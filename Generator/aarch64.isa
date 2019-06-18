@@ -1,0 +1,73 @@
+(def ADD-immediate
+    "f 0 0 10001 0s iiiiiiiiiiii nnnnn ddddd"
+    "add $r$rd, $r$rn, #$imm, LSL #$shift"
+    (names (size f) (sh s) (imm i) (rd d) (rn n))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shift (if (== sh 0) 0 12))
+        (let simm (<< imm shift)))
+    (if (== size 0)
+        (= (gpr32 rd) (+ (gpr32 rn) simm))
+        (= (gpr64 rd) (+ (gpr64 rn) simm))))
+
+(def ADRP
+    "1 ll 10000 iiiiiiiiiiiiiiiiiii ddddd"
+    "adrp X$rd, #$addr"
+    (names (immlo l) (immhi i) (rd d))
+    (block
+        (let imm (signext (| (<< (cast immhi u33) 14) (<< (cast immlo u14) 12)) i64))
+        (let addr (+ (<< (>> (pc) 12) 12) imm)))
+    (= (gpr64 rd) addr))
+
+(def LDR-unsigned-offset
+    "1s 111 0 01 01 iiiiiiiiiiii nnnnn ddddd"
+    "ldr $r$rd, [X$rn, #$imm]"
+    (names (size s) (rawimm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let imm (<< rawimm (if (== size 0) 2 3))))
+    (if (== size 0)
+        (= (gpr32 rd) (load (+ (gpr64 rn) imm) u32))
+        (= (gpr64 rd) (load (+ (gpr64 rn) imm) u64))))
+
+(def STP-signed-offset
+    "s0 101 0 010 0 iiiiiii ppppp nnnnn ttttt"
+    "stp $r$rt1, $r$rt2, [X$rd, #$simm]"
+    (names (size s) (imm i) (rd n) (rt1 t) (rt2 p))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let simm (<< (signext imm i64) (if (== size 0) 2 3))))
+    (runtime-let address (+ (gpr64 rd) simm)
+        (if (== size 0)
+            (block
+                (store address (gpr32 rt1))
+                (store (+ address 4) (gpr32 rt2)))
+            (block
+                (store address (gpr64 rt1))
+                (store (+ address 8) (gpr64 rt2))))))
+
+(def STR-preindex
+	"1s 111 0 00 00 0 iiiiiiiii 11 nnnnn ttttt"
+	"str $r$rs, [X$rd, #$simm]!"
+	(names (size s) (imm i) (rd n) (rs t))
+	(block
+		(let r (if (== size 0) "W" "X"))
+		(let simm (signext imm i64)))
+	(runtime-let address (+ (gpr64 rd) simm)
+		(if (== size 0)
+			(store address (gpr32 rs))
+			(store address (gpr64 rs)))
+		(= (gpr64 rd) address)))
+
+(def SUB-immediate
+    "f 1 0 10001 0s iiiiiiiiiiii nnnnn ddddd"
+    "sub $r$rd, $r$rn, #$imm, LSL #$shift"
+    (names (size f) (sh s) (imm i) (rd d) (rn n))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shift (if (== sh 0) 0 12))
+        (let simm (<< imm shift)))
+    (if (== size 0)
+        (= (gpr32 rd) (- (gpr32 rn) simm))
+        (= (gpr64 rd) (- (gpr64 rn) simm))))
+
