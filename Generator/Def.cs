@@ -77,13 +77,16 @@ namespace Generator {
 							case "block":
 								InferList(list);
 								return list.Last().Type;
-							case "let": case "runtime-let":
+							case "let":
 								locals[((PName) list[1]).Name] = InferType(list[2]);
 								list.Skip(2).ForEach(x => InferType(x));
 								return list.Last().Type;
 							case "if":
 								InferList(list);
 								return InferType(list[2]);
+							case "match":
+								InferList(list);
+								return list.Count == 3 ? list[2].Type : list[3].Type;
 							case { } fname when BuiltinTypes.Builtins.ContainsKey(fname):
 								InferList(list);
 								return BuiltinTypes.Builtins[fname](list);

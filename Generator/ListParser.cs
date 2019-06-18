@@ -36,6 +36,7 @@ namespace Generator {
 	public class PList : PTree, IEnumerable<PTree> {
 		public readonly List<PTree> Children = new List<PTree>();
 		public PTree Head => Children.First();
+		public int Count => Children.Count;
 
 		public void Add(PTree child) => Children.Add(child);
 

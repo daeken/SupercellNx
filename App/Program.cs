@@ -1,30 +1,39 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Common;
 using Cpu64;
 
 namespace App {
 	class Program {
-		static void Main(string[] args) {
+		[DllImport("libc")]
+		static extern ulong mmap(ulong addr, ulong len, int prot, int flags, int fd, ulong offset);
+		
+		static unsafe void Main(string[] args) {
 			var main = Nxo.Load(File.OpenRead(args[0]));
-			var data = main.Data;
-			using var ms = new MemoryStream(data);
-			using var br = new BinaryReader(ms);
+			
+			var addr = mmap(0x7100000000, ((ulong) main.Data.Length & ~0xFFFU) + 0x1000U, 1 | 2, 0x1000 | 0x0001, 0, 0);
+			if(addr != 0x7100000000) throw new Exception("Couldn't map binary to base addr");
+
+			var root = (byte*) addr;
+			foreach(var v in main.Data)
+				*root++ = v;
+
 			var cpu = new Interpreter();
-			for(var i = 0; i < 32; ++i)
-				cpu.X[i] = 0xDE000000 | (ulong) (i << 16);
-			var addr = 0x7100000024UL;
-			br.At(0x24);
-			for(var i = 0; i < 8; ++i) {
-				var inst = br.ReadUInt32();
-				var asm = cpu.Disassemble(inst, addr);
+			cpu.SP = (ulong) (Marshal.AllocHGlobal(1024 * 1024) + 1024 * 1024);
+			cpu.PC = 0x7100000024UL;
+			while(true) {
+				var before = cpu.PC;
+				var inst = *(uint*) cpu.PC;
+				var asm = cpu.Disassemble(inst, cpu.PC);
 				if(asm == null) {
-					$"Disassembly failed at {addr:X} --- {inst:X8}".Debug();
+					$"Disassembly failed at {cpu.PC:X} --- {inst:X8}".Debug();
 					break;
 				}
-				asm.Debug();
-				cpu.Interpret(inst, addr);
-				addr += 4;
+				$"{cpu.PC:X}: {asm}".Debug();
+				cpu.Interpret(inst, cpu.PC);
+				if(before == cpu.PC)
+					cpu.PC += 4;
 			}
 		}
 	}
