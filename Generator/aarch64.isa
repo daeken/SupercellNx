@@ -72,12 +72,12 @@
          (let r (if (== size 0) "W" "X"))
          (let addr (+ (pc) (signext (<< imm 2) i64))))
     (if (== size 0)
-        (if (== (gpr32 rs) (cast 0 u32))
+        (if (!= (gpr32 rs) (cast 0 u32))
             (branch addr)
             (branch-default))
-        (if (== (gpr64 rs) (cast 0 u64))
-                    (branch addr)
-                    (branch-default))))
+        (if (!= (gpr64 rs) (cast 0 u64))
+            (branch addr)
+            (branch-default))))
 
 (def LDR-immediate-postindex
     "1s 111 0 00 01 0 iiiiiiiii 01 nnnnn ddddd"

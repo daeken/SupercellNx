@@ -75,13 +75,13 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) ((imm) << (int) (0x2)), 19))));
 				if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-					if(((byte) ((((uint) ((rs) == 31 ? 0U : W[(int) rs])) == ((uint) ((uint) (0x0)))) ? 1U : 0U)) != 0) {
+					if(((byte) ((((uint) ((rs) == 31 ? 0U : W[(int) rs])) != ((uint) ((uint) (0x0)))) ? 1U : 0U)) != 0) {
 						Branch(addr);
 					} else {
 						Branch(pc + 4);
 					}
 				} else {
-					if(((byte) ((((ulong) ((rs) == 31 ? 0UL : X[(int) rs])) == ((ulong) ((ulong) (0x0)))) ? 1U : 0U)) != 0) {
+					if(((byte) ((((ulong) ((rs) == 31 ? 0UL : X[(int) rs])) != ((ulong) ((ulong) (0x0)))) ? 1U : 0U)) != 0) {
 						Branch(addr);
 					} else {
 						Branch(pc + 4);
