@@ -55,6 +55,17 @@
             (branch addr)
             (branch-default))))
 
+(def BL
+    "1 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
+    "bl #$addr"
+    (names (imm i))
+    (block
+        (let offset (signext (<< (cast imm u28) 2) i64))
+        (let addr (+ (pc) offset)))
+    (block
+        (= (gpr64 30) (+ (pc) 4))
+        (branch addr)))
+
 (def BLR
     "1101011 0 0 01 11111 0000 0 0 nnnnn 00000"
     "blr X$rn"
@@ -63,6 +74,13 @@
     (block
         (= (gpr64 30) (+ (pc) 4))
         (branch (gpr64 rn))))
+
+(def BR
+    "1101011 0 0 00 11111 0000 0 0 nnnnn 00000"
+    "br X$rn"
+    (names (rn n))
+    (block)
+    (branch (gpr64 rn)))
 
 (def CBNZ
     "s 011010 1 iiiiiiiiiiiiiiiiiii ttttt"
@@ -131,6 +149,17 @@
 			(store address (gpr32 rs))
 			(store address (gpr64 rs)))
 		(= (gpr-or-sp64 rd) address)))
+
+(def STR-immediate-unsigned-offset
+    "1s 111 0 01 00 iiiiiiiiiiii nnnnn ttttt"
+    "str $r$rs, [X$rd, #$pimm]"
+    (names (size s) (imm i) (rd n) (rs t))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let pimm (<< (cast imm u64) (if (== size 0) 2 3))))
+    (if (== size 0)
+        (store (+ (gpr-or-sp64 rd) pimm) (gpr32 rs))
+        (store (+ (gpr-or-sp64 rd) pimm) (gpr64 rs))))
 
 (def SUB-immediate
     "f 1 0 10001 0s iiiiiiiiiiii nnnnn ddddd"

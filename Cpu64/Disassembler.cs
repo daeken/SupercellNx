@@ -39,10 +39,22 @@ namespace Cpu64 {
 				var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 				return $"b.{condstr} #0x{addr:X}";
 			}
+			/* BL */
+			if((inst & 0xFC000000U) == 0x94000000U) {
+				var imm = (inst >> 0) & 0x3FFFFFFU;
+				var offset = (long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28));
+				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (offset));
+				return $"bl #0x{addr:X}";
+			}
 			/* BLR */
 			if((inst & 0xFFFFFC1FU) == 0xD63F0000U) {
 				var rn = (inst >> 5) & 0x1FU;
 				return $"blr X{rn}";
+			}
+			/* BR */
+			if((inst & 0xFFFFFC1FU) == 0xD61F0000U) {
+				var rn = (inst >> 5) & 0x1FU;
+				return $"br X{rn}";
 			}
 			/* CBNZ */
 			if((inst & 0x7F000000U) == 0x35000000U) {
@@ -93,6 +105,16 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var simm = (long) (SignExt<long>(imm, 9));
 				return $"str {r}{rs}, [X{rd}, #{(simm < 0 ? $"-0x{-simm}" : $"0x{simm}")}]!";
+			}
+			/* STR-immediate-unsigned-offset */
+			if((inst & 0xBFC00000U) == 0xB9000000U) {
+				var size = (inst >> 30) & 0x1U;
+				var imm = (inst >> 10) & 0xFFFU;
+				var rd = (inst >> 5) & 0x1FU;
+				var rs = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var pimm = (ulong) (((ulong) ((ulong) (imm))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
+				return $"str {r}{rs}, [X{rd}, #0x{pimm:X}]";
 			}
 			/* SUB-immediate */
 			if((inst & 0x7F800000U) == 0x51000000U) {

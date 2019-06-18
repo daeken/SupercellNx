@@ -59,11 +59,27 @@ namespace Cpu64 {
 				}
 				return true;
 			}
+			/* BL */
+			if((inst & 0xFC000000U) == 0x94000000U) {
+				var imm = (inst >> 0) & 0x3FFFFFFU;
+				var offset = (long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28));
+				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (offset));
+				if(0x1E != 31)
+					X[(int) 0x1E] = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (0x4));
+				Branch(addr);
+				return true;
+			}
 			/* BLR */
 			if((inst & 0xFFFFFC1FU) == 0xD63F0000U) {
 				var rn = (inst >> 5) & 0x1FU;
 				if(0x1E != 31)
 					X[(int) 0x1E] = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (0x4));
+				Branch((ulong) ((rn) == 31 ? 0UL : X[(int) rn]));
+				return true;
+			}
+			/* BR */
+			if((inst & 0xFFFFFC1FU) == 0xD61F0000U) {
+				var rn = (inst >> 5) & 0x1FU;
 				Branch((ulong) ((rn) == 31 ? 0UL : X[(int) rn]));
 				return true;
 			}
@@ -168,6 +184,21 @@ namespace Cpu64 {
 					SP = address;
 				else
 					X[(int) rd] = address;
+				return true;
+			}
+			/* STR-immediate-unsigned-offset */
+			if((inst & 0xBFC00000U) == 0xB9000000U) {
+				var size = (inst >> 30) & 0x1U;
+				var imm = (inst >> 10) & 0xFFFU;
+				var rd = (inst >> 5) & 0x1FU;
+				var rs = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var pimm = (ulong) (((ulong) ((ulong) (imm))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
+				if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+					*(uint*) ((ulong) ((ulong) ((ulong) ((rd) == 31 ? SP : X[(int) rd])) + (ulong) (pimm))) = (uint) ((rs) == 31 ? 0U : W[(int) rs]);
+				} else {
+					*(ulong*) ((ulong) ((ulong) ((ulong) ((rd) == 31 ? SP : X[(int) rd])) + (ulong) (pimm))) = (ulong) ((rs) == 31 ? 0UL : X[(int) rs]);
+				}
 				return true;
 			}
 			/* SUB-immediate */
