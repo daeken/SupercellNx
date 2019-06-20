@@ -56,14 +56,31 @@ namespace Generator {
 					c--;
 					c += "}";
 					break;
+				case PName("match"):
+					c += $"switch({GenerateExpression(list[1])}) {{";
+					c++;
+					for(var i = 2; i < list.Count; i += 2)
+						if(i + 1 == list.Count) {
+							c += "default:";
+							c++;
+							GenerateStatement(c, (PList) list[i]);
+							c += "break;";
+							c--;
+						} else {
+							c += $"case {GenerateExpression(list[i])}:";
+							c++;
+							GenerateStatement(c, (PList) list[i + 1]);
+							c += "break;";
+							c--;
+						}
+					c--;
+					c += "}";
+					break;
 				case PName("="):
 					if(list[1] is PList sub)
 						switch(sub[0]) {
 							case PName("gpr32"):
-								c += $"if({GenerateExpression(sub[1])} != 31)";
-								c++;
 								c += $"W[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
-								c--;
 								return;
 							case PName("gpr-or-sp32"):
 								c += $"if({GenerateExpression(sub[1])} == 31)";
@@ -76,10 +93,7 @@ namespace Generator {
 								c--;
 								return;
 							case PName("gpr64"):
-								c += $"if({GenerateExpression(sub[1])} != 31)";
-								c++;
 								c += $"X[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
-								c--;
 								return;
 							case PName("gpr-or-sp64"):
 								c += $"if({GenerateExpression(sub[1])} == 31)";
@@ -126,6 +140,8 @@ namespace Generator {
 						case int x when x > 8: return i.Signed ? "short" : "ushort";
 						default: return i.Signed ? "sbyte" : "byte";
 					}
+				case EFloat f: return f.Width > 32 ? "double" : "float";
+				case EVector _: return "Vector128<float>";
 				default: throw new NotImplementedException();
 			}
 		}
@@ -138,7 +154,11 @@ namespace Generator {
 		static string GenerateBaseListExpression(PList list) {
 			switch(list[0]) {
 				case PName("if"):
-					return $"({GenerateExpression(list[1])} != 0) ? ({GenerateExpression(list[2])}) : ({GenerateExpression(list[3])})";
+					var a = GenerateExpression(list[2]);
+					var b = GenerateExpression(list[3]);
+					if(!a.StartsWith("throw")) a = $"({a})";
+					if(!b.StartsWith("throw")) b = $"({b})";
+					return $"({GenerateExpression(list[1])} != 0) ? {a} : {b}";
 				case PName("match"):
 					var opts = new List<string>();
 					for(var i = 2; i < list.Count; i += 2)
@@ -148,7 +168,11 @@ namespace Generator {
 					return $"({GenerateExpression(list[1])}) switch {{ {string.Join(", ", opts)} }}";
 				case PName("=="): case PName("!="): return $"(({GenerateExpression(list[1])}) {list[0]} ({GenerateExpression(list[2])})) ? 1U : 0U";
 				case PName("<<"): case PName(">>"): return $"({GenerateExpression(list[1])}) {list[0]} (int) ({GenerateExpression(list[2])})";
-				case PName("+"): case PName("-"): case PName("|"): case PName("&"):
+				case PName(">>>"):
+					if(!(list[1].Type is EInt(false, var bs))) throw new NotSupportedException();
+					return
+						$"(({GenerateExpression(list[1])}) << ({bs} - (int) ({GenerateExpression(list[2])}))) | (({GenerateExpression(list[1])}) >> (int) ({GenerateExpression(list[2])}))";
+				case PName("+"): case PName("-"): case PName("*"): case PName("|"): case PName("&"):
 					if(!(list[1].Type is EInt(var sa, var ba)) || !(list[2].Type is EInt(var sb, var bb)))
 						throw new NotImplementedException();
 					var stype = new EInt(sa && sb, Math.Max(ba, bb));
@@ -172,14 +196,28 @@ namespace Generator {
 				case PName("gpr-or-sp32"): return $"({GenerateExpression(list[1])}) == 31 ? (uint) (SP & 0xFFFFFFFFUL) : W[(int) {GenerateExpression(list[1])}]";
 				case PName("gpr64"): return $"({GenerateExpression(list[1])}) == 31 ? 0UL : X[(int) {GenerateExpression(list[1])}]";
 				case PName("gpr-or-sp64"): return $"({GenerateExpression(list[1])}) == 31 ? SP : X[(int) {GenerateExpression(list[1])}]";
+				case PName("vec"): return $"V[{GenerateExpression(list[1])}]";
+				case PName("vec-s"): return $"V[{GenerateExpression(list[1])} >> 2].GetElement((int) {GenerateExpression(list[1])} & 3)";
+				case PName("vec-d"): return $"V[{GenerateExpression(list[1])} >> 1].As<float, double>().GetElement((int) {GenerateExpression(list[1])} & 1)";
+				case PName("make-tmask"):
+					return $"MakeTMask({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[5])}, {GenerateExpression(list[4])})";
+				case PName("make-wmask"):
+					return $"MakeWMask({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[5])}, {GenerateExpression(list[4])})";
 				case PName("signext"):
 					return $"SignExt<{GenerateType(list.Type)}>({GenerateExpression(list[1])}, {((EInt) list[1].Type).Width})";
 				case PName("cast"):
 					return $"({GenerateType(list.Type)}) ({GenerateExpression(list[1])})";
 				case PName("store"):
+					if(list[2].Type is EVector)
+						return $"Sse.Store((float*) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])})";
 					return $"*({GenerateType(list[2].Type)}*) ({GenerateExpression(list[1])}) = {GenerateExpression(list[2])}";
 				case PName("load"):
 					return $"*({GenerateType(list.Type)}*) ({GenerateExpression(list[1])})";
+				case PName("svc"): return $"Svc({GenerateExpression(list[1])})";
+				
+				case PName("vector-all"): return $"Vector128.Create({GenerateExpression(list[1])}).As<{GenerateType(list[1].Type)}, float>()";
+				case PName("vector-zero-top"): return GenerateExpression(list[1]);
+				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");
 				default: throw new NotSupportedException($"Non-name for first element of list {list.ToPrettyString()}");
@@ -200,7 +238,7 @@ namespace Generator {
 								return "$";
 							var name = match.Groups[1].Value;
 							if(def.Locals[name] is EInt(var signed, var size) && size > 8)
-								return signed ? $"{{({name} < 0 ? $\"-0x{{-{name}}}\" : $\"0x{{{name}}}\")}}" : $"0x{{{name}:X}}";
+								return signed ? $"{{({name} < 0 ? $\"-0x{{-{name}:X}}\" : $\"0x{{{name}:X}}\")}}" : $"0x{{{name}:X}}";
 							return $"{{{name}}}";
 						});
 				
@@ -223,7 +261,7 @@ namespace Generator {
 			Context = ContextTypes.Interpreter;
 			
 			var c = new CodeBuilder();
-			c += 3;
+			c += 4;
 			
 			foreach(var def in defs) {
 				c += $"/* {def.Name} */";

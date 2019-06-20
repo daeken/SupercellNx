@@ -29,6 +29,9 @@ namespace Generator {
 			["branch-default"] = _ => EType.Unit, 
 			["store"] = _ => EType.Unit, 
 			["load"] = x => TypeFromName(x[2]), 
+			["svc"] = _ => EType.Unit, 
+			["make-wmask"] = _ => new EInt(false, 64), 
+			["make-tmask"] = _ => new EInt(false, 64), 
 			["signext"] = x => TypeFromName(x[2]), 
 			["cast"] = x => TypeFromName(x[2]), 
 			["gpr32"] = _ => new EInt(false, 32), 
@@ -41,6 +44,7 @@ namespace Generator {
 			["+"] = x => LogicalType(x[1].Type, x[2].Type), 
 			["add-with-carry-set-nzcv"] = x => x[1].Type, 
 			["-"] = x => LogicalType(x[1].Type, x[2].Type), 
+			["*"] = x => LogicalType(x[1].Type, x[2].Type), 
 			["~"] = x => x[1].Type, 
 			["!"] = x => new EInt(false, 1), 
 			["|"] = x => x[1].Type, 
@@ -48,7 +52,13 @@ namespace Generator {
 			["^"] = x => x[1].Type, 
 			["<<"] = x => x[1].Type, 
 			[">>"] = x => x[1].Type, 
+			[">>>"] = x => x[1].Type, 
 			["shift"] = x => x[1].Type, 
+			["vec"] = _ => EType.Vector, 
+			["vec-s"] = _ => new EFloat(32), 
+			["vec-d"] = _ => new EFloat(64), 
+			["vector-all"] = _ => EType.Vector, 
+			["vector-zero-top"] = _ => EType.Vector, 
 		};
 	}
 }

@@ -45,7 +45,10 @@ namespace App {
 	
 	public abstract class Nxo {
 		class Symbol {
-			
+			public string Name;
+			public byte Info, Other;
+			public ushort Shndx;
+			public ulong Value, Size;
 		}
 		
 		public static Nxo Load(Stream stream) {
@@ -65,7 +68,10 @@ namespace App {
 			(byte[] Data, uint Offset, uint Loc, uint Size) ro, 
 			(byte[] Data, uint Offset, uint Loc, uint Size) data
 		) {
-			var full = Data = new byte[data.Loc + data.Size];
+			var len = data.Loc + data.Size;
+			while((len & 0xFFF) != 0)
+				len++;
+			var full = Data = new byte[len];
 			Array.Copy(text.Data, full, Math.Min(text.Data.Length, ro.Loc));
 			Array.Copy(ro.Data, 0, full, ro.Loc, Math.Min(ro.Data.Length, data.Loc - ro.Loc));
 			Array.Copy(data.Data, 0, full, data.Loc, data.Data.Length);
@@ -104,6 +110,26 @@ namespace App {
 			
 			Debug.Assert(dynamic[DynamicKey.SYMTAB] < dynamic[DynamicKey.STRTAB]);
 			var symbols = new List<Symbol>();
+			br.At((long) dynamic[DynamicKey.SYMTAB]);
+			for(var i = 0UL; i < dynamic[DynamicKey.STRTAB] - dynamic[DynamicKey.SYMTAB]; i += 24)
+				symbols.Add(new Symbol {
+					Name = GetDynstr(br.ReadUInt32()), 
+					Info = br.ReadByte(), 
+					Other = br.ReadByte(), 
+					Shndx = br.ReadUInt16(), 
+					Value = br.ReadUInt64(), 
+					Size = br.ReadUInt64()
+				});
+
+			/*void ProcessRelocations(ulong start, ulong size) {
+				
+			}
+			if(dynamic.ContainsKey(DynamicKey.REL))
+				ProcessRelocations(dynamic[DynamicKey.REL], dynamic[DynamicKey.RELSZ]);
+			if(dynamic.ContainsKey(DynamicKey.RELA))
+				ProcessRelocations(dynamic[DynamicKey.RELA], dynamic[DynamicKey.RELASZ]);
+			if(dynamic.ContainsKey(DynamicKey.JMPREL))
+				ProcessRelocations(dynamic[DynamicKey.JMPREL], dynamic[DynamicKey.PLTRELSZ]);*/
 		}
 
 		string GetDynstr(ulong i) => Dynstr.Substring((int) i, Dynstr.IndexOf('\0', (int) i) - (int) i);

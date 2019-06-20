@@ -9,6 +9,7 @@ namespace Generator {
 		public static readonly EUndef Undef = new EUndef();
 		public static readonly EUnit Unit = new EUnit();
 		public static readonly EString String = new EString();
+		public static readonly EVector Vector = new EVector();
 	}
 
 	public class EInt : EType {
@@ -26,9 +27,19 @@ namespace Generator {
 			width = Width;
 		}
 	}
+	public class EFloat : EType {
+		public readonly int Width;
+		public EFloat(int width) => Width = width;
+
+		public override string ToString() => $"EFloat({Width})";
+
+		public void Deconstruct(out int width) => width = Width;
+	}
 	public class EUndef : EType {}
 	public class EString : EType {}
 	public class EUnit : EType {}
+	public class EVector : EType {}
+	
 	public abstract class PTree {
 		public EType Type = EType.Undef;
 	}
