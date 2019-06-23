@@ -54,7 +54,8 @@ namespace Supercell {
 			}
 			
 			AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-				.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+				.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+					.Concat(x.GetMethods(BindingFlags.Static | BindingFlags.Public)))
 				.Where(x => x.GetCustomAttributes(typeof(SvcAttribute)).Count() != 0)
 				.ForEach(x => {
 					var attr = x.GetCustomAttribute<SvcAttribute>();
@@ -65,12 +66,11 @@ namespace Supercell {
 						return reg => reg;
 					}).ToArray();
 					var rethandler = BuildRetHandler(x.ReturnType);
-					var instance = x.DeclaringType.GetField("Instance",
-						BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null);
-					instance ??=
-						typeof(Kernel)
-							.GetFields(BindingFlags.Public | BindingFlags.Static)
-							.FirstOrDefault(y => y.FieldType == x.DeclaringType)?.GetValue(null);
+					var instance = x.IsStatic ? null : x.DeclaringType.GetField("Instance",
+							               BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+						               ?.GetValue(null) ?? typeof(Kernel)
+						               .GetFields(BindingFlags.Public | BindingFlags.Static)
+						               .FirstOrDefault(y => y.FieldType == x.DeclaringType)?.GetValue(null);
 					if(x.ReturnType == typeof(void))
 						Handlers[attr.Svc] = () => {
 							var args = argParsers.Select((x, i) => x(cpu.X[i])).ToArray();

@@ -128,7 +128,7 @@ namespace Cpu64 {
 				/*var local = Ilg.DeclareLocal<ulong>();
 				value.Emit();
 				Ilg.StoreLocal(local);
-				Ilg.WriteLine($"Setting SP from {PC:X} -- {{0}}", local);*/
+				Ilg.WriteLine($"Setting SP from {PC:X} -- {{0:X}}", local);*/
 				Field(nameof(SP), value);
 			}
 		}
@@ -242,6 +242,8 @@ namespace Cpu64 {
 				BranchToBlock = null;
 				BranchTo = unchecked((ulong) -1);
 				block.Func(this);
+				if(SP < 0x100000)
+					throw new Exception($"SP likely corrupted by block {PC:X}");
 				PC = pc = BranchTo;
 				Debug.Assert((pc & 3) == 0);
 			}

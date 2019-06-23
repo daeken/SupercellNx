@@ -21,6 +21,8 @@ namespace Cpu64 {
 			}
 		}
 		public ulong NZCV_N, NZCV_Z, NZCV_C, NZCV_V;
+
+		public ulong TlsBase;
 		
 		protected BaseCpu(IKernel kernel) => Kernel = kernel;
 		public abstract void Run(ulong pc, ulong sp);
@@ -154,6 +156,8 @@ namespace Cpu64 {
 					return 0;
 				case 0b11_011_0100_0100_001: // FPSR
 					return 0;
+				case 0b11_011_1101_0000_011: // TPIDR
+					return TlsBase;
 				default:
 					throw new NotSupportedException($"Unknown SR: S{op0|2}_{op1}_{crn}_{crm}_{op2}");
 			}
@@ -165,6 +169,8 @@ namespace Cpu64 {
 				case 0b11_011_0100_0100_000: // FPCR
 					break;
 				case 0b11_011_0100_0100_001: // FPSR
+					break;
+				case 0b11_011_1101_0000_010: // TPIDR_EL0
 					break;
 				default:
 					throw new NotSupportedException($"Unknown SR: S{op0|2}_{op1}_{crn}_{crm}_{op2}");

@@ -14,7 +14,10 @@ namespace Supercell {
 		//public static readonly BaseCpu Cpu = new Interpreter(Instance);
 		public static readonly BaseCpu Cpu = new Recompiler(Instance);
 		public static readonly MemoryManager Memory = new MemoryManager();
+		public static readonly IpcManager Ipc = new IpcManager();
 		public static readonly ServiceManager Service = new ServiceManager();
+
+		public ulong StackBase, StackSize;
 		
 		public unsafe void LoadAndRun(string[] fns) {
 			(ulong Addr, Nxo Nxo) LoadBinary(ulong preferred, string path) {
@@ -36,13 +39,23 @@ namespace Supercell {
 				.Select((x, i) => (x, LoadBinary((ulong) (0x7100000000 + (i << 32)), x)))
 				.OrderBy(x => Path.GetFileName(x.Item1) != "rtld").Select(x => x.Item2).ToList();
 			
-			var stackSize = 32UL * 1024 * 1024;
-			var stackBase = Memory.AllocateAligned(32 * 1024 * 1024, 0x40000000);
-			Cpu.Run(binaries[0].Addr, stackBase + stackSize);
+			StackSize = 32UL * 1024 * 1024;
+			StackBase = Memory.AllocateAligned(StackSize);
+
+			Cpu.TlsBase = Memory.AllocateAligned(0x1000);
+			*(ulong*) (Cpu.TlsBase + 0x1F8) = Cpu.TlsBase + 0x400;
+			
+			Cpu.Run(binaries[0].Addr, StackBase + StackSize);
 		}
 
 		public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => Memory.Regions.Values;
 		public void Svc(int svc) => Service.Svc(svc);
+
+		[Svc(0x26)]
+		public uint Break(ulong reason, ulong _, ulong info) {
+			$"Break({reason}, {info})".Debug();
+			return 0;
+		}
 
 		string DebugBuffer = "";
 		[Svc(0x27)]
@@ -60,7 +73,7 @@ namespace Supercell {
 		}
 
 		[Svc(0x29)]
-		public (uint, ulong) GetInfo(uint id1, uint handle, uint id2) {
+		public (uint, ulong) GetInfo(ulong _, uint id1, uint handle, uint id2) {
 			$"GetInfo({id1}, 0x{handle:X}, {id2})".Debug();
 			var value = 0UL;
 			switch((id1, id2)) {
@@ -72,10 +85,10 @@ namespace Supercell {
 				case (5, 0): value = 0; break;
 				case (6, 0): value = 0x400000; break;
 				case (7, 0): value = 0x10000; break;
-				case (12, 0): value = 0x10000; break;
-				case (13, 0): value = 0x10000; break;
-				case (14, 0): value = 0x10000; break;
-				case (15, 0): value = 0x10000; break;
+				case (12, 0): value = 0; break;
+				case (13, 0): value = 1UL << 40; break;
+				case (14, 0): value = StackBase; break;
+				case (15, 0): value = StackSize; break;
 				case (18, 0): value = 0x10000; break;
 				case (11, _): value = 0; break;
 				default:

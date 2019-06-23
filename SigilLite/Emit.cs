@@ -55,10 +55,13 @@ namespace SigilLite {
 
 		public Emit<DelegateT> Branch(Label label) => Do(() => Ilg.Emit(OpCodes.Br, label.ILabel));
 		public Emit<DelegateT> BranchIfEqual(Label label) => Do(() => Ilg.Emit(OpCodes.Beq, label.ILabel));
+		public Emit<DelegateT> UnsignedBranchIfGreater(Label label) => Do(() => Ilg.Emit(OpCodes.Bgt_Un, label.ILabel));
 		public Emit<DelegateT> BranchIfGreater(Label label) => Do(() => Ilg.Emit(OpCodes.Bgt, label.ILabel));
+		public Emit<DelegateT> UnsignedBranchIfGreaterOrEqual(Label label) => Do(() => Ilg.Emit(OpCodes.Bge_Un, label.ILabel));
 		public Emit<DelegateT> BranchIfGreaterOrEqual(Label label) => Do(() => Ilg.Emit(OpCodes.Bge, label.ILabel));
-		public Emit<DelegateT> BranchIfLess(Label label)  => Do(() => Ilg.Emit(OpCodes.Blt, label.ILabel));
 		public Emit<DelegateT> UnsignedBranchIfLess(Label label)  => Do(() => Ilg.Emit(OpCodes.Blt_Un, label.ILabel));
+		public Emit<DelegateT> BranchIfLess(Label label)  => Do(() => Ilg.Emit(OpCodes.Blt, label.ILabel));
+		public Emit<DelegateT> UnsignedBranchIfLessOrEqual(Label label)  => Do(() => Ilg.Emit(OpCodes.Ble_Un, label.ILabel));
 		public Emit<DelegateT> BranchIfLessOrEqual(Label label)  => Do(() => Ilg.Emit(OpCodes.Ble, label.ILabel));
 		public Emit<DelegateT> BranchIfTrue(Label label)  => Do(() => Ilg.Emit(OpCodes.Brtrue, label.ILabel));
 
@@ -107,7 +110,15 @@ namespace SigilLite {
 			try {
 				Ilg.Emit(OpCodes.Ldc_I4, (uint) System.Convert.ChangeType(value, typeof(uint)));
 			} catch(Exception) {
-				Ilg.Emit(OpCodes.Ldc_I4, unchecked((uint) (int) System.Convert.ChangeType(value, typeof(int))));
+				try {
+					Ilg.Emit(OpCodes.Ldc_I4, unchecked((uint) (int) System.Convert.ChangeType(value, typeof(int))));
+				} catch (Exception) {
+					try {
+						Ilg.Emit(OpCodes.Ldc_I8, (ulong) System.Convert.ChangeType(value, typeof(ulong)));
+					} catch(Exception) {
+						Ilg.Emit(OpCodes.Ldc_I8, unchecked((ulong) (long) System.Convert.ChangeType(value, typeof(long))));
+					}
+				}
 			}
 
 			return Convert<ConstT>();
@@ -122,6 +133,19 @@ namespace SigilLite {
 			if(tt == typeof(uint)) return Do(() => Ilg.Emit(OpCodes.Ldelem_U4));
 			if(tt == typeof(int)) return Do(() => Ilg.Emit(OpCodes.Ldelem_I4));
 			throw new NotImplementedException($"Load element of unknown type: {tt}");
+		}
+
+		public Emit<DelegateT> LoadIndirect<ElementT>() {
+			var tt = typeof(ElementT);
+			if(tt == typeof(byte)) return Do(() => Ilg.Emit(OpCodes.Ldind_U1));
+			if(tt == typeof(sbyte)) return Do(() => Ilg.Emit(OpCodes.Ldind_I1));
+			if(tt == typeof(ushort)) return Do(() => Ilg.Emit(OpCodes.Ldind_U2));
+			if(tt == typeof(short)) return Do(() => Ilg.Emit(OpCodes.Ldind_I2));
+			if(tt == typeof(uint)) return Do(() => Ilg.Emit(OpCodes.Ldind_U4));
+			if(tt == typeof(int)) return Do(() => Ilg.Emit(OpCodes.Ldind_I4));
+			if(tt == typeof(ulong)) return Do(() => Ilg.Emit(OpCodes.Ldind_I8));
+			if(tt == typeof(long)) return Do(() => Ilg.Emit(OpCodes.Ldind_I8));
+			throw new NotImplementedException($"Load indirect of unknown type: {tt}");
 		}
 
 		public Emit<DelegateT> LoadField(FieldInfo field) => Do(() => Ilg.Emit(field.IsStatic ? OpCodes.Ldsfld : OpCodes.Ldfld, field));
@@ -150,7 +174,17 @@ namespace SigilLite {
 			if(tt == typeof(byte) || tt == typeof(sbyte)) return Do(() => Ilg.Emit(OpCodes.Stelem_I1));
 			if(tt == typeof(ushort) || tt == typeof(short)) return Do(() => Ilg.Emit(OpCodes.Stelem_I2));
 			if(tt == typeof(uint) || tt == typeof(int)) return Do(() => Ilg.Emit(OpCodes.Stelem_I4));
+			if(tt == typeof(ulong) || tt == typeof(long)) return Do(() => Ilg.Emit(OpCodes.Stelem_I8));
 			throw new NotImplementedException($"Store element of unknown type: {tt}");
+		}
+		
+		public Emit<DelegateT> StoreIndirect<ElementT>() {
+			var tt = typeof(ElementT);
+			if(tt == typeof(byte) || tt == typeof(sbyte)) return Do(() => Ilg.Emit(OpCodes.Stind_I1));
+			if(tt == typeof(ushort) || tt == typeof(short)) return Do(() => Ilg.Emit(OpCodes.Stind_I2));
+			if(tt == typeof(uint) || tt == typeof(int)) return Do(() => Ilg.Emit(OpCodes.Stind_I4));
+			if(tt == typeof(ulong) || tt == typeof(long)) return Do(() => Ilg.Emit(OpCodes.Stind_I8));
+			throw new NotImplementedException($"Store indirect of unknown type: {tt}");
 		}
 		
 		public Emit<DelegateT> StoreField(FieldInfo field) => Do(() => Ilg.Emit(field.IsStatic ? OpCodes.Stsfld : OpCodes.Stfld, field));

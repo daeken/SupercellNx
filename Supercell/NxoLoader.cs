@@ -81,7 +81,8 @@ namespace Supercell {
 			using var br = new BinaryReader(ms);
 
 			var modOff = br.At(4).ReadUInt32();
-			Debug.Assert(br.At(modOff).ReadString(4) == "MOD0");
+			var magic = br.At(modOff).ReadString(4);
+			Debug.Assert(magic == "MOD0");
 
 			var dynamicOff = modOff + br.ReadUInt32();
 			var bssOff = modOff + br.ReadUInt32();

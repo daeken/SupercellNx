@@ -538,6 +538,31 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* LDARB */
+				if((inst & 0xFFFFFC00U) == 0x08DFFC00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var address = (RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]);
+					// Runtime let!
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value)));
+					return true;
+				}
+				/* LDAXB */
+				if((inst & 0xBFFFFC00U) == 0x885FFC00U) {
+					var size = (inst >> 30) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var address = (RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]);
+					// Runtime let!
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value));
+					} else {
+						// Runtime else!
+						XR[(int) rt] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value);
+					}
+					return true;
+				}
 				/* LDP-immediate-postindex */
 				if((inst & 0x7FC00000U) == 0x28C00000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -896,6 +921,17 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* MRS */
+				if((inst & 0xFFF00000U) == 0xD5300000U) {
+					var op0 = (inst >> 19) & 0x1U;
+					var op1 = (inst >> 16) & 0x7U;
+					var cn = (inst >> 12) & 0xFU;
+					var cm = (inst >> 8) & 0xFU;
+					var op2 = (inst >> 5) & 0x7U;
+					var rt = (inst >> 0) & 0x1FU;
+					XR[(int) rt] = (RuntimeValue<ulong>) (CallSR(op0, op1, cn, cm, op2));
+					return true;
+				}
 				/* MSR-register */
 				if((inst & 0xFFF00000U) == 0xD5100000U) {
 					var op0 = (inst >> 19) & 0x1U;
@@ -1027,6 +1063,26 @@ namespace Cpu64 {
 						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (top) & (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (~(tmask))))) | (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (bot) & (RuntimeValue<ulong>) (RuntimeValue<ulong>) (tmask))));
 					}
+					return true;
+				}
+				/* STLXR */
+				if((inst & 0xBFE0FC00U) == 0x8800FC00U) {
+					var size = (inst >> 30) & 0x1U;
+					var rs = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var address = (RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]);
+					// Runtime let!
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
+					} else {
+						// Runtime else!
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
+					}
+					// Runtime let!
+					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (0x0);
 					return true;
 				}
 				/* STP-postindex */
@@ -1194,6 +1250,30 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* STR-immediate-postindex */
+				if((inst & 0xBFE00C00U) == 0xB8000400U) {
+					var size = (inst >> 30) & 0x1U;
+					var imm = (inst >> 12) & 0x1FFU;
+					var rd = (inst >> 5) & 0x1FU;
+					var rs = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var simm = (long) (SignExt<long>(imm, 9));
+					var address = (RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]);
+					// Runtime let!
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs]);
+					} else {
+						// Runtime else!
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs]);
+					}
+					// Runtime let!
+					if(rd == 31)
+						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+					else
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+					return true;
+				}
 				/* STR-immediate-preindex */
 				if((inst & 0xBFE00C00U) == 0xB8000C00U) {
 					var size = (inst >> 30) & 0x1U;
@@ -1268,6 +1348,26 @@ namespace Cpu64 {
 				}
 				/* STRB-register */
 				if((inst & 0xFFE00C00U) == 0x38200800U) {
+					var rm = (inst >> 16) & 0x1FU;
+					var option = (inst >> 13) & 0x7U;
+					var amount = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
+					throw new NotImplementedException();
+					return true;
+				}
+				/* STRH-immediate-unsigned-offset */
+				if((inst & 0xFFC00000U) == 0x79000000U) {
+					var imm = (inst >> 10) & 0xFFFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					return true;
+				}
+				/* STRH-register */
+				if((inst & 0xFFE00C00U) == 0x78200800U) {
 					var rm = (inst >> 16) & 0x1FU;
 					var option = (inst >> 13) & 0x7U;
 					var amount = (inst >> 12) & 0x1U;
@@ -1488,6 +1588,24 @@ namespace Cpu64 {
 					Label(temp_19);
 					Branch(pc + 4);
 					Label(temp_18);
+					return true;
+				}
+				/* TBNZ */
+				if((inst & 0x7F000000U) == 0x37000000U) {
+					var upper = (inst >> 31) & 0x1U;
+					var bottom = (inst >> 19) & 0x1FU;
+					var offset = (inst >> 5) & 0x3FFFU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var imm = (byte) ((byte) ((byte) ((upper) << (int) (0x5))) | (byte) (bottom));
+					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
+					Label temp_20 = Ilg.DefineLabel(), temp_21 = Ilg.DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])).ShiftRight(imm))) & (RuntimeValue<ulong>) (RuntimeValue<long>) (0x1))) != (0x0))) == 0, temp_21);
+					Branch(addr);
+					Branch(temp_20);
+					Label(temp_21);
+					Branch(pc + 4);
+					Label(temp_20);
 					return true;
 				}
 				/* UBFM */
