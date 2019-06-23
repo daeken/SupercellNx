@@ -2,12 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.0</TargetFramework>
-        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <DefineConstants>TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_0;FULLSIGIL</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -15,14 +13,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Common\Common.csproj" />
-      <ProjectReference Include="..\SigilLite\SigilLite.csproj" />
-      <ProjectReference Include="..\UnicornSharp\UnicornSharp.csproj" />
+      <PackageReference Include="K4os.Compression.LZ4" Version="1.1.10" />
+      <PackageReference Include="morelinq" Version="3.1.1" />
+      <PackageReference Include="PrettyPrinter" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Sigil.NetStandard" Version="4.8.0" />
-      <PackageReference Include="UltimateOrb.Int128" Version="1.0.8" />
+      <ProjectReference Include="..\Common\Common.csproj" />
+      <ProjectReference Include="..\Cpu64\Cpu64.csproj" />
     </ItemGroup>
 
 </Project>

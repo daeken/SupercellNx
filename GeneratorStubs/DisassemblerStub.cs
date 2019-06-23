@@ -3,7 +3,7 @@ using System;
 
 namespace Cpu64 {
 	public partial class BaseCpu {
-		public unsafe string? Disassemble(uint inst, ulong pc) {
+		public unsafe string Disassemble(uint inst, ulong pc) {
 /*%CODE%*/
 			return null;
 		}

@@ -7,9 +7,14 @@ using PrettyPrinter;
 namespace Generator {
 	public abstract class EType {
 		public static readonly EUndef Undef = new EUndef();
-		public static readonly EUnit Unit = new EUnit();
-		public static readonly EString String = new EString();
-		public static readonly EVector Vector = new EVector();
+		public static readonly EUnit Unit = (EUnit) EUnit.CompiletimeType;
+		public static readonly EString String = (EString) EString.CompiletimeType;
+		public static readonly EVector Vector = (EVector) EVector.CompiletimeType;
+
+		public bool Runtime;
+		public abstract EType AsRuntime();
+		public abstract EType AsCompiletime();
+		public EType AsRuntime(bool cond) => cond ? AsRuntime() : this;
 	}
 
 	public class EInt : EType {
@@ -20,6 +25,8 @@ namespace Generator {
 			Width = width;
 		}
 
+		public override EType AsCompiletime() => Runtime ? new EInt(Signed, Width) { Runtime = false } : this;
+		public override EType AsRuntime() => Runtime ? this : new EInt(Signed, Width) { Runtime = true };
 		public override string ToString() => $"EInt({(Signed ? "i" : "u")}{Width})";
 
 		public void Deconstruct(out bool signed, out int width) {
@@ -31,14 +38,34 @@ namespace Generator {
 		public readonly int Width;
 		public EFloat(int width) => Width = width;
 
+		public override EType AsRuntime() => Runtime ? this : new EFloat(Width) { Runtime = true };
+		public override EType AsCompiletime() => Runtime ? new EFloat(Width) { Runtime = false } : this;
 		public override string ToString() => $"EFloat({Width})";
 
 		public void Deconstruct(out int width) => width = Width;
 	}
-	public class EUndef : EType {}
-	public class EString : EType {}
-	public class EUnit : EType {}
-	public class EVector : EType {}
+	public class EUndef : EType {
+		public override EType AsRuntime() => throw new NotSupportedException();
+		public override EType AsCompiletime() => this;
+	}
+	public class EString : EType {
+		public static readonly EType RuntimeType = new EString { Runtime = true };
+		public static readonly EType CompiletimeType = new EString { Runtime = false };
+		public override EType AsRuntime() => RuntimeType;
+		public override EType AsCompiletime() => CompiletimeType;
+	}
+	public class EUnit : EType {
+		public static readonly EType RuntimeType = new EUnit { Runtime = true };
+		public static readonly EType CompiletimeType = new EUnit { Runtime = false };
+		public override EType AsRuntime() => RuntimeType;
+		public override EType AsCompiletime() => CompiletimeType;
+	}
+	public class EVector : EType {
+		public static readonly EType RuntimeType = new EVector { Runtime = true };
+		public static readonly EType CompiletimeType = new EVector { Runtime = false };
+		public override EType AsRuntime() => RuntimeType;
+		public override EType AsCompiletime() => CompiletimeType;
+	}
 	
 	public abstract class PTree {
 		public EType Type = EType.Undef;

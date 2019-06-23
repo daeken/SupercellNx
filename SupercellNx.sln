@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StubGenerator", "StubGenera
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnicornSharp", "UnicornSharp\UnicornSharp.csproj", "{18AB06BA-F32A-4169-A307-733996602DBF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supercell", "Supercell\Supercell.csproj", "{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,9 +25,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{57734E17-223A-40DE-B50E-322DD2982830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57734E17-223A-40DE-B50E-322DD2982830}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57734E17-223A-40DE-B50E-322DD2982830}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57734E17-223A-40DE-B50E-322DD2982830}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57734E17-223A-40DE-B50E-322DD2982830}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97092A7C-B87E-4D3E-8972-0D4949A04354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{97092A7C-B87E-4D3E-8972-0D4949A04354}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97092A7C-B87E-4D3E-8972-0D4949A04354}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,5 +55,9 @@ Global
 		{18AB06BA-F32A-4169-A307-733996602DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18AB06BA-F32A-4169-A307-733996602DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18AB06BA-F32A-4169-A307-733996602DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

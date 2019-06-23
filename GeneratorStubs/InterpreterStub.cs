@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using UltimateOrb;
 
 namespace Cpu64 {
 	public partial class Interpreter : BaseCpu {

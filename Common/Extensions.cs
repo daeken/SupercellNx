@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Common {
 	public static class Extensions {
 		public static void Debug<T>(this T obj) => Console.WriteLine(obj);
-
-		/*public static Dictionary<TKey, TValue>
-			ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> enumerable) =>
-			enumerable.ToDictionary(x => x.Item1, x => x.Item2);*/
+		
+		public static DelegateT CreateDelegate<DelegateT>(this MethodInfo mi) =>
+			(DelegateT) (object) Delegate.CreateDelegate(typeof(DelegateT), mi);
 
 		public static string ReadString(this BinaryReader br, int size) =>
 			string.Join("", Enumerable.Range(0, size).Select(_ => (char) br.ReadByte()));

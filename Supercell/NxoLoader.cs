@@ -8,7 +8,7 @@ using Common;
 using K4os.Compression.LZ4;
 using PrettyPrinter;
 
-namespace App {
+namespace Supercell {
 	enum DynamicKey {
 		NULL,
 		NEEDED,
@@ -62,6 +62,7 @@ namespace App {
 
 		string Dynstr;
 		public byte[] Data;
+		public uint BssStart, BssEnd;
 
 		protected void Load(
 			(byte[] Data, uint Offset, uint Loc, uint Size) text, 
@@ -91,6 +92,8 @@ namespace App {
 
 			var dataSize = bssOff - data.Loc;
 			var bssSize = bssEnd - bssOff;
+			BssStart = bssOff;
+			BssEnd = bssEnd;
 			
 			if(br.At(dynamicOff).ReadUInt64() > 0xFFFFFFFFU || br.At(dynamicOff + 0x10).ReadUInt64() > 0xFFFFFFFFU)
 				throw new NotSupportedException("Aarch32 binaries not supported");
@@ -143,6 +146,7 @@ namespace App {
 			var (doff, dloc, dsize) = (br.At(0x30).ReadUInt32(), br.ReadUInt32(), br.ReadUInt32());
 			
 			var (tfilesize, rfilesize, dfilesize) = (br.At(0x60).ReadUInt32(), br.ReadUInt32(), br.ReadUInt32());
+			var bsssize = br.At(0x3C).ReadUInt32();
 
 			var textData = br.At(toff).ReadBytes((int) tfilesize);
 			if(flags.HasBit(0)) {

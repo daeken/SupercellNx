@@ -1,11 +1,48 @@
 (def ADD-extended-register
     "s 0 0 01011 00 1 mmmmm ooo iii nnnnn ddddd"
-    "add $r$rd, $r$rn, $r$rm"
+    "add $r1$rd, $r1$rn, $r2$rm, $extend #$imm"
     (names (size s) (rm m) (option o) (imm i) (rn n) (rd d))
     (block
-        (let r (if (== size 0) "W" "X"))
-        (unimplemented))
-    (unimplemented))
+        (let r1 (if (== size 0) "W" "X"))
+        (let r2 (if (== (& option 0b011) 0b011) "X" "W"))
+        (let extend (if (== size 0)
+            (match option
+                0b000 "UXTB"
+                0b001 "UXTH"
+                0b010 "LSL"
+                0b011 "UXTX"
+                0b100 "SXTB"
+                0b101 "SXTH"
+                0b110 "SXTW"
+                "SXTX")
+            (match option
+                0b000 "UXTB"
+                0b001 "UXTH"
+                0b010 "UXTW"
+                0b011 "LSL"
+                0b100 "SXTB"
+                0b101 "SXTH"
+                0b110 "SXTW"
+                "SXTX"))))
+    (if (== size 0)
+        (let m (gpr32 rm)
+            (= (gpr-or-sp32 rd) (+ (gpr-or-sp32 rn) (<< (match option
+                0b000 (& m 0xFF)
+                0b001 (& m 0xFFFF)
+                0b100 (cast (signext (cast m u8) i32) u32)
+                0b101 (cast (signext (cast m u16) i32) u32)
+                m) imm))))
+        (if (== (& option 0b011) 0b011)
+            (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (<< (gpr64 rm) imm)))
+            (let m (cast (gpr32 rm) u64)
+                (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (<< (match option
+                    0b000 (& m 0xFF)
+                    0b001 (& m 0xFFFF)
+                    0b010 (& m 0xFFFFFFFF)
+                    0b100 (cast (signext (cast m u8) i64) u64)
+                    0b101 (cast (signext (cast m u16) i64) u64)
+                    0b110 (cast (signext m i64) u64)
+                    m) imm)))))))
 
 (def ADD-immediate
     "f 0 0 10001 0s iiiiiiiiiiii nnnnn ddddd"
@@ -43,6 +80,19 @@
                 0b01 (>> b imm)
                 0b10 (cast (>> (cast b i64) imm) u64)
                 (unimplemented)))))))
+
+(def ADDS-immediate
+    "f 0 1 10001 0s iiiiiiiiiiii nnnnn ddddd"
+    "adds $r$rd, $r$rn, #$imm, LSL #$shift"
+    (names (size f) (sh s) (imm i) (rd d) (rn n))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shift (if (== sh 0) 0 12))
+        (let simm (<< imm shift)))
+    (if (== size 0)
+        (= (gpr32 rd) (add-with-carry-set-nzcv (gpr-or-sp32 rn) simm 0))
+        (= (gpr64 rd) (add-with-carry-set-nzcv (gpr-or-sp64 rn) simm 0))))
+
 (def ADRP
     "1 ll 10000 iiiiiiiiiiiiiiiiiii ddddd"
     "adrp X$rd, #$addr"
@@ -62,6 +112,27 @@
     (if (== size 0)
         (= (gpr-or-sp32 rd) (& (gpr32 rn) (cast imm u32)))
         (= (gpr-or-sp64 rd) (& (gpr64 rn) imm))))
+
+(def ANDS-immediate
+    "f 11 100100 u rrrrrr ssssss nnnnn ddddd"
+    "ands $r$rd, $r$rn, #$imm"
+    (names (size f) (up u) (immr r) (imms s) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let imm (make-wmask up imms immr 1 (if (== size 0) 32 64))))
+    (if (== size 0)
+        (let result (& (gpr32 rn) imm)
+            (= (gpr32 rd) result)
+            (= (nzcv n) (>> result 31))
+            (= (nzcv z) (== result 0))
+            (= (nzcv c) 0)
+            (= (nzcv v) 0))
+        (let result (& (gpr64 rn) imm)
+            (= (gpr64 rd) result)
+            (= (nzcv n) (>> result 63))
+            (= (nzcv z) (== result 0))
+            (= (nzcv c) 0)
+            (= (nzcv v) 0))))
 
 (def B
     "0 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
@@ -120,6 +191,31 @@
             (let bot (| (& dst (~ wmask)) (& (>>> src immr) wmask)))
             (= (gpr64 rd) (| (& dst (~ tmask)) (& bot tmask))))))
 
+(def BIC
+    "f 00 01010 ss 1 mmmmm iiiiii nnnnn ddddd"
+    "bic $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
+    (names (size f) (shift s) (rm m) (imm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shiftstr (match shift
+            0b00 "LSL"
+            0b01 "LSR"
+            0b10 "ASR"
+            "ROR")))
+    (if (== size 0)
+        (let b (gpr32 rm)
+            (= (gpr32 rd) (& (gpr32 rn) (~ (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i32) imm) u32)
+                (>>> b imm))))))
+        (let b (gpr64 rm)
+            (= (gpr64 rd) (& (gpr64 rn) (~ (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i64) imm) u64)
+                (>>> b imm))))))))
+
 (def BL
     "1 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
     "bl #$addr"
@@ -176,6 +272,107 @@
         (if (== (gpr64 rs) (cast 0 u64))
             (branch addr)
             (branch-default))))
+
+(def CCMP-immediate
+    "s 1 1 11010010 iiiii cccc 1 0 nnnnn 0 zzzz"
+    "ccmp $r$rn, #$imm, #$nzcv, $condstr"
+    (names (size s) (imm i) (cond c) (rn n) (nzcv z))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let condstr (match cond
+            0b0000 "EQ" 0b0001 "NE"
+            0b0010 "CS" 0b0011 "CC"
+            0b0100 "MI" 0b0101 "PL"
+            0b0110 "VS" 0b0111 "VC"
+            0b1000 "HI" 0b1001 "LS"
+            0b1010 "GE" 0b1011 "LT"
+            0b1100 "GT" 0b1101 "LE"
+            "AL")))
+    (let result (match (>> cond 1)
+            0b000 (nzcv z)
+            0b001 (nzcv c)
+            0b010 (nzcv n)
+            0b011 (nzcv v)
+            0b100 (& (nzcv c) (! (nzcv z)))
+            0b101 (== (nzcv n) (nzcv v))
+            0b110 (& (== (nzcv n) (nzcv v)) (! (nzcv z)))
+            1)
+        (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
+            (if (== size 0)
+                (= (gpr32 31) (add-with-carry-set-nzcv (gpr32 rn) (~ (cast imm u32)) 1))
+                (= (gpr64 31) (add-with-carry-set-nzcv (gpr64 rn) (~ (cast imm u64)) 1)))
+            (= (nzcv) (<< (cast nzcv u64) 28)))))
+
+(def CCMP-register
+    "s 1 1 11010010 mmmmm cccc 0 0 nnnnn 0 zzzz"
+    "ccmp $r$rn, $r$rm, #$nzcv, $condstr"
+    (names (size s) (rm m) (cond c) (rn n) (nzcv z))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let condstr (match cond
+            0b0000 "EQ" 0b0001 "NE"
+            0b0010 "CS" 0b0011 "CC"
+            0b0100 "MI" 0b0101 "PL"
+            0b0110 "VS" 0b0111 "VC"
+            0b1000 "HI" 0b1001 "LS"
+            0b1010 "GE" 0b1011 "LT"
+            0b1100 "GT" 0b1101 "LE"
+            "AL")))
+    (let result (match (>> cond 1)
+            0b000 (nzcv z)
+            0b001 (nzcv c)
+            0b010 (nzcv n)
+            0b011 (nzcv v)
+            0b100 (& (nzcv c) (! (nzcv z)))
+            0b101 (== (nzcv n) (nzcv v))
+            0b110 (& (== (nzcv n) (nzcv v)) (! (nzcv z)))
+            1)
+        (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
+            (if (== size 0)
+                (= (gpr32 31) (add-with-carry-set-nzcv (gpr32 rn) (~ (gpr32 rm)) 1))
+                (= (gpr64 31) (add-with-carry-set-nzcv (gpr64 rn) (~ (gpr64 rm)) 1)))
+            (= (nzcv) (<< (cast nzcv u64) 28)))))
+
+(def CLZ
+    "s 1 0 11010110 00000 00010 0 nnnnn ddddd"
+    "clz $r$rd, $r$rn"
+    (names (size s) (rn n) (rd d))
+    (let r (if (== size 0) "W" "X"))
+    (if (== size 0)
+        (= (gpr32 rd) (count-leading-zeros (gpr32 rn)))
+        (= (gpr64 rd) (count-leading-zeros (gpr64 rn)))))
+
+(def CSEL
+    "s 0 0 11010100 mmmmm cccc 0 0 nnnnn ddddd"
+    "csel $r$rd, $r$rn, $r$rm, $condstr"
+    (names (size s) (rm m) (cond c) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let condstr (match cond
+            0b0000 "EQ" 0b0001 "NE"
+            0b0010 "CS" 0b0011 "CC"
+            0b0100 "MI" 0b0101 "PL"
+            0b0110 "VS" 0b0111 "VC"
+            0b1000 "HI" 0b1001 "LS"
+            0b1010 "GE" 0b1011 "LT"
+            0b1100 "GT" 0b1101 "LE"
+            "AL")))
+    (let result (match (>> cond 1)
+            0b000 (nzcv z)
+            0b001 (nzcv c)
+            0b010 (nzcv n)
+            0b011 (nzcv v)
+            0b100 (& (nzcv c) (! (nzcv z)))
+            0b101 (== (nzcv n) (nzcv v))
+            0b110 (& (== (nzcv n) (nzcv v)) (! (nzcv z)))
+            1)
+        (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
+            (if (== size 0)
+                (= (gpr32 rd) (gpr32 rn))
+                (= (gpr64 rd) (gpr64 rn)))
+            (if (== size 0)
+                (= (gpr32 rd) (gpr32 rm))
+                (= (gpr64 rd) (gpr64 rm))))))
 
 (def CSINC
     "s 0 0 11010100 mmmmm cccc 0 1 nnnnn ddddd"
@@ -235,7 +432,49 @@
                 (vector-zero-top (vector-all (cast src u32))))
             (if Q (vector-all src) (unimplemented))))))))
 
-(def LDP-signed-offset
+(def EOR-shifted-register
+    "f 10 01010 ss 0 mmmmm iiiiii nnnnn ddddd"
+    "eor $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
+    (names (size f) (shift s) (rm m) (imm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shiftstr (match shift
+            0b00 "LSL"
+            0b01 "LSR"
+            0b10 "ASR"
+            "ROR")))
+    (if (== size 0)
+        (let b (gpr32 rm)
+            (= (gpr32 rd) (^ (gpr32 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i32) imm) u32)
+                (>>> b imm)))))
+        (let b (gpr64 rm)
+            (= (gpr64 rd) (^ (gpr64 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i64) imm) u64)
+                (>>> b imm)))))))
+
+(def LDP-immediate-postindex
+    "s0 101 0 001 1 iiiiiii ppppp nnnnn ttttt"
+    "ldp $r$rt1, $r$rt2, [X$rn], #$simm"
+    (names (size s) (imm i) (rt2 p) (rn n) (rt1 t))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let simm (<< (signext imm i64) (if (== size 0) 2 3))))
+    (let address (gpr-or-sp64 rn)
+        (if (== size 0)
+            (block
+                (= (gpr32 rt1) (load address u32))
+                (= (gpr32 rt2) (load (+ address 4) u32)))
+            (block
+                (= (gpr64 rt1) (load address u64))
+                (= (gpr64 rt2) (load (+ address 8) u64))))
+        (= (gpr-or-sp64 rn) (+ address simm))))
+
+(def LDP-immediate-signed-offset
     "s0 101 0 010 1 iiiiiii ppppp nnnnn ttttt"
     "ldp $r$rt1, $r$rt2, [X$rn, #$simm]"
     (names (size s) (imm i) (rt2 p) (rn n) (rt1 t))
@@ -250,6 +489,39 @@
             (block
                 (= (gpr64 rt1) (load address u64))
                 (= (gpr64 rt2) (load (+ address 8) u64))))))
+
+(def LDP-simd-postindex
+    "oo 101 1 001 1 iiiiiii ppppp nnnnn ttttt"
+    "ldp $r$rt1, $r$rt2, [X$rn], #$simm"
+    (names (opc o) (imm i) (rt2 p) (rn n) (rt1 t))
+    (block
+        (let r (match opc 0b00 "S" 0b01 "D" "Q")) 
+        (let simm (<< (signext imm i64) (match opc 0b00 2 0b01 3 4))))
+    (let address (gpr-or-sp64 rn)
+        (match opc
+            0b00 (block
+                (= (vec-s rt1) (load address f32))
+                (= (vec-s rt2) (load (+ address 4) f32)))
+            0b01 (block
+                (= (vec-d rt1) (load address f64))
+                (= (vec-d rt2) (load (+ address 8) f64)))
+            (block
+                (= (vec rt1) (load address vec))
+                (= (vec rt2) (load (+ address 16) vec))))
+        (= (gpr-or-sp64 rn) (+ address simm))))
+
+(def LDR-immediate-preindex
+    "1s 111 0 00 01 0 iiiiiiiii 11 nnnnn ddddd"
+    "ldr $r$rd, [X$rn, #$imm]!"
+    (names (size s) (rawimm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let imm (signext rawimm i64)))
+    (let address (+ (gpr-or-sp64 rn) imm)
+        (if (== size 0)
+            (= (gpr32 rd) (load address u32))
+            (= (gpr64 rd) (load address u64)))
+        (= (gpr-or-sp64 rn) address)))
 
 (def LDR-immediate-postindex
     "1s 111 0 00 01 0 iiiiiiiii 01 nnnnn ddddd"
@@ -275,6 +547,46 @@
         (= (gpr32 rd) (load (+ (gpr-or-sp64 rn) imm) u32))
         (= (gpr64 rd) (load (+ (gpr-or-sp64 rn) imm) u64))))
 
+(def LDR-register
+    "1f 111 0 00 01 1 mmmmm ooo s 10 nnnnn ttttt"
+    "ldr $r1$rt, [X$rn, $r2$rm, $extend $amount]"
+    (names (size f) (rm m) (option o) (scale s) (rn n) (rt t))
+    (block
+        (let r1 (if (== size 0) "W" "X"))
+        (let r2 (if (& option 1) "X" "W"))
+        (let amount (if (== scale 0) 0 (if (== size 0) 2 3)))
+        (let extend (match option
+            0b010 "UXTW"
+            0b110 "SXTW"
+            0b111 "SXTX"
+            "LSL")))
+    (let offset (<< (if (== option 0b110)
+            (cast (signext (gpr32 rm) i64) u64)
+            (if (& option 1)
+                (gpr64 rm)
+                (cast (gpr32 rm) u64))) amount)
+        (if (== size 0)
+            (= (gpr32 rt) (load (+ (gpr-or-sp64 rn) offset) u32))
+            (= (gpr64 rt) (load (+ (gpr-or-sp64 rn) offset) u64)))))
+
+(def LDRB-immediate-preindex
+    "00 111 0 00 01 0 iiiiiiiii 11 nnnnn ttttt"
+    "ldrb W$rt, [X$rn, #$imm]!"
+    (names (rawimm i) (rn n) (rt t))
+    (let imm (signext rawimm i64))
+    (let address (+ (gpr-or-sp64 rn) imm)
+        (= (gpr32 rt) (cast (load address u8) u32))
+        (= (gpr-or-sp64 rn) address)))
+
+(def LDRB-immediate-postindex
+    "00 111 0 00 01 0 iiiiiiiii 01 nnnnn ttttt"
+    "ldrb W$rt, [X$rn], #$imm"
+    (names (rawimm i) (rn n) (rt t))
+    (let imm (signext rawimm i64))
+    (block
+        (= (gpr32 rt) (cast (load (gpr-or-sp64 rn) u8) u32))
+        (= (gpr-or-sp64 rn) (+ (gpr-or-sp64 rn) imm))))
+
 (def LDRB-immediate-unsigned-offset
     "00 111 0 01 01 iiiiiiiiiiii nnnnn ttttt"
     "ldrb W$rt, [X$rn, #$imm]"
@@ -294,6 +606,13 @@
             0b111 "SXTX"
             "LSL")))
     (unimplemented))
+
+(def LDRH-immediate-unsigned-offset
+    "01 111 0 01 01 iiiiiiiiiiii nnnnn ttttt"
+    "ldrh W$rt, [X$rn, #$imm]"
+    (names (rawimm i) (rt t) (rn n))
+    (let imm (<< rawimm 1))
+    (= (gpr64 rt) (cast (load (+ (gpr-or-sp64 rn) imm) u16) u64)))
 
 (def LDRSW-register
     "10 111 0 00 10 1 mmmmm ooo s 10 nnnnn ttttt"
@@ -325,6 +644,15 @@
         (= (gpr32 rd) (load (+ (gpr-or-sp64 rn) imm) u32))
         (= (gpr64 rd) (load (+ (gpr-or-sp64 rn) imm) u64))))
 
+(def LSRV
+    "s 0 0 11010110 mmmmm 0010 01 nnnnn ddddd"
+    "lsrv $r$rd, $r$rn, $r$rm"
+    (names (size s) (rm m) (rn n) (rd d))
+    (let r (if (== size 0) "W" "X"))
+    (if (== size 0)
+        (= (gpr32 rd) (>> (gpr32 rn) (gpr32 rm)))
+        (= (gpr64 rd) (>> (gpr64 rn) (gpr64 rm)))))
+
 (def MADD
     "s 00 11011 000 mmmmm 0 aaaaa nnnnn ddddd"
     "madd $r$rd, $r$rn, $r$rm, $r$ra"
@@ -345,6 +673,17 @@
         (= (gpr32 rd) (| (& (gpr32 rd) (>>> (cast -1 u32) (- 16 shift))) (<< (cast imm u32) shift)))
         (= (gpr64 rd) (| (& (gpr64 rd) (>>> (cast -1 u64) (- 16 shift))) (<< (cast imm u64) shift)))))
 
+(def MOVN
+    "s 00 100101 hh iiiiiiiiiiiiiiii ddddd"
+    "movn $r$rd, #$imm, LSL #$shift"
+    (names (size s) (imm i) (rd d) (hw h))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shift (<< hw 4)))
+    (if (== size 0)
+        (= (gpr32 rd) (~ (<< (cast imm u32) shift)))
+        (= (gpr64 rd) (~ (<< (cast imm u64) shift)))))
+
 (def MOVZ
     "s 10 100101 hh iiiiiiiiiiiiiiii ddddd"
     "movz $r$rd, #$imm, LSL #$shift"
@@ -355,6 +694,22 @@
     (if (== size 0)
         (= (gpr32 rd) (<< (cast imm u32) shift))
         (= (gpr64 rd) (<< (cast imm u64) shift))))
+
+(def MSR-register
+    "1101010100 0 1 o ppp nnnn mmmm qqq ttttt"
+    "msr S$op0 $op1 $cn $cm $op2, X$rt"
+    (names (op0 o) (op1 p) (cn n) (cm m) (op2 q) (rt t))
+    (block)
+    (= (sr op0 op1 cn cm op2) (gpr64 rt)))
+
+(def MSUB
+    "s 00 11011 000 mmmmm 1 aaaaa nnnnn ddddd"
+    "msub $r$rd, $r$rn, $r$rm, $r$ra"
+    (names (size s) (rm m) (ra a) (rn n) (rd d))
+    (let r (if (== size 0) "W" "X"))
+    (if (== size 0)
+        (= (gpr32 rd) (- (gpr32 ra) (* (gpr32 rn) (gpr32 rm))))
+        (= (gpr64 rd) (- (gpr64 ra) (* (gpr64 rn) (gpr64 rm))))))
 
 (def ORR-immediate
     "f 01 100100 u iiiiii ssssss nnnnn ddddd"
@@ -392,6 +747,15 @@
                     0b10 (cast (>> (cast b i64) imm) u64)
                     (>>> b imm)))))))
 
+(def RBIT
+    "s 1 0 11010110 00000 0000 00 nnnnn ddddd"
+    "rbit $r$rd, $r$rn"
+    (names (size s) (rn n) (rd d))
+    (let r (if (== size 0) "W" "X"))
+    (if (== size 0)
+        (= (gpr32 rd) (reverse-bits (gpr32 rn)))
+        (= (gpr64 rd) (reverse-bits (gpr64 rn)))))
+
 (def RET
     "1101011 0 0 10 11111 0000 0 0 nnnnn 00000"
     "ret X$rn"
@@ -420,6 +784,23 @@
             (let top (- (cast 0 u64) (& (>> src imms) 1)))
             (= (gpr64 rd) (| (& top (~ tmask)) (& bot tmask))))))
 
+(def STP-postindex
+    "s0 101 0 001 0 iiiiiii ppppp nnnnn ttttt"
+    "stp $r$rt1, $r$rt2, [X$rd], #$simm"
+    (names (size s) (imm i) (rd n) (rt1 t) (rt2 p))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let simm (<< (signext imm i64) (if (== size 0) 2 3))))
+    (let address (gpr-or-sp64 rd)
+        (if (== size 0)
+            (block
+                (store address (gpr32 rt1))
+                (store (+ address 4) (gpr32 rt2)))
+            (block
+                (store address (gpr64 rt1))
+                (store (+ address 8) (gpr64 rt2))))
+        (= (gpr-or-sp64 rd) (+ address simm))))
+
 (def STP-preindex
     "s0 101 0 011 0 iiiiiii ppppp nnnnn ttttt"
     "stp $r$rt1, $r$rt2, [X$rd, #$simm]!"
@@ -431,12 +812,11 @@
         (if (== size 0)
             (block
                 (store address (gpr32 rt1))
-                (store (+ address 4) (gpr32 rt2))
-                (= (gpr-or-sp64 rd) address))
+                (store (+ address 4) (gpr32 rt2)))
             (block
                 (store address (gpr64 rt1))
-                (store (+ address 8) (gpr64 rt2))
-                (= (gpr-or-sp64 rd) address)))))
+                (store (+ address 8) (gpr64 rt2))))
+        (= (gpr-or-sp64 rd) address)))
 
 (def STP-signed-offset
     "s0 101 0 010 0 iiiiiii ppppp nnnnn ttttt"
@@ -453,6 +833,27 @@
             (block
                 (store address (gpr64 rt1))
                 (store (+ address 8) (gpr64 rt2))))))
+
+(def STP-simd-preindex
+    "oo 101 1 011 0 iiiiiii ppppp nnnnn ttttt"
+    "stp $r$rt1, $r$rt2, [X$rd, #$simm]!"
+    (names (opc o) (imm i) (rd n) (rt1 t) (rt2 p))
+    (block
+        (let r (match opc 0b00 "S" 0b01 "D" 0b10 "Q" (unimplemented)))
+        (let simm (<< (signext imm i64) (match opc 0b00 2 0b01 3 0b10 4 (unimplemented)))))
+    (let address (+ (gpr-or-sp64 rd) simm)
+        (match opc
+            0b00 (block
+                (store address (vec-s rt1))
+                (store (+ address 4) (vec-s rt2)))
+            0b01 (block
+                (store address (vec-d rt1))
+                (store (+ address 8) (vec-d rt2)))
+            0b10 (block
+                (store address (vec rt1))
+                (store (+ address 16) (vec rt2)))
+            (unimplemented))
+        (= (gpr-or-sp64 rd) address)))
 
 (def STP-simd-signed-offset
     "oo 101 1 010 0 iiiiiii ppppp nnnnn ttttt"
@@ -570,6 +971,52 @@
         (= (gpr-or-sp32 rd) (- (gpr-or-sp32 rn) simm))
         (= (gpr-or-sp64 rd) (- (gpr-or-sp64 rn) simm))))
 
+(def SUB-extended-register
+    "s 1 0 01011 00 1 mmmmm ooo iii nnnnn ddddd"
+    "sub $r1$rd, $r1$rn, $r2$rm, $extend #$imm"
+    (names (size s) (rm m) (option o) (imm i) (rn n) (rd d))
+    (block
+        (let r1 (if (== size 0) "W" "X"))
+        (let r2 (if (== (& option 0b011) 0b011) "X" "W"))
+        (let extend (if (== size 0)
+            (match option
+                0b000 "UXTB"
+                0b001 "UXTH"
+                0b010 "LSL"
+                0b011 "UXTX"
+                0b100 "SXTB"
+                0b101 "SXTH"
+                0b110 "SXTW"
+                "SXTX")
+            (match option
+                0b000 "UXTB"
+                0b001 "UXTH"
+                0b010 "UXTW"
+                0b011 "LSL"
+                0b100 "SXTB"
+                0b101 "SXTH"
+                0b110 "SXTW"
+                "SXTX"))))
+    (if (== size 0)
+        (let m (gpr32 rm)
+            (= (gpr-or-sp32 rd) (+ (gpr-or-sp32 rn) (~ (<< (match option
+                0b000 (& m 0xFF)
+                0b001 (& m 0xFFFF)
+                0b100 (cast (signext (cast m u8) i32) u32)
+                0b101 (cast (signext (cast m u16) i32) u32)
+                m) imm)))))
+        (if (== (& option 0b011) 0b011)
+            (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (~ (<< (gpr64 rm) imm))))
+            (let m (cast (gpr32 rm) u64)
+                (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (~ (<< (match option
+                    0b000 (& m 0xFF)
+                    0b001 (& m 0xFFFF)
+                    0b010 (& m 0xFFFFFFFF)
+                    0b100 (cast (signext (cast m u8) i64) u64)
+                    0b101 (cast (signext (cast m u16) i64) u64)
+                    0b110 (cast (signext m i64) u64)
+                    m) imm))))))))
+
 (def SUB-shifted-register
     "f 1 0 01011 ss 0 mmmmm iiiiii nnnnn ddddd"
     "sub $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
@@ -676,6 +1123,18 @@
     (block)
     (svc imm))
 
+(def TBZ
+    "u 011011 0 bbbbb iiiiiiiiiiiiii ttttt"
+    "tbz $r$rt, #$imm, $addr"
+    (names (upper u) (bottom b) (offset i) (rt t))
+    (block
+        (let r (if (== upper 0) "W" "X"))
+        (let imm (| (<< upper 5) bottom))
+        (let addr (+ (pc) (signext (<< (cast offset u16) 2) i64))))
+    (if (== (& (>> (gpr64 rt) imm) 1) 0)
+        (branch addr)
+        (branch-default)))
+
 (def UBFM
     "f 10 100110 o pppppp ssssss nnnnn ddddd"
     "ubfm $r$rd, $r$rn, #$immr, #$imms"
@@ -694,3 +1153,32 @@
             (let tmask (make-tmask N imms immr 0 64))
             (let bot (& (>>> src immr) wmask))
             (= (gpr64 rd) (& bot tmask)))))
+
+(def UDIV
+    "f 0 0 11010110 mmmmm 00001 0 nnnnn ddddd"
+    "udiv $r$rd, $r$rn, $r$rm"
+    (names (size f) (rm m) (rn n) (rd d))
+    (let r (if (== size 0) "W" "X"))
+    (if (== size 0)
+        (let operand2 (gpr32 rm)
+            (= (gpr32 rd) (if (== operand2 0)
+                (cast 0 u32)
+                (cast (/ (cast (gpr32 rn) f32) (cast operand2 f32)) u32))))
+        (let operand2 (gpr64 rm)
+            (= (gpr64 rd) (if (== operand2 0)
+                (cast 0 u64)
+                (cast (/ (cast (gpr64 rn) f64) (cast operand2 f64)) u64))))))
+
+(def UMADDL
+    "1 00 11011 1 01 mmmmm 0 aaaaa nnnnn ddddd"
+    "umaddl X$rd, W$rn, W$rm, X$ra"
+    (names (rd d) (rn n) (rm m) (ra a))
+    (block)
+    (= (gpr64 rd) (+ (gpr64 ra) (* (cast (gpr32 rn) u64) (cast (gpr32 rm) u64)))))
+
+(def UMULH
+    "1 00 11011 1 10 mmmmm 0 11111 nnnnn ddddd"
+    "umulh X$rd, X$rn, X$rm"
+    (names (rm m) (rn n) (rd d))
+    (block)
+    (= (gpr64 rd) (cast (>> (* (cast (gpr64 rn) u128) (cast (gpr64 rm) u128)) 64) u64)))

@@ -537,8 +537,16 @@ namespace UnicornSharp {
 			CheckError(Native.uc_mem_map(uc, addr, size, (uint) perms));
 		}
 
+		public void Map(ulong addr, ulong size, MemoryPermission perms, IntPtr ptr) {
+			CheckError(Native.uc_mem_map_ptr(uc, addr, size, (uint) perms, ptr));
+		}
+
 		public void Map(uint addr, uint size, MemoryPermission perms) {
 			CheckError(Native.uc_mem_map(uc, addr, size, (uint) perms));
+		}
+
+		public void Map(uint addr, uint size, MemoryPermission perms, IntPtr ptr) {
+			CheckError(Native.uc_mem_map_ptr(uc, addr, size, (uint) perms, ptr));
 		}
 
 		public void Unmap(ulong addr, ulong size) {
