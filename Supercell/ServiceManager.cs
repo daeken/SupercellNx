@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Common;
 using MoreLinq;
+using static Supercell.Globals;
 
 namespace Supercell {
 	[AttributeUsage(AttributeTargets.Method)]
@@ -16,7 +16,7 @@ namespace Supercell {
 		readonly Dictionary<int, Action> Handlers = new Dictionary<int, Action>();
 		
 		public ServiceManager() {
-			var cpu = Kernel.Cpu;
+			var cpu = Thread.CurrentThread.Cpu;
 			Action<object> BuildRetHandler(Type rt) {
 				Action<object> BuildSetter(Type s, int i) {
 					if(s == typeof(uint)) return ret => cpu.X[i] = (ulong) (uint) ret;
@@ -68,7 +68,7 @@ namespace Supercell {
 					var rethandler = BuildRetHandler(x.ReturnType);
 					var instance = x.IsStatic ? null : x.DeclaringType.GetField("Instance",
 							               BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-						               ?.GetValue(null) ?? typeof(Kernel)
+						               ?.GetValue(null) ?? typeof(Globals)
 						               .GetFields(BindingFlags.Public | BindingFlags.Static)
 						               .FirstOrDefault(y => y.FieldType == x.DeclaringType)?.GetValue(null);
 					if(x.ReturnType == typeof(void))

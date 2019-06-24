@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Supercell {
-	public abstract class Waitable {
+	public abstract class Waitable : KObject {
 		public readonly Queue<Func<bool, int>> Waiters = new Queue<Func<bool, int>>();
 		public bool Presignaled, Canceled;
 		

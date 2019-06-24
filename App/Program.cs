@@ -1,9 +1,7 @@
 ﻿using Supercell;
 
 namespace App {
-	class Program {
-		static void Main(string[] args) {
-			Kernel.Instance.LoadAndRun(args);
-		}
+	static class Program {
+		static void Main(string[] args) => Globals.Kernel.LoadAndRun(args);
 	}
 }

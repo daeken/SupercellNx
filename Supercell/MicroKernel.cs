@@ -7,17 +7,35 @@ using System.Text;
 using Common;
 using Cpu64;
 using PrettyPrinter;
+using static Supercell.Globals;
 
 namespace Supercell {
-	public class Kernel : IKernel {
-		public static readonly Kernel Instance = new Kernel();
-		//public static readonly BaseCpu Cpu = new Interpreter(Instance);
-		public static readonly BaseCpu Cpu = new Recompiler(Instance);
-		public static readonly MemoryManager Memory = new MemoryManager();
-		public static readonly IpcManager Ipc = new IpcManager();
-		public static readonly ServiceManager Service = new ServiceManager();
+	public abstract class KObject {
+		public readonly uint Handle;
+		public bool Closed;
+		public KObject() => Handle = Kernel.Add(this);
+		public virtual void Close() {}
+	}
+	
+	public class MicroKernel : IKernel {
+		uint HandleIter;
+		readonly Dictionary<uint, KObject> Handles = new Dictionary<uint, KObject>();
 
-		public ulong StackBase, StackSize;
+		public uint Add(KObject obj) {
+			lock(Handles) {
+				Handles[++HandleIter] = obj;
+				return HandleIter;
+			}
+		}
+
+		public T Get<T>(uint handle) where T : KObject => Handles.TryGetValue(handle, out var obj) ? obj as T : null;
+
+		public void Close(KObject obj) {
+			if(obj == null || obj.Closed) return;
+			obj.Close();
+			obj.Closed = true;
+			Handles.Remove(obj.Handle);
+		}
 		
 		public unsafe void LoadAndRun(string[] fns) {
 			(ulong Addr, Nxo Nxo) LoadBinary(ulong preferred, string path) {
@@ -39,22 +57,21 @@ namespace Supercell {
 				.Select((x, i) => (x, LoadBinary((ulong) (0x7100000000 + (i << 32)), x)))
 				.OrderBy(x => Path.GetFileName(x.Item1) != "rtld").Select(x => x.Item2).ToList();
 			
-			StackSize = 32UL * 1024 * 1024;
-			StackBase = Memory.AllocateAligned(StackSize);
-
-			Cpu.TlsBase = Memory.AllocateAligned(0x1000);
-			*(ulong*) (Cpu.TlsBase + 0x1F8) = Cpu.TlsBase + 0x400;
-			
-			Cpu.Run(binaries[0].Addr, StackBase + StackSize);
+			Thread.CurrentThread.Run(binaries[0].Addr);
 		}
 
 		public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => Memory.Regions.Values;
 		public void Svc(int svc) => Service.Svc(svc);
 
+		[Svc(0x16)]
+		public uint Close(uint handle) {
+			Close(Get<KObject>(handle));
+			return 0;
+		}
+
 		[Svc(0x26)]
 		public uint Break(ulong reason, ulong _, ulong info) {
-			$"Break({reason}, {info})".Debug();
-			return 0;
+			throw new Exception($"Break({reason}, {info})");
 		}
 
 		string DebugBuffer = "";
@@ -87,8 +104,8 @@ namespace Supercell {
 				case (7, 0): value = 0x10000; break;
 				case (12, 0): value = 0; break;
 				case (13, 0): value = 1UL << 40; break;
-				case (14, 0): value = StackBase; break;
-				case (15, 0): value = StackSize; break;
+				case (14, 0): value = Thread.CurrentThread.StackBase; break;
+				case (15, 0): value = Thread.CurrentThread.StackSize; break;
 				case (18, 0): value = 0x10000; break;
 				case (11, _): value = 0; break;
 				default:

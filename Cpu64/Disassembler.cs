@@ -74,6 +74,18 @@ namespace Cpu64 {
 				var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 				return $"and {r}{rd}, {r}{rn}, #0x{imm:X}";
 			}
+			/* AND-shifted-register */
+			if((inst & 0x7F200000U) == 0x0A000000U) {
+				var size = (inst >> 31) & 0x1U;
+				var shift = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var imm = (inst >> 10) & 0x3FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
+				return $"and {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
+			}
 			/* ANDS-immediate */
 			if((inst & 0x7F800000U) == 0x72000000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -221,6 +233,18 @@ namespace Cpu64 {
 				var T = ((byte) ((((byte) ((ulong) (imm) & (ulong) (0xF))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("16B") : ("8B"))) : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x3))) == (0x2)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("8H") : ("4H"))) : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x7))) == (0x4)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("4S") : ("2S"))) : ((string) ((Q != 0) ? ("2D") : throw new NotImplementedException()))))))));
 				return $"dup V{rd}.{T}, {r}{rn}";
 			}
+			/* EOR-immediate */
+			if((inst & 0x7F800000U) == 0x52000000U) {
+				var size = (inst >> 31) & 0x1U;
+				var up = (inst >> 22) & 0x1U;
+				var immr = (inst >> 16) & 0x3FU;
+				var imms = (inst >> 10) & 0x3FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
+				return $"and {r}{rd}, {r}{rn}, #0x{imm:X}";
+			}
 			/* EOR-shifted-register */
 			if((inst & 0x7F200000U) == 0x4A000000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -365,6 +389,14 @@ namespace Cpu64 {
 				var imm = (ushort) ((rawimm) << (int) (0x1));
 				return $"ldrh W{rt}, [X{rn}, #0x{imm:X}]";
 			}
+			/* LDRSW-immediate-unsigned-offset */
+			if((inst & 0xFFC00000U) == 0xB9800000U) {
+				var rawimm = (inst >> 10) & 0xFFFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (ushort) ((rawimm) << (int) (0x2));
+				return $"ldrsw X{rt}, [X{rn}, #0x{imm:X}]";
+			}
 			/* LDRSW-register */
 			if((inst & 0xFFE00C00U) == 0xB8A00800U) {
 				var rm = (inst >> 16) & 0x1FU;
@@ -386,6 +418,14 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var imm = (long) (SignExt<long>(rawimm, 9));
 				return $"ldur {r}{rd}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]";
+			}
+			/* LDURB */
+			if((inst & 0xFFE00C00U) == 0x38400000U) {
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				return $"ldurb W{rd}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]";
 			}
 			/* LSRV */
 			if((inst & 0x7FE0FC00U) == 0x1AC02400U) {
@@ -513,6 +553,12 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"sbfm {r}{rd}, {r}{rn}, #{immr}, #{imms}";
+			}
+			/* STLRB */
+			if((inst & 0xFFFFFC00U) == 0x089FFC00U) {
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				return $"stlrb W{rt}, [X{rn}]";
 			}
 			/* STLXR */
 			if((inst & 0xBFE0FC00U) == 0x8800FC00U) {
@@ -675,6 +721,14 @@ namespace Cpu64 {
 				var rt = (inst >> 0) & 0x1FU;
 				var offset = (long) (SignExt<long>(imm, 9));
 				return $"sturb W{rt}, [X{rn}, #{(offset < 0 ? $"-0x{-offset:X}" : $"0x{offset:X}")}]";
+			}
+			/* STURH */
+			if((inst & 0xFFE00C00U) == 0x78000000U) {
+				var imm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var offset = (long) (SignExt<long>(imm, 9));
+				return $"sturh W{rt}, [X{rn}, #{(offset < 0 ? $"-0x{-offset:X}" : $"0x{offset:X}")}]";
 			}
 			/* SUB-immediate */
 			if((inst & 0x7F800000U) == 0x51000000U) {

@@ -113,6 +113,31 @@
         (= (gpr-or-sp32 rd) (& (gpr32 rn) (cast imm u32)))
         (= (gpr-or-sp64 rd) (& (gpr64 rn) imm))))
 
+(def AND-shifted-register
+    "f 00 01010 ss 0 mmmmm iiiiii nnnnn ddddd"
+    "and $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
+    (names (size f) (shift s) (rm m) (imm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shiftstr (match shift
+            0b00 "LSL"
+            0b01 "LSR"
+            0b10 "ASR"
+            "ROR")))
+    (if (== size 0)
+        (let b (gpr32 rm)
+            (= (gpr32 rd) (& (gpr32 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i32) imm) u32)
+                (>>> b imm)))))
+        (let b (gpr64 rm)
+            (= (gpr64 rd) (& (gpr64 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i64) imm) u64)
+                (>>> b imm)))))))
+
 (def ANDS-immediate
     "f 11 100100 u rrrrrr ssssss nnnnn ddddd"
     "ands $r$rd, $r$rn, #$imm"
@@ -432,6 +457,17 @@
                 (vector-zero-top (vector-all (cast src u32))))
             (if Q (vector-all src) (unimplemented))))))))
 
+(def EOR-immediate
+    "f 10 100100 u iiiiii ssssss nnnnn ddddd"
+    "and $r$rd, $r$rn, #$imm"
+    (names (size f) (up u) (immr i) (imms s) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let imm (make-wmask up imms immr 1 (if (== size 0) 32 64))))
+    (if (== size 0)
+        (= (gpr-or-sp32 rd) (^ (gpr32 rn) (cast imm u32)))
+        (= (gpr-or-sp64 rd) (^ (gpr64 rn) imm))))
+
 (def EOR-shifted-register
     "f 10 01010 ss 0 mmmmm iiiiii nnnnn ddddd"
     "eor $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
@@ -632,6 +668,13 @@
     (let imm (<< rawimm 1))
     (= (gpr64 rt) (cast (load (+ (gpr-or-sp64 rn) imm) u16) u64)))
 
+(def LDRSW-immediate-unsigned-offset
+    "10 111 0 01 10 iiiiiiiiiiii nnnnn ttttt"
+    "ldrsw X$rt, [X$rn, #$imm]"
+    (names (rawimm i) (rt t) (rn n))
+    (let imm (<< rawimm 2))
+    (= (gpr64 rt) (cast (signext (load (+ (gpr-or-sp64 rn) imm) u32) i64) u64)))
+
 (def LDRSW-register
     "10 111 0 00 10 1 mmmmm ooo s 10 nnnnn ttttt"
     "ldrsw X$rt, [X$rn, $r$rm, $extend $amount]"
@@ -661,6 +704,13 @@
     (if (== size 0)
         (= (gpr32 rd) (load (+ (gpr-or-sp64 rn) imm) u32))
         (= (gpr64 rd) (load (+ (gpr-or-sp64 rn) imm) u64))))
+
+(def LDURB
+    "00 111 0 00 01 0 iiiiiiiii 00 nnnnn ttttt"
+    "ldurb W$rd, [X$rn, #$imm]"
+    (names (rawimm i) (rn n) (rd t))
+    (let imm (signext rawimm i64))
+    (= (gpr64 rd) (cast (load (+ (gpr-or-sp64 rn) imm) u8) u64)))
 
 (def LSRV
     "s 0 0 11010110 mmmmm 0010 01 nnnnn ddddd"
@@ -808,6 +858,14 @@
             (let bot (& (>>> src immr) wmask))
             (let top (- (cast 0 u64) (& (>> src imms) 1)))
             (= (gpr64 rd) (| (& top (~ tmask)) (& bot tmask))))))
+
+(def STLRB
+    "00 001000 1 0 0 11111 1 11111 nnnnn ttttt"
+    "stlrb W$rt, [X$rn]"
+    (names (rn n) (rt t))
+    (block)
+    (let address (gpr-or-sp64 rn)
+        (store address (cast (gpr32 rt) u8))))
 
 (def STLXR
     "1f 001000 0 0 0 sssss 1 11111 nnnnn ttttt"
@@ -1027,6 +1085,13 @@
     (names (imm i) (rn n) (rt t))
     (let offset (signext imm i64))
     (store (+ (gpr-or-sp64 rn) offset) (cast (gpr64 rt) u8)))
+
+(def STURH
+    "01 111 0 00 00 0 iiiiiiiii 00 nnnnn ttttt"
+    "sturh W$rt, [X$rn, #$offset]"
+    (names (imm i) (rn n) (rt t))
+    (let offset (signext imm i64))
+    (store (+ (gpr-or-sp64 rn) offset) (cast (gpr64 rt) u16)))
 
 (def SUB-immediate
     "f 1 0 10001 0s iiiiiiiiiiii nnnnn ddddd"

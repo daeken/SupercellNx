@@ -165,6 +165,29 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* AND-shifted-register */
+				if((inst & 0x7F200000U) == 0x0A000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var shift = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var imm = (inst >> 10) & 0x3FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						var b = (RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]);
+						// Runtime let!
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) & (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))));
+					} else {
+						// Runtime else!
+						var b = (RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]);
+						// Runtime let!
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) & (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })));
+					}
+					return true;
+				}
 				/* ANDS-immediate */
 				if((inst & 0x7F800000U) == 0x72000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -515,6 +538,31 @@ namespace Cpu64 {
 					VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) (src))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) (src))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x3))) == (0x2)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x7))) == (0x4)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) (src))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) (src))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) ((src).CreateVector())) : throw new NotImplementedException())))))));
 					return true;
 				}
+				/* EOR-immediate */
+				if((inst & 0x7F800000U) == 0x52000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var up = (inst >> 22) & 0x1U;
+					var immr = (inst >> 16) & 0x3FU;
+					var imms = (inst >> 10) & 0x3FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						if(rd == 31)
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) ^ (RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (imm)))));
+						else
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) ^ (RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (imm)))));
+					} else {
+						// Runtime else!
+						if(rd == 31)
+							SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) ^ (RuntimeValue<ulong>) (RuntimeValue<ulong>) (imm));
+						else
+							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) ^ (RuntimeValue<ulong>) (RuntimeValue<ulong>) (imm));
+					}
+					return true;
+				}
 				/* EOR-shifted-register */
 				if((inst & 0x7F200000U) == 0x4A000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -805,6 +853,15 @@ namespace Cpu64 {
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value)));
 					return true;
 				}
+				/* LDRSW-immediate-unsigned-offset */
+				if((inst & 0xFFC00000U) == 0xB9800000U) {
+					var rawimm = (inst >> 10) & 0xFFFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (ushort) ((rawimm) << (int) (0x2));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 32))));
+					return true;
+				}
 				/* LDRSW-register */
 				if((inst & 0xFFE00C00U) == 0xB8A00800U) {
 					var rm = (inst >> 16) & 0x1FU;
@@ -835,6 +892,15 @@ namespace Cpu64 {
 						// Runtime else!
 						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value);
 					}
+					return true;
+				}
+				/* LDURB */
+				if((inst & 0xFFE00C00U) == 0x38400000U) {
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value)));
 					return true;
 				}
 				/* LSRV */
@@ -1063,6 +1129,15 @@ namespace Cpu64 {
 						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (top) & (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (~(tmask))))) | (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (bot) & (RuntimeValue<ulong>) (RuntimeValue<ulong>) (tmask))));
 					}
+					return true;
+				}
+				/* STLRB */
+				if((inst & 0xFFFFFC00U) == 0x089FFC00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var address = (RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]);
+					// Runtime let!
+					((RuntimePointer<byte>) (address)).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
 					return true;
 				}
 				/* STLXR */
@@ -1402,6 +1477,15 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var offset = (long) (SignExt<long>(imm, 9));
 					((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					return true;
+				}
+				/* STURH */
+				if((inst & 0xFFE00C00U) == 0x78000000U) {
+					var imm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var offset = (long) (SignExt<long>(imm, 9));
+					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
 					return true;
 				}
 				/* SUB-immediate */

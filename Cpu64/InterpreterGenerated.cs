@@ -139,6 +139,25 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* AND-shifted-register */
+				if((inst & 0x7F200000U) == 0x0A000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var shift = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var imm = (inst >> 10) & 0x3FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						var b = (uint) ((rm) == 31 ? 0U : W[(int) rm]);
+						W[(int) rd] = (uint) ((uint) ((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn])) & (uint) ((uint) ((shift) switch { 0x0 => (uint) ((b) << (int) (imm)), 0x1 => (uint) ((b) >> (int) (imm)), 0x2 => (uint) ((uint) ((int) (((int) ((int) (b))) >> (int) (imm)))), _ => (uint) (((b) << (32 - (int) (imm))) | ((b) >> (int) (imm))) }))));
+					} else {
+						var b = (ulong) ((rm) == 31 ? 0UL : X[(int) rm]);
+						X[(int) rd] = (ulong) ((ulong) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) & (ulong) ((ulong) ((shift) switch { 0x0 => (ulong) ((b) << (int) (imm)), 0x1 => (ulong) ((b) >> (int) (imm)), 0x2 => (ulong) ((ulong) ((long) (((long) ((long) (b))) >> (int) (imm)))), _ => (ulong) (((b) << (64 - (int) (imm))) | ((b) >> (int) (imm))) })));
+					}
+					return true;
+				}
 				/* ANDS-immediate */
 				if((inst & 0x7F800000U) == 0x72000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -416,6 +435,29 @@ namespace Cpu64 {
 					V[rd] = (Vector128<float>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((byte) ((byte) (src))).As<byte, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((byte) ((byte) (src))).As<byte, float>()))))) : ((Vector128<float>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x3))) == (0x2)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((ushort) ((ushort) (src))).As<ushort, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((ushort) ((ushort) (src))).As<ushort, float>()))))) : ((Vector128<float>) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x7))) == (0x4)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((uint) ((uint) (src))).As<uint, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((uint) ((uint) (src))).As<uint, float>()))))) : ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create(src).As<ulong, float>())) : throw new NotImplementedException())))))));
 					return true;
 				}
+				/* EOR-immediate */
+				if((inst & 0x7F800000U) == 0x52000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var up = (inst >> 22) & 0x1U;
+					var immr = (inst >> 16) & 0x3FU;
+					var imms = (inst >> 10) & 0x3FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						if(rd == 31)
+							SP = (ulong) (uint) ((uint) ((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn])) ^ (uint) ((uint) ((uint) (imm)))));
+						else
+							W[(int) rd] = (uint) ((uint) ((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn])) ^ (uint) ((uint) ((uint) (imm)))));
+					} else {
+						if(rd == 31)
+							SP = (ulong) ((ulong) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) ^ (ulong) (imm));
+						else
+							X[(int) rd] = (ulong) ((ulong) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) ^ (ulong) (imm));
+					}
+					return true;
+				}
 				/* EOR-shifted-register */
 				if((inst & 0x7F200000U) == 0x4A000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -658,6 +700,15 @@ namespace Cpu64 {
 					X[(int) rt] = (ulong) ((ulong) ((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))));
 					return true;
 				}
+				/* LDRSW-immediate-unsigned-offset */
+				if((inst & 0xFFC00000U) == 0xB9800000U) {
+					var rawimm = (inst >> 10) & 0xFFFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (ushort) ((rawimm) << (int) (0x2));
+					X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((uint) (*(uint*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 32))));
+					return true;
+				}
 				/* LDRSW-register */
 				if((inst & 0xFFE00C00U) == 0xB8A00800U) {
 					var rm = (inst >> 16) & 0x1FU;
@@ -685,6 +736,15 @@ namespace Cpu64 {
 					} else {
 						X[(int) rd] = (ulong) (*(ulong*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))));
 					}
+					return true;
+				}
+				/* LDURB */
+				if((inst & 0xFFE00C00U) == 0x38400000U) {
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					X[(int) rd] = (ulong) ((ulong) ((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))));
 					return true;
 				}
 				/* LSRV */
@@ -883,6 +943,14 @@ namespace Cpu64 {
 						var top = (ulong) ((ulong) ((ulong) ((ulong) (0x0))) - (ulong) ((ulong) ((ulong) ((ulong) ((src) >> (int) (imms))) & (ulong) (0x1))));
 						X[(int) rd] = (ulong) ((ulong) ((ulong) ((ulong) (top) & (ulong) ((ulong) (~(tmask))))) | (ulong) ((ulong) ((ulong) (bot) & (ulong) (tmask))));
 					}
+					return true;
+				}
+				/* STLRB */
+				if((inst & 0xFFFFFC00U) == 0x089FFC00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+					*(byte*) (address) = (byte) ((byte) ((uint) ((rt) == 31 ? 0U : W[(int) rt])));
 					return true;
 				}
 				/* STLXR */
@@ -1165,6 +1233,15 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var offset = (long) (SignExt<long>(imm, 9));
 					*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset))) = (byte) ((byte) ((ulong) ((rt) == 31 ? 0UL : X[(int) rt])));
+					return true;
+				}
+				/* STURH */
+				if((inst & 0xFFE00C00U) == 0x78000000U) {
+					var imm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var offset = (long) (SignExt<long>(imm, 9));
+					*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset))) = (ushort) ((ushort) ((ulong) ((rt) == 31 ? 0UL : X[(int) rt])));
 					return true;
 				}
 				/* SUB-immediate */

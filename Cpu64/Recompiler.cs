@@ -170,8 +170,6 @@ namespace Cpu64 {
 			set => TlsIlg.Value = value;
 		}
 
-		readonly Dictionary<ulong, Block> Blocks = new Dictionary<ulong, Block>();
-
 		public Block BranchToBlock;
 		public ulong BranchTo = 0;
 
@@ -189,7 +187,7 @@ namespace Cpu64 {
 		public override unsafe void Run(ulong pc, ulong sp) {
 			SP = sp;
 			while(true) {
-				var block = BranchToBlock ?? GetBlock(pc);
+				var block = BranchToBlock ?? CacheManager.GetBlock(pc);
 				lock(block)
 					if(block.Func == null) {
 						$"Recompiling block at 0x{pc:X}".Debug();
@@ -249,9 +247,6 @@ namespace Cpu64 {
 			}
 		}
 
-		Block GetBlock(ulong addr) =>
-			Blocks.TryGetValue(addr, out var block) ? block : Blocks[addr] = new Block(addr);
-
 		static void LoadConstant(object c) {
 			switch(c) {
 				case bool v: Ilg.LoadConstant(v); break;
@@ -304,7 +299,7 @@ namespace Cpu64 {
 			}
 
 			var fname = $"_{target:X8}";
-			var block = GetBlock(target);
+			var block = CacheManager.GetBlock(target);
 			if(CurBlockRefs.TryGetValue(fname, out var br)) {
 				CpuRef.Emit();
 				Ilg.LoadField(br.Item1);
