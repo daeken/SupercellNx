@@ -1218,7 +1218,7 @@ namespace Cpu64 {
 							V[(int) ((rt) >> 1)] = V[(int) ((rt) >> 1)].As<float, double>().WithElement((int) ((rt) & 1), (double) (*(double*) (address))).As<double, float>();
 							break;
 						case 0x1:
-							V[rt] = (Vector128<float>) (*(Vector128<float>*) (address));
+							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) (address)));
 							break;
 						default:
 							throw new NotImplementedException();
@@ -1254,7 +1254,7 @@ namespace Cpu64 {
 							V[(int) ((rt) >> 1)] = V[(int) ((rt) >> 1)].As<float, double>().WithElement((int) ((rt) & 1), (double) (*(double*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x3))))))).As<double, float>();
 							break;
 						default:
-							V[rt] = (Vector128<float>) (*(Vector128<float>*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x4))))));
+							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x4)))))));
 							break;
 					}
 					return true;

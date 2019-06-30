@@ -448,11 +448,11 @@ namespace Generator {
 				case PName("bitcast"):
 					return $"Bitcast<{GenerateType(list[1].Type)}, {GenerateType(list.Type)}>({GenerateExpression(list[1])})";
 				case PName("store"):
-					if(list[2].Type is EVector)
+					if(list[2].Type is EVector || list[2].Type is EFloat(128))
 						return $"Sse.Store((float*) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])})";
 					return $"*({GenerateType(list[2].Type)}*) ({GenerateExpression(list[1])}) = {GenerateExpression(list[2])}";
 				case PName("load"):
-					if(list.Type is EVector)
+					if(list.Type is EVector || list.Type is EFloat(128))
 						return $"Sse.LoadVector128((float*) ({GenerateExpression(list[1])}))";
 					return $"*({GenerateType(list.Type)}*) ({GenerateExpression(list[1])})";
 				
