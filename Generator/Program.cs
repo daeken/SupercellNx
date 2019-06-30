@@ -50,7 +50,7 @@ namespace Generator {
 								InferList(sublist);
 						foreach(var elem in list)
 							if(!(elem.Type is EUnit) && elem.Type.Runtime)
-								list.Type.Runtime = true;
+								list.Type = list.Type.AsRuntime();
 						break;
 					default:
 						InferExpression(list);
@@ -72,6 +72,7 @@ namespace Generator {
 				}
 			}
 
+			InferList(def.Decode);
 			InferList(def.Eval);
 			return def;
 		}
@@ -166,6 +167,12 @@ namespace Generator {
 								c--;
 								return;
 							
+							case PName("vec-b"):
+								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 4)] = V[(int) (({GenerateExpression(sub[1])}) >> 4)].As<float, byte>().WithElement((int) (({GenerateExpression(sub[1])}) & 15), {GenerateExpression(list[2])}).As<byte, float>();";
+								return;
+							case PName("vec-h"):
+								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 3)] = V[(int) (({GenerateExpression(sub[1])}) >> 3)].As<float, ushort>().WithElement((int) (({GenerateExpression(sub[1])}) & 7), {GenerateExpression(list[2])}).As<ushort, float>();";
+								return;
 							case PName("vec-s"):
 								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 2)] = V[(int) (({GenerateExpression(sub[1])}) >> 2)].WithElement((int) (({GenerateExpression(sub[1])}) & 3), {GenerateExpression(list[2])});";
 								return;
@@ -384,9 +391,28 @@ namespace Generator {
 						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
 					throw new NotImplementedException();
+				case PName("sqrt"):
+					return $"({GenerateType(list.Type)}) Math.Sqrt((double) ({GenerateExpression(list[1])}))";
+				case PName(":"):
+					var offset = 0;
+					return list.Skip(1).Reverse().Select(x => {
+						if(!(x.Type is EInt(_, var width))) throw new NotSupportedException();
+						var ret = $"((({GenerateType(list.Type)}) ({GenerateExpression(x)})) << {offset})";
+						offset += width;
+						return ret;
+					}).Aggregate((a, x) => $"({GenerateType(list.Type)}) ((({GenerateType(list.Type)}) {a}) | (({GenerateType(list.Type)}) {x}))");
+				case PName("replicate"):
+					if(!(list[1].Type is EInt(_, var width))) throw new NotSupportedException();
+					if(!(list[2] is PInt(var count))) throw new NotSupportedException();
+					return Enumerable.Range(0, (int) count)
+							.Select(i => $"((({GenerateType(list.Type)}) ({GenerateExpression(list[1])})) << {i * width})")
+							.Aggregate((a, x) => $"({GenerateType(list.Type)}) ((({GenerateType(list.Type)}) {a}) | (({GenerateType(list.Type)}) {x}))");
 				case PName("add-with-carry-set-nzcv"):
 					return $"AddWithCarrySetNzcv({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("fcmp"):
+					return $"FloatCompare({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("~"): return $"~({GenerateExpression(list[1])})";
+				case PName("-!"): return $"-({GenerateExpression(list[1])})";
 				case PName("!"): return $"({GenerateExpression(list[1])}) != 0 ? 0U : 1U";
 				case PName("shift"):
 					return $"Shift({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
@@ -407,6 +433,8 @@ namespace Generator {
 				case PName("gpr64"): return $"({GenerateExpression(list[1])}) == 31 ? 0UL : X[(int) {GenerateExpression(list[1])}]";
 				case PName("gpr-or-sp64"): return $"({GenerateExpression(list[1])}) == 31 ? SP : X[(int) {GenerateExpression(list[1])}]";
 				case PName("vec"): return $"V[{GenerateExpression(list[1])}]";
+				case PName("vec-b"): return $"V[{GenerateExpression(list[1])} >> 4].As<float, byte>().GetElement((int) {GenerateExpression(list[1])} & 15)";
+				case PName("vec-h"): return $"V[{GenerateExpression(list[1])} >> 3].As<float, ushort>().GetElement((int) {GenerateExpression(list[1])} & 7)";
 				case PName("vec-s"): return $"V[{GenerateExpression(list[1])} >> 2].GetElement((int) {GenerateExpression(list[1])} & 3)";
 				case PName("vec-d"): return $"V[{GenerateExpression(list[1])} >> 1].As<float, double>().GetElement((int) {GenerateExpression(list[1])} & 1)";
 				case PName("make-tmask"):
@@ -417,6 +445,8 @@ namespace Generator {
 					return $"SignExt<{GenerateType(list.Type)}>({GenerateExpression(list[1])}, {((EInt) list[1].Type).Width})";
 				case PName("cast"):
 					return $"({GenerateType(list.Type)}) ({GenerateExpression(list[1])})";
+				case PName("bitcast"):
+					return $"Bitcast<{GenerateType(list[1].Type)}, {GenerateType(list.Type)}>({GenerateExpression(list[1])})";
 				case PName("store"):
 					if(list[2].Type is EVector)
 						return $"Sse.Store((float*) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])})";
@@ -483,9 +513,14 @@ namespace Generator {
 						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
 					throw new NotImplementedException();
+				case PName("sqrt"):
+					return $"({GenerateType(list.Type)}) (({GenerateType(new EFloat(64).AsRuntime(list[1].Type.Runtime))}) ({GenerateExpression(list[1])})).Sqrt()";
 				case PName("add-with-carry-set-nzcv"):
 					return $"CallAddWithCarrySetNzcv({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("fcmp"):
+					return $"CallFloatCompare({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("~"): return $"~({GenerateExpression(list[1])})";
+				case PName("-!"): return $"-({GenerateExpression(list[1])})";
 				case PName("!"): return $"!({GenerateExpression(list[1])})";
 				case PName("shift"):
 					return $"Shift({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
@@ -506,6 +541,8 @@ namespace Generator {
 				case PName("gpr64"): return $"({GenerateExpression(list[1])}) == 31 ? 0UL : XR[(int) {GenerateExpression(list[1])}]";
 				case PName("gpr-or-sp64"): return $"({GenerateExpression(list[1])}) == 31 ? SPR : XR[(int) {GenerateExpression(list[1])}]";
 				case PName("vec"): return $"VR[(int) ({GenerateExpression(list[1])})]";
+				case PName("vec-b"): return $"VBR[(int) ({GenerateExpression(list[1])})]";
+				case PName("vec-h"): return $"VHR[(int) ({GenerateExpression(list[1])})]";
 				case PName("vec-s"): return $"VSR[(int) ({GenerateExpression(list[1])})]";
 				case PName("vec-d"): return $"VDR[(int) ({GenerateExpression(list[1])})]";
 				case PName("make-tmask"):
@@ -516,6 +553,8 @@ namespace Generator {
 					return $"SignExtRuntime<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[1])}, {((EInt) list[1].Type).Width})";
 				case PName("cast"):
 					return $"({GenerateType(list.Type)}) ({GenerateExpression(list[1])})";
+				case PName("bitcast"):
+					return $"({GenerateExpression(list[1])}).Bitcast<{GenerateType(list.Type.AsCompiletime())}>()";
 				case PName("store"):
 					return $"((RuntimePointer<{GenerateType(list[2].Type.AsCompiletime())}>) ({GenerateExpression(list[1])})).Value = {GenerateExpression(list[2])}";
 				case PName("load"):
@@ -524,7 +563,8 @@ namespace Generator {
 				case PName("svc"): return $"CallVoid(nameof(Svc), {GenerateExpression(list[1])})";
 				case PName("sr"): return $"CallSR({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])}, {GenerateExpression(list[5])})";
 				
-				case PName("vector-all"): return $"({GenerateExpression(list[1])}).CreateVector()";
+				case PName("vector-all"):
+					return $"(({GenerateType(list[1].Type.AsRuntime())}) ({GenerateExpression(list[1])})).CreateVector()";
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";

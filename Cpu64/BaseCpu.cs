@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics;
 using Common;
+using UltimateOrb;
 
 namespace Cpu64 {
 	public abstract partial class BaseCpu {
@@ -25,14 +26,14 @@ namespace Cpu64 {
 		public ulong TlsBase;
 		
 		protected BaseCpu(IKernel kernel) => Kernel = kernel;
-		public abstract void Run(ulong pc, ulong sp);
+		public abstract void Run(ulong pc, ulong sp, bool one = false);
 
-		public void DebugRegs() {
+		public unsafe void DebugRegs() {
 			"========================".Debug();
 			$"NZCV {NZCV_N}{NZCV_Z}{NZCV_C}{NZCV_V}".Debug();
-			$"PC == 0x{PC:X}    SP == 0x{SP:X}".Debug();
+			$"PC == {Kernel.MapAddress(PC)}    SP == 0x{SP:X}".Debug();
 			for(var i = 0; i < 31; ++i)
-				$"X{i} == 0x{X[i]:X}".Debug();
+				$"X{i} == {Kernel.MapAddress(X[i])}".Debug();
 			"========================".Debug();
 		}
 		
@@ -124,7 +125,7 @@ namespace Cpu64 {
 				var result = usum & 0x7FFFFFFFU;
 				var n = result >> 30;
 				var z = result == 0 ? 1U : 0;
-				var c = result == usum ? 1U : 0;
+				var c = (uint) ((((ulong) operand1 + operand2 + carryIn) >> 32) & 1);
 				var v = (int) (result << 1) >> 1 == ssum ? 0U : 1;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
@@ -139,12 +140,34 @@ namespace Cpu64 {
 				var result = (usum << 1) >> 1;
 				var n = result >> 62;
 				var z = result == 0 ? 1U : 0;
-				var c = result == usum ? 1U : 0;
+				var c = (uint) ((((UInt128) operand1 + operand2 + carryIn) >> 64) & 1);
 				var v = (long) (result << 1) >> 1 == ssum ? 0U : 1;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
 				return usum;
 			}
+		}
+
+		public void FloatCompare(float operand1, float operand2) {
+			if(float.IsNaN(operand1) || float.IsNaN(operand2))
+				NZCV = 0b0011UL << 28;
+			else if(operand1 == operand2)
+				NZCV = 0b0110UL << 28;
+			else if(operand1 < operand2)
+				NZCV = 0b1000UL << 28;
+			else
+				NZCV = 0b0010UL << 28;
+		}
+		
+		public void FloatCompare(double operand1, double operand2) {
+			if(double.IsNaN(operand1) || double.IsNaN(operand2))
+				NZCV = 0b0011UL << 28;
+			else if(operand1 == operand2)
+				NZCV = 0b0110UL << 28;
+			else if(operand1 < operand2)
+				NZCV = 0b1000UL << 28;
+			else
+				NZCV = 0b0010UL << 28;
 		}
 		
 		public void Svc(uint svc) => Kernel.Svc((int) svc);
@@ -158,6 +181,8 @@ namespace Cpu64 {
 					return 0;
 				case 0b11_011_1101_0000_011: // TPIDR
 					return TlsBase;
+				case 0b11_011_1110_0000_001: // CntpctEl0
+					return 0;
 				default:
 					throw new NotSupportedException($"Unknown SR: S{op0|2}_{op1}_{crn}_{crm}_{op2}");
 			}
@@ -174,6 +199,33 @@ namespace Cpu64 {
 					break;
 				default:
 					throw new NotSupportedException($"Unknown SR: S{op0|2}_{op1}_{crn}_{crm}_{op2}");
+			}
+		}
+
+		protected unsafe OutT Bitcast<InT, OutT>(InT value) {
+			var ov = Activator.CreateInstance<OutT>();
+			switch(value) {
+				case uint v:
+					switch(ov) {
+						case float _: return (OutT) (object) *(float*) &v;
+						default: throw new NotImplementedException();
+					}
+				case ulong v:
+					switch(ov) {
+						case double _: return (OutT) (object) *(double*) &v;
+						default: throw new NotImplementedException();
+					}
+				case float v:
+					switch(ov) {
+						case uint _: return (OutT) (object) *(uint*) &v;
+						default: throw new NotImplementedException();
+					}
+				case double v:
+					switch(ov) {
+						case ulong _: return (OutT) (object) *(ulong*) &v;
+						default: throw new NotImplementedException();
+					}
+				default: throw new NotImplementedException();
 			}
 		}
 	}

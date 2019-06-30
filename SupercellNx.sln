@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnicornSharp", "UnicornShar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supercell", "Supercell\Supercell.csproj", "{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CpuTest", "CpuTest\CpuTest.csproj", "{47B35BE5-5470-48D3-87F7-8714A8244ABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdbStub", "GdbStub\GdbStub.csproj", "{76A6C3E8-B525-40C0-AB76-622B6E91A055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,5 +59,13 @@ Global
 		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1937DEFE-893D-4C7C-AFA2-77F27BFD63E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47B35BE5-5470-48D3-87F7-8714A8244ABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47B35BE5-5470-48D3-87F7-8714A8244ABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47B35BE5-5470-48D3-87F7-8714A8244ABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47B35BE5-5470-48D3-87F7-8714A8244ABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76A6C3E8-B525-40C0-AB76-622B6E91A055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76A6C3E8-B525-40C0-AB76-622B6E91A055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76A6C3E8-B525-40C0-AB76-622B6E91A055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76A6C3E8-B525-40C0-AB76-622B6E91A055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

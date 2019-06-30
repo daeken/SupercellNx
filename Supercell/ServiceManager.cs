@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Common;
 using MoreLinq;
 using static Supercell.Globals;
 
@@ -85,6 +86,7 @@ namespace Supercell {
 		}
 		
 		public void Svc(int svc) {
+			$"Incoming SVC 0x{svc:X}".Debug();
 			if(Handlers.ContainsKey(svc))
 				Handlers[svc]();
 			else

@@ -674,42 +674,42 @@ namespace UnicornSharp {
 		}
 
 		public void AddCodeHook(UnicornAction<UT, ulong, int> func, ulong begin, ulong end) {
-			Action<IntPtr, ulong, ulong, IntPtr> del = (_, addr, size, __) =>
+			Native.IUUI del = (_, addr, size, __) =>
 				func((UT) (object) this, addr, (int) size);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_CODE, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}
 
 		public void AddMemReadHook(UnicornAction<UT, ulong, int> func, ulong begin, ulong end) {
-			Action<IntPtr, MemType, ulong, ulong, ulong, IntPtr> del = (_, __, addr, size, ___, ____) =>
+			Native.IMUUUI del = (_, __, addr, size, ___, ____) =>
 				func((UT) (object) this, addr, (int) size);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_MEM_READ, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}
 
 		public void AddMemWriteHook(UnicornAction<UT, ulong, int, ulong> func, ulong begin, ulong end) {
-			Action<IntPtr, MemType, ulong, ulong, ulong, IntPtr> del = (_, __, addr, size, value, ___) =>
+			Native.IMUUUI del = (_, __, addr, size, value, ___) =>
 				func((UT) (object) this, addr, (int) size, value);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_MEM_WRITE, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}
 
 		public void AddBadReadHook(UnicornFunc<UT, bool, ulong, int, bool> func, ulong begin, ulong end) {
-			Func<IntPtr, MemType, ulong, ulong, ulong, IntPtr, bool> del = (_, type, addr, size, __, ___) =>
+			Native.IMUUUIrB del = (_, type, addr, size, __, ___) =>
 				func((UT) (object) this, addr, (int) size, type == MemType.UC_MEM_READ_PROT);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_MEM_READ_PROT | HookType.UC_HOOK_MEM_READ_UNMAPPED, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}
 
 		public void AddBadWriteHook(UnicornFunc<UT, bool, ulong, int, ulong, bool> func, ulong begin, ulong end) {
-			Func<IntPtr, MemType, ulong, ulong, ulong, IntPtr, bool> del = (_, type, addr, size, value, __) =>
+			Native.IMUUUIrB del = (_, type, addr, size, value, __) =>
 				func((UT) (object) this, addr, (int) size, value, type == MemType.UC_MEM_WRITE_PROT);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_MEM_WRITE_PROT | HookType.UC_HOOK_MEM_WRITE_UNMAPPED, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}
 
 		public void AddInterruptHook(UnicornAction<UT, uint> func, ulong begin, ulong end) {
-			Action<IntPtr, uint, IntPtr> del = (_, intno, __) => func((UT) (object) this, intno);
+			Native.IUI del = (_, intno, __) => func((UT) (object) this, intno);
 			CheckError(Native.uc_hook_add(uc, out var hh, HookType.UC_HOOK_INTR, del, IntPtr.Zero, begin, end));
 			hookHandles[func] = (hh, del);
 		}

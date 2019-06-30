@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Intrinsics;
 using System.Threading;
 using Common;
@@ -54,6 +55,66 @@ namespace Cpu64 {
 			}
 		}
 
+		class VectorByteMap {
+			readonly Recompiler Recompiler;
+
+			public RuntimeValue<byte> this[int reg] {
+				get => new RuntimeValue<float>(() => {
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 4);
+					Ilg.LoadElement<Vector128<float>>();
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(byte)));
+					Ilg.LoadConstant(reg & 15);
+					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte)));
+				});
+				set {
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 4);
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 4);
+					Ilg.LoadElement<Vector128<float>>();
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(byte)));
+					Ilg.LoadConstant(reg & 15);
+					value.Emit();
+					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte)));
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte), typeof(float)));
+					Ilg.StoreElement<Vector128<float>>();
+				}
+			}
+
+			public VectorByteMap(Recompiler recompiler) => Recompiler = recompiler;
+		}
+		
+		class VectorHalfMap {
+			readonly Recompiler Recompiler;
+
+			public RuntimeValue<ushort> this[int reg] {
+				get => new RuntimeValue<float>(() => {
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 3);
+					Ilg.LoadElement<Vector128<float>>();
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(ushort)));
+					Ilg.LoadConstant(reg & 7);
+					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort)));
+				});
+				set {
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 3);
+					Recompiler.Field<Vector128<float>[]>("V").Emit();
+					Ilg.LoadConstant(reg >> 3);
+					Ilg.LoadElement<Vector128<float>>();
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(ushort)));
+					Ilg.LoadConstant(reg & 7);
+					value.Emit();
+					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort)));
+					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort), typeof(float)));
+					Ilg.StoreElement<Vector128<float>>();
+				}
+			}
+
+			public VectorHalfMap(Recompiler recompiler) => Recompiler = recompiler;
+		}
+		
 		class VectorSingleMap {
 			readonly Recompiler Recompiler;
 
@@ -63,7 +124,7 @@ namespace Cpu64 {
 					Ilg.LoadConstant(reg >> 2);
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.LoadConstant(reg & 3);
-					Ilg.Call(typeof(Vector128<float>).GetMethod("GetElement"));
+					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
@@ -73,7 +134,7 @@ namespace Cpu64 {
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.LoadConstant(reg & 3);
 					value.Emit();
-					Ilg.Call(typeof(Vector128<float>).GetMethod("WithElement"));
+					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float)));
 					Ilg.StoreElement<Vector128<float>>();
 				}
 			}
@@ -91,7 +152,7 @@ namespace Cpu64 {
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(double)));
 					Ilg.LoadConstant(reg & 1);
-					Ilg.Call(typeof(Vector128<float>).GetMethod("GetElement"));
+					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
@@ -102,7 +163,7 @@ namespace Cpu64 {
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(double)));
 					Ilg.LoadConstant(reg & 1);
 					value.Emit();
-					Ilg.Call(typeof(Vector128<float>).GetMethod("WithElement"));
+					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double)));
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double), typeof(float)));
 					Ilg.StoreElement<Vector128<float>>();
 				}
@@ -120,6 +181,8 @@ namespace Cpu64 {
 		
 		readonly RegisterMap<ulong> XR;
 		readonly RegisterMap<Vector128<float>> VR;
+		readonly VectorByteMap VBR;
+		readonly VectorHalfMap VHR;
 		readonly VectorSingleMap VSR;
 		readonly VectorDoubleMap VDR;
 		RuntimeValue<ulong> SPR {
@@ -171,7 +234,7 @@ namespace Cpu64 {
 		}
 
 		public Block BranchToBlock;
-		public ulong BranchTo = 0;
+		public ulong BranchTo;
 
 		bool Branched;
 		ulong BlockStart, CurPc;
@@ -181,16 +244,20 @@ namespace Cpu64 {
 		public Recompiler(IKernel kernel) : base(kernel) {
 			XR = new RegisterMap<ulong>(this, nameof(X));
 			VR = new RegisterMap<Vector128<float>>(this, nameof(V));
+			VBR = new VectorByteMap(this);
+			VHR = new VectorHalfMap(this);
 			VSR = new VectorSingleMap(this);
 			VDR = new VectorDoubleMap(this);
 		}
-		public override unsafe void Run(ulong pc, ulong sp) {
+		
+		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {
 			SP = sp;
 			while(true) {
 				var block = BranchToBlock ?? CacheManager.GetBlock(pc);
 				lock(block)
 					if(block.Func == null) {
-						$"Recompiling block at 0x{pc:X}".Debug();
+						$"Recompiling block at {Kernel.MapAddress(pc)}".Debug();
+						//DebugRegs();
 						BlockStart = pc;
 						BlockInstLabels = new Dictionary<ulong, Label>();
 						CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
@@ -207,7 +274,7 @@ namespace Cpu64 {
 							var inst = *(uint*) pc;
 							var asm = Disassemble(inst, pc);
 							if(asm == null) {
-								$"Disassembly failed at {pc:X} --- {inst:X8}".Debug();
+								$"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}".Debug();
 								Environment.Exit(1);
 							}
 
@@ -215,9 +282,13 @@ namespace Cpu64 {
 							Ilg.MarkLabel(blabel);
 
 							Field<ulong>(nameof(PC), pc);
-							//CallVoid(nameof(DebugRegs));
-							
-							//$"{pc:X}:  {asm}".Debug();
+							CallVoid(nameof(Test));
+
+							LogIf(0, () => {
+								$"{Kernel.MapAddress(pc)}:  {asm}".Debug();
+								//CallVoid(nameof(DebugRegs));
+							});
+
 							if(!Recompile(inst, pc))
 								throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
 							pc += 4;
@@ -235,16 +306,28 @@ namespace Cpu64 {
 						block.Func = func;
 						pc = BlockStart;
 					}
-				//$"Running block at 0x{pc:X}".Debug();
+				LogIf(0, () => $"Running block at 0x{pc:X}".Debug());
 				
 				BranchToBlock = null;
 				BranchTo = unchecked((ulong) -1);
 				block.Func(this);
-				if(SP < 0x100000)
-					throw new Exception($"SP likely corrupted by block {PC:X}");
+
+				if(!one && (SP < 0x100000 || SP >> 48 != 0))
+					throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
 				PC = pc = BranchTo;
 				Debug.Assert((pc & 3) == 0);
+				if(one)
+					break;
 			}
+		}
+
+		bool PlanZ;
+		public void Test() {
+			return;
+			if(PC == 0x7200990864) PlanZ = true;
+			if(!PlanZ) return;
+			var regs = Enumerable.Range(0, 31).Select(i => $"X{i} == {X[i]:X}");
+			$"{Kernel.MapAddress(PC)}  {NZCV >> 28:X} {string.Join(' ', regs)} SP == {SP:X}".Debug();
 		}
 
 		static void LoadConstant(object c) {
@@ -262,11 +345,18 @@ namespace Cpu64 {
 		}
 
 		static void CallVoid(string methodName, params object[] args) {
-			var methods = typeof(BaseCpu).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Concat(
-				typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
-			var mi = methods.First(m => m.ReturnType == typeof(void) && m.GetParameters().Length == args.Length &&
+			var methods = typeof(BaseCpu)
+				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+				.Concat(
+					typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
+					                              BindingFlags.NonPublic));
+			var mi = methods.First(m => m.Name == methodName && m.ReturnType == typeof(void) &&
+			                            m.GetParameters().Length == args.Length &&
 			                            m.GetParameters().Select(x => x.ParameterType)
-				.Zip(args, (t, o) => o.GetType() == t || o.GetType() == typeof(RuntimeValue<>).MakeGenericType(t)).All(x => x));
+				                            .Zip(args,
+					                            (t, o) => o.GetType() == t ||
+					                                      o.GetType() == typeof(RuntimeValue<>).MakeGenericType(t))
+				                            .All(x => x));
 			if(!mi.IsStatic)
 				CpuRef.Emit();
 			foreach(var a in args)
@@ -276,11 +366,18 @@ namespace Cpu64 {
 		}
 
 		static RuntimeValue<T> Call<T>(string methodName, params object[] args) {
-			var methods = typeof(BaseCpu).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Concat(
-				typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
-			var mi = methods.First(m => m.ReturnType == typeof(T) && m.GetParameters().Length == args.Length
-			                                                      && m.GetParameters().Select(x => x.ParameterType)
-				.Zip(args, (t, o) => o.GetType() == t || o.GetType() == typeof(RuntimeValue<>).MakeGenericType(t)).All(x => x));
+			var methods = typeof(BaseCpu)
+				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+				.Concat(
+					typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
+					                              BindingFlags.NonPublic));
+			var mi = methods.First(m => m.Name == methodName && m.ReturnType == typeof(T) &&
+			                            m.GetParameters().Length == args.Length
+			                            && m.GetParameters().Select(x => x.ParameterType)
+				                            .Zip(args,
+					                            (t, o) => o.GetType() == t ||
+					                                      o.GetType() == typeof(RuntimeValue<>).MakeGenericType(t))
+				                            .All(x => x));
 			return new RuntimeValue<T>(() => {
 				if(!mi.IsStatic)
 					CpuRef.Emit();
@@ -378,6 +475,11 @@ namespace Cpu64 {
 			Call<uint>(nameof(AddWithCarrySetNzcv), operand1, operand2, carryIn);
 		RuntimeValue<ulong> CallAddWithCarrySetNzcv(RuntimeValue<ulong> operand1, RuntimeValue<ulong> operand2, RuntimeValue<ulong> carryIn) =>
 			Call<ulong>(nameof(AddWithCarrySetNzcv), operand1, operand2, carryIn);
+
+		void CallFloatCompare(RuntimeValue<float> operand1, RuntimeValue<float> operand2) =>
+			CallVoid(nameof(FloatCompare), operand1, operand2);
+		void CallFloatCompare(RuntimeValue<double> operand1, RuntimeValue<double> operand2) =>
+			CallVoid(nameof(FloatCompare), operand1, operand2);
 		
 		RuntimeValue<T> SignExtRuntime<T>(RuntimeValue<ulong> value, int size) {
 			if(typeof(T) == typeof(int))
@@ -398,20 +500,43 @@ namespace Cpu64 {
 		RuntimeValue<ulong> CallSR(uint op0, uint op1, uint crn, uint crm, uint op2) => Call<ulong>(nameof(SR), op0, op1, crn, crm, op2);
 		void CallSR(uint op0, uint op1, uint crn, uint crm, uint op2, RuntimeValue<ulong> value) => CallVoid(nameof(SR), op0, op1, crn, crm, op2, value);
 
+		void LogIf(ulong addr, Action func) {
+			return;
+			//if(addr >= 0x7100B51004 && addr <= 0x71008D50D0)
+			if(
+				(PC >= 0x7100B4A07C + 0x7000 && PC <= 0x7100B4A20C + 0x7000) ||
+				(addr >= 0x7102465A50 + 0x7000 && addr <= 0x7102465A80 + 0x7000) ||
+				(PC >= 0x7100A39CC8 + 0x7000 && PC <= 0x7100A39DBC + 0x7000)
+			)
+				func();
+		}
+
 		public static void LogLoad<T>(RuntimeValue<ulong> addr) => CallVoid(nameof(LogLoad), addr, typeof(T).Name);
-		public void LogLoad(ulong addr, string type) => $"[{PC:X}] Loading {type} from 0x{addr:X}".Debug();
+		public void LogLoad(ulong addr, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loading {type} from {Kernel.MapAddress(addr)}".Debug());
+		public static void LogLoaded<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogLoaded), addr, value, typeof(T).Name);
+		public void LogLoaded(ulong addr, byte value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, ushort value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, uint value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, ulong value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, sbyte value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, short value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, int value, string type)              => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, long value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, float value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, double value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
 		
 		public static void LogStore<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogStore), addr, value, typeof(T).Name);
-		public void LogStore(ulong addr, byte value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, ushort value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, uint value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, ulong value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, sbyte value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, short value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, int value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, long value, string type) => $"[{PC:X}] Storing 0x{value:X} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, float value, string type) => $"[{PC:X}] Storing {value} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, double value, string type) => $"[{PC:X}] Storing {value} ({type}) to 0x{addr:X}".Debug();
-		public void LogStore(ulong addr, Vector128<float> value, string type) => $"[{PC:X}] Storing {value} ({type}) to 0x{addr:X}".Debug();
+		public void LogStore(ulong addr, byte value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, ushort value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, uint value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, ulong value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, sbyte value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, short value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, int value, string type)              => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, long value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, float value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, double value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
 	}
 }

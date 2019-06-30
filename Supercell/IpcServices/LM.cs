@@ -10,9 +10,9 @@ namespace Supercell.IpcServices.nn.lm {
 
 	public class ILogger : IpcInterface {
 		[IpcCommand(0)]
-		public void Initialize() => throw new NotImplementedException();
+		public void Initialize() {}
 		
 		[IpcCommand(1)]
-		public void SetDestination(uint destination) => throw new NotImplementedException();
+		public void SetDestination(uint destination) {}
 	}
 }

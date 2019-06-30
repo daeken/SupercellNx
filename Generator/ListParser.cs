@@ -83,7 +83,7 @@ namespace Generator {
 		public IEnumerator<PTree> GetEnumerator() => Children.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		public override string ToString() => $"({string.Join(' ', Children.Select(x => x.ToString()))})";
+		public override string ToString() => $"({(Type.Runtime ? "~runtime~ " : "")}{string.Join(' ', Children.Select(x => x.ToString()))})";
 	}
 
 	public class PName : PTree {
@@ -105,6 +105,7 @@ namespace Generator {
 		public readonly long Value;
 		public PInt(long value) => Value = value;
 		public override string ToString() => Value.ToString();
+		public void Deconstruct(out long value) => value = Value;
 		public static implicit operator long(PInt val) => val.Value;
 	}
 	

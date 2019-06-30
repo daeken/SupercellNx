@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Common;
@@ -68,12 +69,11 @@ namespace Supercell {
 			CommandId = GetData<uint>(0);
 		}
 
-		T GetData<T>(uint offset) {
-			return new Span<T>(Buffer + SfciOffset + 8 + offset, Marshal.SizeOf<T>())[0];
-		}
+		T GetData<T>(uint offset) => new Span<T>(Buffer + SfciOffset + 8 + offset, Marshal.SizeOf<T>())[0];
 
 		public static Func<IncomingMessage, object> DataGetter(Type T, uint offset) {
 			switch(Activator.CreateInstance(T)) {
+				case bool _: return im => im.GetData<byte>(offset) != 0;
 				case byte _: return im => im.GetData<byte>(offset);
 				case ushort _: return im => im.GetData<ushort>(offset);
 				case uint _: return im => im.GetData<uint>(offset);
@@ -82,6 +82,8 @@ namespace Supercell {
 				case short _: return im => im.GetData<short>(offset);
 				case int _: return im => im.GetData<int>(offset);
 				case long _: return im => im.GetData<long>(offset);
+				case float _: return im => im.GetData<float>(offset);
+				case double _: return im => im.GetData<double>(offset);
 				default: throw new NotSupportedException($"Can't create data getter of type {T.Name}");
 			}
 		}
@@ -92,7 +94,7 @@ namespace Supercell {
 
 	public unsafe class OutgoingMessage {
 		readonly byte* Buffer;
-		public readonly bool IsDomainObject;
+		public bool IsDomainObject;
 		public uint ErrCode;
 		uint SfcoOffset, RealDataOffset, CopyCount;
 
@@ -128,7 +130,7 @@ namespace Supercell {
 		}
 
 		public void Move(uint offset, uint handle) {
-			var buf = (uint *) Buffer;
+			var buf = (uint*) Buffer;
 			if(IsDomainObject)
 				buf[(SfcoOffset >> 2) + 4 + offset] = handle;
 			else
@@ -136,12 +138,43 @@ namespace Supercell {
 		}
 
 		public void Bake() {
-			var buf = (uint *) Buffer;
+			var buf = (uint*) Buffer;
 			buf[(SfcoOffset >> 2) + 2] = ErrCode;
 		}
+		
+		public void SetData<T>(uint offset, T value) => 
+			new Span<T>(Buffer + SfcoOffset + 8 + offset + (offset < 8 ? 0 : RealDataOffset), Marshal.SizeOf<T>())[0] = value;
+
+		public static Action<OutgoingMessage, object> DataSetter(Type T, uint offset) {
+			switch(Activator.CreateInstance(T)) {
+				case bool _: return (om, v) => om.SetData(offset, (byte) ((bool) v ? 1 : 0));
+				case byte _: return (om, v) => om.SetData(offset, (byte) v);
+				case ushort _: return (om, v) => om.SetData(offset, (ushort) v);
+				case uint _: return (om, v) => om.SetData(offset, (uint) v);
+				case ulong _: return (om, v) => om.SetData(offset, (ulong) v);
+				case sbyte _: return (om, v) => om.SetData(offset, (sbyte) v);
+				case short _: return (om, v) => om.SetData(offset, (short) v);
+				case int _: return (om, v) => om.SetData(offset, (int) v);
+				case long _: return (om, v) => om.SetData(offset, (long) v);
+				case float _: return (om, v) => om.SetData(offset, (float) v);
+				case double _: return (om, v) => om.SetData(offset, (double) v);
+				default: throw new NotSupportedException($"Can't create data setter of type {T.Name}");
+			}
+		}
+
+		public static Action<OutgoingMessage, object> BytesSetter(uint offset, uint size) => (om, v) =>
+			((byte[]) v).CopyTo(new Span<byte>(
+				om.Buffer + om.SfcoOffset + 8 + offset + (offset < 8 ? 0 : om.RealDataOffset), (int) size));
 	}
 	
 	public abstract class IpcInterface : KObject {
+		bool IsDomainObject;
+		IpcInterface DomainOwner;
+		uint DomainHandleIter = 0xf001;
+		const uint ThisHandle = 0xf000;
+		readonly Dictionary<uint, KObject> DomainHandles = new Dictionary<uint, KObject>();
+		readonly Dictionary<uint, uint> DomainHandleMap = new Dictionary<uint, uint>();
+		
 		// TODO: Refactor this so it happens at emulator startup
 		readonly Dictionary<uint, Action<IncomingMessage, OutgoingMessage>> Commands;
 		protected IpcInterface() =>
@@ -157,6 +190,7 @@ namespace Supercell {
 			var outputBuilders = new List<Action<OutgoingMessage, object>>();
 
 			var inputOffset = 8U;
+			var outputOffset = 8U;
 			var moveCount = 0U;
 			var copyCount = 0U;
 			var dataBytes = 0U;
@@ -170,19 +204,31 @@ namespace Supercell {
 					else if(p.TryGetAttribute<BytesAttribute>(out var bytesAttribute)) {
 						inputBuilders.Add(IncomingMessage.BytesGetter(inputOffset, bytesAttribute.Count));
 						inputOffset += bytesAttribute.Count;
-					} else {
+					} else if(p.TryGetAttribute<BufferAttribute>(out var bufferAttribute)) {
+						inputBuilders.Add(_ => throw new NotImplementedException());
+					} else if(p.ParameterType == typeof(object))
+						inputBuilders.Add(im => null);
+					else {
 						var type = p.ParameterType;
 						inputBuilders.Add(IncomingMessage.DataGetter(type, inputOffset));
 						inputOffset += (uint) Marshal.SizeOf(type);
 					}
 				} else {
 					var type = p.ParameterType.GetElementType();
-					if(type.IsSubclassOf(typeof(KObject))) {
+					if(type == typeof(KObject) || type.IsSubclassOf(typeof(KObject))) {
 						if(p.HasAttribute<MoveAttribute>()) {
 							var movePos = moveCount++;
-							outputBuilders.Add((om, v) => om.Move(movePos, ((KObject) v)?.Handle ?? 0xDEADBEEF));
+							outputBuilders.Add((om, v) => om.Move(movePos, CreateHandle((KObject) v)));
 						} else throw new NotSupportedException();
-					} else throw new NotSupportedException();
+					} else if(p.TryGetAttribute<BytesAttribute>(out var bytesAttribute)) {
+						outputBuilders.Add(OutgoingMessage.BytesSetter(outputOffset, bytesAttribute.Count));
+						outputOffset += bytesAttribute.Count;
+					} else if(type == typeof(object))
+						outputBuilders.Add((im, v) => { });
+					else {
+						outputBuilders.Add(OutgoingMessage.DataSetter(type, outputOffset));
+						outputOffset += (uint) Marshal.SizeOf(type);
+					}
 				}
 			});
 
@@ -214,13 +260,34 @@ namespace Supercell {
 				$"Return from function {mi.DeclaringType.FullName}.{mi.Name} should be void or uint.");
 		}
 
+		uint CreateHandle(KObject obj) {
+			if(obj == null) return 0xDEADBEEF;
+			if(DomainOwner != null) return DomainOwner.CreateHandle(obj);
+			if(!IsDomainObject) return obj.Handle;
+			if(DomainHandleMap.TryGetValue(obj.Handle, out var dmap)) return dmap;
+			var handle = DomainHandleMap[obj.Handle] = DomainHandleIter++;
+			DomainHandles[handle] = obj;
+			if(obj is IpcInterface iface)
+				iface.DomainOwner = this;
+			return handle;
+		}
+
+		void Dispatch(IncomingMessage incoming, OutgoingMessage outgoing) {
+			if(!Commands.TryGetValue(incoming.CommandId, out var cb))
+				throw new NotImplementedException($"Unknown message command for service {this}: {incoming.CommandId}");
+			cb(incoming, outgoing);
+		}
+
 		public unsafe uint SyncMessage(ulong bufferAddr, uint bufferSize, out bool closeHandle) {
 			var buffer = (byte*) bufferAddr;
 			new Span<byte>(buffer, (int) bufferSize).Hexdump();
-			var incoming = new IncomingMessage(buffer);
-			var outgoing = new OutgoingMessage(buffer, false);
+			var incoming = new IncomingMessage(buffer, IsDomainObject);
+			var outgoing = new OutgoingMessage(buffer, IsDomainObject);
 			var ret = 0xF601U;
 			closeHandle = false;
+			var target = this;
+			if(IsDomainObject && incoming.DomainHandle != ThisHandle && incoming.Type == 4)
+				target = (IpcInterface) DomainHandles[incoming.DomainHandle];
 			switch(incoming.Type) {
 				case 2:
 					closeHandle = true;
@@ -229,9 +296,30 @@ namespace Supercell {
 					break;
 				case 4:
 				case 6:
-					if(!Commands.TryGetValue(incoming.CommandId, out var cb))
-						throw new NotImplementedException($"Unknown message command for service {this}: {incoming.CommandId}");
-					cb(incoming, outgoing);
+					target.Dispatch(incoming, outgoing);
+					ret = 0;
+					break;
+				case 5:
+				case 7:
+					switch(incoming.CommandId) {
+						case 0: // ConvertSessionToDomain
+							"Converting session to domain...".Debug();
+							outgoing.Initialize(0, 0, 4);
+							IsDomainObject = true;
+							outgoing.SetData(8, ThisHandle);
+							break;
+						case 2: // DuplicateSession
+							outgoing.IsDomainObject = false;
+							outgoing.Initialize(1, 0, 0);
+							outgoing.Move(0, Handle);
+							break;
+						case 3: // QueryPointerBufferSize
+							outgoing.Initialize(0, 0, 4);
+							outgoing.SetData(8, 0x500U);
+							break;
+						default:
+							throw new NotImplementedException($"Unknown domain command ID: {incoming.CommandId}");
+					}
 					ret = 0;
 					break;
 				default:
@@ -260,6 +348,12 @@ namespace Supercell {
 	public class BytesAttribute : Attribute {
 		public readonly uint Count;
 		public BytesAttribute(uint count) => Count = count;
+	}
+
+	[AttributeUsage(AttributeTargets.Parameter)]
+	public class BufferAttribute : Attribute {
+		public readonly uint Type;
+		public BufferAttribute(uint type) => Type = type;
 	}
 	
 	[AttributeUsage(AttributeTargets.Parameter)]

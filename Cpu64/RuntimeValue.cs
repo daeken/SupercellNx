@@ -53,6 +53,10 @@ namespace Cpu64 {
 					Ilg.Call(typeof(UInt128).GetMethod(
 						"op_Multiply", BindingFlags.Public | BindingFlags.Static, null,
 						new[] { typeof(UInt128), typeof(UInt128) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Int128))
+					Ilg.Call(typeof(Int128).GetMethod(
+						"op_Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Int128), typeof(Int128) }, new ParameterModifier[0]));
 				else
 					Ilg.Multiply();
 			})));
@@ -64,6 +68,21 @@ namespace Cpu64 {
 		public static RuntimeValue<T> operator %(RuntimeValue<T> a, RuntimeValue<T> b) => a.IsSigned || b.IsSigned
 			? new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.Remainder())))
 			: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.UnsignedRemainder())));
+
+		public RuntimeValue<T> Sqrt() {
+			switch(this) {
+				case RuntimeValue<ushort> v: throw new NotImplementedException();
+				case RuntimeValue<float> v: return new RuntimeValue<T>(() => {
+					this.Emit();
+					Ilg.Call(typeof(MathF).GetMethod("Sqrt"));
+				});
+				case RuntimeValue<double> v: return new RuntimeValue<T>(() => {
+					this.Emit();
+					Ilg.Call(typeof(Math).GetMethod("Sqrt"));
+				});
+				default: throw new NotImplementedException();
+			}
+		}
 
 		public static RuntimeValue<T> operator &(RuntimeValue<T> a, RuntimeValue<T> b) =>
 			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.And())));
@@ -77,6 +96,9 @@ namespace Cpu64 {
 		public static RuntimeValue<T> operator ~(RuntimeValue<T> v) =>
 			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Not()));
 
+		public static RuntimeValue<T> operator -(RuntimeValue<T> v) =>
+			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Neg()));
+
 		public static RuntimeValue<uint> operator !(RuntimeValue<T> v) =>
 			Recompiler.Ternary(v, (RuntimeValue<uint>) 0U, 1U);
 
@@ -86,6 +108,10 @@ namespace Cpu64 {
 					Ilg.Call(typeof(UInt128).GetMethod(
 						"op_LeftShift", BindingFlags.Public | BindingFlags.Static, null,
 						new[] { typeof(UInt128), typeof(int) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Int128))
+					Ilg.Call(typeof(Int128).GetMethod(
+						"op_LeftShift", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Int128), typeof(int) }, new ParameterModifier[0]));
 				else
 					Ilg.ShiftLeft();
 			})));
@@ -100,12 +126,16 @@ namespace Cpu64 {
 		public RuntimeValue<T> ShiftLeft(RuntimeValue<ulong> b) => ShiftLeft(this, b);
 
 		public static RuntimeValue<T> ShiftRight(RuntimeValue<T> a, RuntimeValue<uint> b) =>
-			a.IsSigned || typeof(T) == typeof(UInt128)
+			a.IsSigned || typeof(T) == typeof(UInt128) || typeof(T) == typeof(Int128)
 				? new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
 					if(typeof(T) == typeof(UInt128))
 						Ilg.Call(typeof(UInt128).GetMethod(
 							"op_RightShift", BindingFlags.Public | BindingFlags.Static, null,
 							new[] { typeof(UInt128), typeof(int) }, new ParameterModifier[0]));
+					else if(typeof(T) == typeof(Int128))
+						Ilg.Call(typeof(Int128).GetMethod(
+							"op_RightShift", BindingFlags.Public | BindingFlags.Static, null,
+							new[] { typeof(Int128), typeof(int) }, new ParameterModifier[0]));
 					else
 						Ilg.ShiftRight();
 				})))
@@ -176,6 +206,9 @@ namespace Cpu64 {
 				if(typeof(T) == typeof(UInt128))
 					Ilg.Call(typeof(UInt128).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x =>
 						x.ReturnType == typeof(ulong)));
+				else if(typeof(T) == typeof(Int128))
+					Ilg.Call(typeof(Int128).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x =>
+						x.ReturnType == typeof(ulong)));
 				else
 					Ilg.Convert<ulong>();
 			});
@@ -206,6 +239,13 @@ namespace Cpu64 {
 					"op_Implicit", BindingFlags.Public | BindingFlags.Static, null, 
 					new[] { typeof(T) }, new ParameterModifier[0]));
 			});
+		public static implicit operator RuntimeValue<Int128>(RuntimeValue<T> value) => value is RuntimeValue<Int128> v ? v
+			: new RuntimeValue<Int128>(() => {
+				value.Emit();
+				Ilg.Call(typeof(Int128).GetMethod(
+					"op_Implicit", BindingFlags.Public | BindingFlags.Static, null, 
+					new[] { typeof(T) }, new ParameterModifier[0]));
+			});
 		public static implicit operator RuntimeValue<float>(RuntimeValue<T> value) => value is RuntimeValue<float> v ? v
 			: new RuntimeValue<float>(() => {
 				value.Emit();
@@ -217,6 +257,62 @@ namespace Cpu64 {
 				Ilg.Convert<double>();
 			});
 
+		public RuntimeValue<OutT> Bitcast<OutT>() {
+			var iv = Activator.CreateInstance<T>();
+			var ov = Activator.CreateInstance<OutT>();
+			switch(iv) {
+				case uint _:
+					switch(ov) {
+						case float _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<uint>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<float>();
+						});
+						default: throw new NotImplementedException();
+					}
+				case ulong _:
+					switch(ov) {
+						case double _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<ulong>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<double>();
+						});
+						default: throw new NotImplementedException();
+					}
+				case float _:
+					switch(ov) {
+						case uint _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<float>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<uint>();
+						});
+						default: throw new NotImplementedException();
+					}
+				case double _:
+					switch(ov) {
+						case ulong _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<double>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<ulong>();
+						});
+						default: throw new NotImplementedException();
+					}
+				default: throw new NotImplementedException();
+			}
+		}
+
 		public static implicit operator RuntimeValue<T>(T value) =>
 			new RuntimeValue<T>(value switch {
 				byte v => (Action) (() => Ilg.LoadConstant(v)), 
@@ -227,6 +323,8 @@ namespace Cpu64 {
 				short v => (Action) (() => Ilg.LoadConstant(v)), 
 				int v => (Action) (() => Ilg.LoadConstant(v)), 
 				long v => (Action) (() => Ilg.LoadConstant(v)), 
+				float v => (Action) (() => Ilg.LoadConstant(v)), 
+				double v => (Action) (() => Ilg.LoadConstant(v)), 
 				_ => throw new NotImplementedException($"Unknown literal cast type: {typeof(T).FullName}")
 			});
 
@@ -248,16 +346,20 @@ namespace Cpu64 {
 
 		public RuntimeValue<T> Value {
 			get => new RuntimeValue<T>(() => {
-				//Recompiler.LogLoad<T>(Address);
+				Recompiler.LogLoad<T>(Address);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				if(typeof(T) == typeof(Vector128<float>))
 					Recompiler.Ilg.Call(typeof(Sse).GetMethod("LoadVector128", new[] { typeof(float*) }));
 				else
 					Recompiler.Ilg.LoadIndirect<T>();
+				var local = Recompiler.Ilg.DeclareLocal<T>();
+				Recompiler.Ilg.Duplicate();
+				Recompiler.Ilg.StoreLocal(local);
+				Recompiler.LogLoaded(Address, new RuntimeValue<T>(() => Recompiler.Ilg.LoadLocal(local)));
 			});
 			set {
-				//Recompiler.LogStore(Address, value);
+				Recompiler.LogStore(Address, value);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				value.Emit();

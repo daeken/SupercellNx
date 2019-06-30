@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common;
 using PrettyPrinter;
 
@@ -47,6 +48,7 @@ namespace Generator {
 			["make-tmask"] = _ => new EInt(false, 64), 
 			["signext"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime), 
 			["cast"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime), 
+			["bitcast"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime), 
 			["gpr32"] = _ => new EInt(false, 32).AsRuntime(), 
 			["gpr-or-sp32"] = _ => new EInt(false, 32).AsRuntime(), 
 			["gpr64"] = _ => new EInt(false, 64).AsRuntime(), 
@@ -56,9 +58,12 @@ namespace Generator {
 			["!="] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["+"] = x => LogicalType(x[1].Type, x[2].Type), 
 			["add-with-carry-set-nzcv"] = x => x[1].Type, 
+			["fcmp"] = _ => EType.Unit, 
 			["-"] = x => LogicalType(x[1].Type, x[2].Type), 
+			["-!"] = x => x[1].Type, 
 			["*"] = x => LogicalType(x[1].Type, x[2].Type), 
 			["/"] = x => LogicalType(x[1].Type, x[2].Type), 
+			["sqrt"] = x => x[1].Type, 
 			["~"] = x => x[1].Type, 
 			["!"] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime), 
 			["|"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
@@ -66,15 +71,25 @@ namespace Generator {
 			["^"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["<<"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			[">>"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
-			[">>>"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
+			[">>>"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime),
+			[":"] = x =>
+				new EInt(false,
+					x.Skip(1).Select(y => y.Type is EInt(_, var width) ? width : throw new NotSupportedException())
+						.Sum()).AsRuntime(x.Skip(1).Any(y => y.Type.Runtime)),
+			["replicate"] = x => new EInt(false,
+				x[1].Type is EInt(_, var elemWidth) && x[2] is PInt(var count)
+					? elemWidth * (int) count
+					: throw new NotSupportedException()).AsRuntime(x[1].Type.Runtime),
 			["shift"] = x => x[1].Type, 
 			["count-leading-zeros"] = x => x[1].Type, 
 			["reverse-bits"] = x => x[1].Type, 
 			["vec"] = _ => EType.Vector.AsRuntime(), 
+			["vec-b"] = _ => new EFloat(8).AsRuntime(), 
+			["vec-h"] = _ => new EFloat(16).AsRuntime(), 
 			["vec-s"] = _ => new EFloat(32).AsRuntime(), 
 			["vec-d"] = _ => new EFloat(64).AsRuntime(), 
-			["vector-all"] = _ => EType.Vector, 
-			["vector-zero-top"] = _ => EType.Vector, 
+			["vector-all"] = _ => EType.Vector.AsRuntime(), 
+			["vector-zero-top"] = _ => EType.Vector.AsRuntime(), 
 		};
 	}
 }

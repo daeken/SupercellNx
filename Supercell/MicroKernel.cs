@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Common;
 using Cpu64;
+using MoreLinq.Extensions;
 using PrettyPrinter;
 using static Supercell.Globals;
 
@@ -37,29 +38,47 @@ namespace Supercell {
 			Handles.Remove(obj.Handle);
 		}
 		
+		readonly List<(ulong, ulong, string)> BinaryNames = new List<(ulong, ulong, string)>();
+		
 		public unsafe void LoadAndRun(string[] fns) {
-			(ulong Addr, Nxo Nxo) LoadBinary(ulong preferred, string path) {
+			(ulong Addr, ulong Size, Nxo Nxo) LoadBinary(ulong preferred, string path) {
 				$"Loading {path}".Debug();
 				var bin = Nxo.Load(File.OpenRead(path));
-			
-				var addr = Memory.AllocateAligned((ulong) bin.Data.Length + (bin.BssEnd - bin.BssStart + 0x2000), preferred);
-				if(Path.GetFileName(path) == "sdk" && addr != preferred) throw new Exception("Couldn't map binary to preferred addr");
-				$"Loaded at 0x{addr:X}".Debug();
+
+				var size = (ulong) bin.Data.Length + (bin.BssEnd - bin.BssStart + 0x2000);
+				var addr = Memory.AllocateAligned(size, preferred);
+				//if(Path.GetFileName(path) == firstBinary && addr != preferred) throw new Exception("Couldn't map binary to preferred addr");
+				$"Loaded at 0x{addr:X} - 0x{addr+size:X}".Debug();
 
 				var root = (byte*) addr;
 				foreach(var v in bin.Data)
 					*root++ = v;
 
-				return (addr, bin);
+				return (addr, size, bin);
 			}
-			
-			var binaries = fns.Where(x => !Path.GetFileName(x).Contains(".")).OrderBy(x => Path.GetFileName(x) != "sdk")
-				.Select((x, i) => (x, LoadBinary((ulong) (0x7100000000 + (i << 32)), x)))
-				.OrderBy(x => Path.GetFileName(x.Item1) != "rtld").Select(x => x.Item2).ToList();
+
+			var filemap = fns.Select(x => (Path.GetFileName(x), x)).ToDictionary();
+			var nfns = new List<string>();
+			if(filemap.ContainsKey("rtld"))
+				nfns.Add(filemap["rtld"]);
+			if(filemap.ContainsKey("main"))
+				nfns.Add(filemap["main"]);
+			nfns = nfns.Concat(filemap.Where(kv => kv.Key.StartsWith("subsdk") && !kv.Key.Contains('.'))
+				.Select(kv => kv.Value).OrderBy(x => x)).ToList();
+			if(filemap.ContainsKey("sdk"))
+				nfns.Add(filemap["sdk"]);
+			var binaries = nfns.Select((x, i) => LoadBinary(0x7100000000U + ((ulong) i << 32), x)).ToList();
+			binaries.ForEach((x, i) => BinaryNames.Add((x.Addr, x.Addr + x.Size, Path.GetFileName(nfns[i]))));
 			
 			Thread.CurrentThread.Run(binaries[0].Addr);
 		}
 
+		public string MapAddress(ulong addr) {
+			foreach(var (start, end, name) in BinaryNames)
+				if(start <= addr && end > addr)
+					return $"0x{addr:X} ({name} @ 0x{addr - start + 0x7100000000:X})";
+			return $"0x{addr:X}";
+		}
 		public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => Memory.Regions.Values;
 		public void Svc(int svc) => Service.Svc(svc);
 
@@ -98,8 +117,8 @@ namespace Supercell {
 				case (1, 0): value = 0xFFFFFFFF00000000UL; break;
 				case (2, 0): value = 0xbb0000000; break;
 				case (3, 0): value = 0x1000000000; break;
-				case (4, 0): value = 0xaa0000000; break;
-				case (5, 0): value = 0; break;
+				case (4, 0): value = Memory.HeapAddress; break;
+				case (5, 0): value = Memory.HeapSize; break;
 				case (6, 0): value = 0x400000; break;
 				case (7, 0): value = 0x10000; break;
 				case (12, 0): value = 0; break;

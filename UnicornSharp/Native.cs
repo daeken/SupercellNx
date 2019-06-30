@@ -118,15 +118,19 @@ namespace UnicornSharp {
 
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern Err uc_emu_stop(IntPtr uc);
-		
+
+		internal delegate void IUI(IntPtr a, uint b, IntPtr c);
+		internal delegate void IUUI(IntPtr a, ulong b, ulong c, IntPtr d);
+		internal delegate void IMUUUI(IntPtr a, MemType b, ulong c, ulong d, ulong e, IntPtr f);
+		internal delegate bool IMUUUIrB(IntPtr a, MemType b, ulong c, ulong d, ulong e, IntPtr f);
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, Action<IntPtr, uint, IntPtr> callback, IntPtr userdata, ulong begin, ulong end);
+		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, IUI callback, IntPtr userdata, ulong begin, ulong end);
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, Action<IntPtr, ulong, ulong, IntPtr> callback, IntPtr userdata, ulong begin, ulong end);
+		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, IUUI callback, IntPtr userdata, ulong begin, ulong end);
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, Action<IntPtr, MemType, ulong, ulong, ulong, IntPtr> callback, IntPtr userdata, ulong begin, ulong end);
+		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, IMUUUI callback, IntPtr userdata, ulong begin, ulong end);
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, Func<IntPtr, MemType, ulong, ulong, ulong, IntPtr, bool> callback, IntPtr userdata, ulong begin, ulong end);
+		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, IMUUUIrB callback, IntPtr userdata, ulong begin, ulong end);
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern Err uc_hook_add(IntPtr uc, out IntPtr hh, HookType type, Action callback, IntPtr userdata, ulong begin, ulong end, int insn);
 

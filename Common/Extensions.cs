@@ -55,5 +55,7 @@ namespace Common {
 			attr = (T) attrs[0];
 			return true;
 		}
+
+		public static string Repeat(this string str, int count) => string.Concat(Enumerable.Repeat(str, count));
 	}
 }

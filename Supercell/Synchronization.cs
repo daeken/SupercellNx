@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Common;
 
 namespace Supercell {
 	public abstract class Waitable : KObject {
@@ -79,6 +80,12 @@ namespace Supercell {
 			? sema
 			: Semaphores[addr] = new Semaphore(addr);
 
+		[Svc(0x18)]
+		public (uint, uint) WaitSynchronization(ulong _, ulong handlesAddr, uint numHandles, ulong timeout) {
+			$"WaitSynchronization".Debug();
+			return (0, 0);
+		}
+		
 		[Svc(0x1D)]
 		public uint SignalProcessWideKey(ulong semaAddr, uint target) {
 			var semaphore = EnsureSemaphore(semaAddr);
