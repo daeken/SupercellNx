@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using Common;
@@ -57,17 +58,22 @@ namespace Cpu64 {
 			};*/
 
 			var resetTicks = false;
-			var planZ = false;
+			var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
+			var count = 0UL;
 			Uc.OnCode += (_, addr, __) => {
 				if(resetTicks) {
 					resetTicks = false;
 					Uc[Arm64Register.X0] = 0;
 				} else if(*(uint*) addr == 0xD53BE020) resetTicks = true;
 
-				if(addr == 0x7200990864) planZ = true;
-				if(!planZ) return;
-				var regs = Enumerable.Range(0, 31).Select(i => $"X{i} == {this[i]:X}");
-				$"{Kernel.MapAddress(addr)}  {Uc[Arm64Register.NZCV] >> 28:X} {string.Join(' ', regs)} SP == {Uc[Arm64Register.SP]:X}".Debug();
+				//if(count++ > 10_000_000) return;
+				BW.Write(addr);
+				BW.Write((byte) (Uc[Arm64Register.NZCV] >> 28));
+				for(var i = 0; i < 31; ++i)
+					BW.Write(this[i]);
+				for(var i = 0; i < 32; ++i)
+					BW.Write(Uc[Arm64Register.D0 + i]);
+				BW.Write(Uc[Arm64Register.SP]);
 			};
 			
 			//Uc.AddCodeHook((_, __, ___) => throw new NotImplementedException(), 0x7200000024, 0x7200000030);
@@ -94,6 +100,8 @@ namespace Cpu64 {
 			} catch (Exception) {
 				$"{Uc[Arm64Register.PC]:X}".Debug();
 			}
+			BW.BaseStream.Close();
+			BW.Close();
 		}
 	}
 }

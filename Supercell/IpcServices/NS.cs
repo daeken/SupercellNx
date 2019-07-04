@@ -6,11 +6,11 @@ namespace Supercell.IpcServices.nn.aocsrv.detail {
 		[IpcCommand(0)]
 		void CountAddOnContentByApplicationId(ulong /* nn::ncm::ApplicationId */ unknown0, out uint unknown1) => throw new NotImplementedException();
 		[IpcCommand(1)]
-		void ListAddOnContentByApplicationId(uint unknown0, uint unknown1, ulong /* nn::ncm::ApplicationId */ unknown2, out uint unknown3, [Buffer(0x6)] Span<uint> unknown4) => throw new NotImplementedException();
+		void ListAddOnContentByApplicationId(uint unknown0, uint unknown1, ulong /* nn::ncm::ApplicationId */ unknown2, out uint unknown3, [Buffer(0x6)] Buffer<uint> unknown4) => throw new NotImplementedException();
 		[IpcCommand(2)]
 		void CountAddOnContent(ulong unknown0, [Pid] ulong pid, out uint unknown1) => throw new NotImplementedException();
 		[IpcCommand(3)]
-		void ListAddOnContent(uint unknown0, uint unknown1, ulong unknown2, [Pid] ulong pid, out uint unknown3, [Buffer(0x6)] Span<uint> unknown4) => throw new NotImplementedException();
+		void ListAddOnContent(uint unknown0, uint unknown1, ulong unknown2, [Pid] ulong pid, out uint unknown3, [Buffer(0x6)] Buffer<uint> unknown4) => throw new NotImplementedException();
 		[IpcCommand(4)]
 		void GetAddOnContentBaseIdByApplicationId(ulong /* nn::ncm::ApplicationId */ unknown0, out ulong unknown1) => throw new NotImplementedException();
 		[IpcCommand(5)]

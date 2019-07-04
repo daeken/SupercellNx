@@ -97,7 +97,7 @@ namespace Cpu64 {
 			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Not()));
 
 		public static RuntimeValue<T> operator -(RuntimeValue<T> v) =>
-			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Neg()));
+			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Negate()));
 
 		public static RuntimeValue<uint> operator !(RuntimeValue<T> v) =>
 			Recompiler.Ternary(v, (RuntimeValue<uint>) 0U, 1U);
@@ -227,11 +227,19 @@ namespace Cpu64 {
 				value.Emit();
 				Ilg.Convert<int>();
 			});
-		public static implicit operator RuntimeValue<long>(RuntimeValue<T> value) => value is RuntimeValue<long> v ? v
-			: new RuntimeValue<long>(() => {
-				value.Emit();
-				Ilg.Convert<long>();
-			});
+
+		public static implicit operator RuntimeValue<long>(RuntimeValue<T> value) => value is RuntimeValue<long> v
+			? v
+			: typeof(T) == typeof(Int128)
+				? new RuntimeValue<long>(() => {
+					value.Emit();
+					Ilg.Call(typeof(Int128).GetMethods(BindingFlags.Public | BindingFlags.Static)
+						.First(x => x.Name == "op_Explicit" && x.ReturnType == typeof(long)));
+				})
+				: new RuntimeValue<long>(() => {
+					value.Emit();
+					Ilg.Convert<long>();
+				});
 		public static implicit operator RuntimeValue<UInt128>(RuntimeValue<T> value) => value is RuntimeValue<UInt128> v ? v
 			: new RuntimeValue<UInt128>(() => {
 				value.Emit();
@@ -336,6 +344,24 @@ namespace Cpu64 {
 		
 		public RuntimeValue<ElementT> GetElement<ElementT>(int element) => throw new NotImplementedException();
 		public RuntimeValue<Vector128<VT>> AsVector<VT>() where VT : struct => throw new NotImplementedException();
+		
+		public RuntimeValue<T> Insert<ElementT>(uint index, RuntimeValue<ElementT> value) {
+			if(typeof(ElementT) == typeof(float))
+				return new RuntimeValue<T>(() => {
+					Emit();
+					Ilg.LoadConstant((int) index);
+					value.Emit();
+					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float)));
+				});
+			return new RuntimeValue<T>(() => {
+				Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(ElementT)));
+				Ilg.LoadConstant((int) index);
+				value.Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ElementT)));
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ElementT), typeof(float)));
+			});
+		}
 
 		public override bool Equals(object obj) => throw new NotImplementedException();
 		public override int GetHashCode() => throw new NotImplementedException();

@@ -146,8 +146,10 @@ namespace Supercell.IpcServices.nn.am.Service {
 		void SetScreenShotImageOrientation(uint unknown0) {}
 		[IpcCommand(20)]
 		void SetDesirableKeyboardLayout(uint unknown0) {}
+		
 		[IpcCommand(40)]
-		void CreateManagedDisplayLayer(out ulong unknown0) => throw new NotImplementedException();
+		void CreateManagedDisplayLayer(out ulong layerId) => layerId = 1;
+		
 		[IpcCommand(41)]
 		void IsSystemBufferSharingEnabled() {}
 		[IpcCommand(42)]
@@ -173,7 +175,7 @@ namespace Supercell.IpcServices.nn.am.Service {
 		[IpcCommand(67)]
 		void IsIlluminanceAvailable(out bool unknown0) => throw new NotImplementedException();
 		[IpcCommand(70)]
-		void ReportMultimediaError(uint unknown0, [Buffer(0x5)] Span<byte> unknown1) => throw new NotImplementedException();
+		void ReportMultimediaError(uint unknown0, [Buffer(0x5)] Buffer<byte> unknown1) => throw new NotImplementedException();
 		[IpcCommand(80)]
 		void SetWirelessPriorityMode(uint unknown0) {}
 	}

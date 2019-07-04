@@ -122,11 +122,11 @@ namespace Cpu64 {
 			unchecked {
 				var usum = operand1 + operand2 + carryIn;
 				var ssum = (int) operand1 + (int) operand2 + (int) carryIn;
-				var result = usum & 0x7FFFFFFFU;
-				var n = result >> 30;
+				var result = usum;
+				var n = result >> 31;
 				var z = result == 0 ? 1U : 0;
 				var c = (uint) ((((ulong) operand1 + operand2 + carryIn) >> 32) & 1);
-				var v = (int) (result << 1) >> 1 == ssum ? 0U : 1;
+				var v = (int) result == ssum ? 0U : 1;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
 				return usum;
@@ -137,11 +137,11 @@ namespace Cpu64 {
 			unchecked {
 				var usum = operand1 + operand2 + carryIn;
 				var ssum = (long) operand1 + (long) operand2 + (long) carryIn;
-				var result = (usum << 1) >> 1;
-				var n = result >> 62;
+				var result = usum;
+				var n = result >> 63;
 				var z = result == 0 ? 1U : 0;
 				var c = (uint) ((((UInt128) operand1 + operand2 + carryIn) >> 64) & 1);
-				var v = (long) (result << 1) >> 1 == ssum ? 0U : 1;
+				var v = (long) result == ssum ? 0U : 1;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
 				return usum;
@@ -228,5 +228,8 @@ namespace Cpu64 {
 				default: throw new NotImplementedException();
 			}
 		}
+
+		protected Vector128<float> Insert<ElementT>(Vector128<float> vec, uint index, ElementT value)
+			where ElementT : struct => vec.As<float, ElementT>().WithElement((int) index, value).As<ElementT, float>();
 	}
 }

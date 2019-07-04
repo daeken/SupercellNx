@@ -9,8 +9,11 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(0)]
 		void CreateService(ulong unknown0, [Pid] ulong pid, [Move] out IParentalControlService service) =>
 			service = new IParentalControlService();
+
 		[IpcCommand(1)]
-		void CreateServiceWithoutInitialize(ulong unknown0, [Pid] ulong pid, out object unknown1) => throw new NotImplementedException();
+		void CreateServiceWithoutInitialize(ulong unknown0, [Pid] ulong pid,
+			[Move] out IParentalControlService service) =>
+			service = new IParentalControlService();
 	}
 	
 	public class IParentalControlService : IpcInterface {
@@ -19,9 +22,9 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1001)]
 		void CheckFreeCommunicationPermission() {}
 		[IpcCommand(1002)]
-		void ConfirmLaunchApplicationPermission(bool unknown0, ulong /* nn::ncm::ApplicationId */ unknown1, [Buffer(0x9)] Span<sbyte> unknown2) => throw new NotImplementedException();
+		void ConfirmLaunchApplicationPermission(bool unknown0, ulong /* nn::ncm::ApplicationId */ unknown1, [Buffer(0x9)] Buffer<sbyte> unknown2) => throw new NotImplementedException();
 		[IpcCommand(1003)]
-		void ConfirmResumeApplicationPermission(bool unknown0, ulong /* nn::ncm::ApplicationId */ unknown1, [Buffer(0x9)] Span<sbyte> unknown2) => throw new NotImplementedException();
+		void ConfirmResumeApplicationPermission(bool unknown0, ulong /* nn::ncm::ApplicationId */ unknown1, [Buffer(0x9)] Buffer<sbyte> unknown2) => throw new NotImplementedException();
 		[IpcCommand(1004)]
 		void ConfirmSnsPostPermission() {}
 		[IpcCommand(1005)]
@@ -69,9 +72,9 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1043)]
 		void DeleteSettings() {}
 		[IpcCommand(1044)]
-		void GetFreeCommunicationApplicationList(uint unknown0, out uint unknown1, [Buffer(0x6)] Span<object /* nn::pctl::FreeCommunicationApplicationInfo */> unknown2) => throw new NotImplementedException();
+		void GetFreeCommunicationApplicationList(uint unknown0, out uint unknown1, [Buffer(0x6)] Buffer<byte /* nn::pctl::FreeCommunicationApplicationInfo */> unknown2) => throw new NotImplementedException();
 		[IpcCommand(1045)]
-		void UpdateFreeCommunicationApplicationList([Buffer(0x5)] Span<object /* nn::pctl::FreeCommunicationApplicationInfo */> unknown0) => throw new NotImplementedException();
+		void UpdateFreeCommunicationApplicationList([Buffer(0x5)] Buffer<byte /* nn::pctl::FreeCommunicationApplicationInfo */> unknown0) => throw new NotImplementedException();
 		[IpcCommand(1046)]
 		void DisableFeaturesForReset() {}
 		[IpcCommand(1047)]
@@ -87,21 +90,21 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1065)]
 		void IsStereoVisionPermitted(object unknown0, out object unknown1) => throw new NotImplementedException();
 		[IpcCommand(1201)]
-		void UnlockRestrictionTemporarily([Buffer(0x9)] Span<byte> unknown0) => throw new NotImplementedException();
+		void UnlockRestrictionTemporarily([Buffer(0x9)] Buffer<byte> unknown0) => throw new NotImplementedException();
 		[IpcCommand(1202)]
-		void UnlockSystemSettingsRestriction([Buffer(0x9)] Span<byte> unknown0) => throw new NotImplementedException();
+		void UnlockSystemSettingsRestriction([Buffer(0x9)] Buffer<byte> unknown0) => throw new NotImplementedException();
 		[IpcCommand(1203)]
-		void SetPinCode([Buffer(0x9)] Span<byte> unknown0) => throw new NotImplementedException();
+		void SetPinCode([Buffer(0x9)] Buffer<byte> unknown0) => throw new NotImplementedException();
 		[IpcCommand(1204)]
 		void GenerateInquiryCode([Bytes(0x20 /* 32 x 1 */)] out byte[] /* nn::pctl::InquiryCode */ unknown0) => throw new NotImplementedException();
 		[IpcCommand(1205)]
-		void CheckMasterKey([Bytes(0x20 /* 32 x 1 */)] byte[] /* nn::pctl::InquiryCode */ unknown0, [Buffer(0x9)] Span<byte> unknown1, out bool unknown2) => throw new NotImplementedException();
+		void CheckMasterKey([Bytes(0x20 /* 32 x 1 */)] byte[] /* nn::pctl::InquiryCode */ unknown0, [Buffer(0x9)] Buffer<byte> unknown1, out bool unknown2) => throw new NotImplementedException();
 		[IpcCommand(1206)]
 		void GetPinCodeLength(out uint unknown0) => throw new NotImplementedException();
 		[IpcCommand(1207)]
 		void GetPinCodeChangedEvent([Move] out KObject unknown0) => throw new NotImplementedException();
 		[IpcCommand(1208)]
-		void GetPinCode(out uint unknown0, [Buffer(0xa)] Span<byte> unknown1) => throw new NotImplementedException();
+		void GetPinCode(out uint unknown0, [Buffer(0xa)] Buffer<byte> unknown1) => throw new NotImplementedException();
 		[IpcCommand(1403)]
 		void IsPairingActive(out bool unknown0) => throw new NotImplementedException();
 		[IpcCommand(1406)]
@@ -109,7 +112,7 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1411)]
 		void GetPairingAccountInfo([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingInfoBase */ unknown0, [Bytes(0x80 /* 16 x 8 */)] out byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown1) => throw new NotImplementedException();
 		[IpcCommand(1421)]
-		void GetAccountNickname([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, out uint unknown1, [Buffer(0xa)] Span<byte> unknown2) => throw new NotImplementedException();
+		void GetAccountNickname([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, out uint unknown1, [Buffer(0xa)] Buffer<byte> unknown2) => throw new NotImplementedException();
 		[IpcCommand(1424)]
 		void GetAccountState([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, out uint unknown1) => throw new NotImplementedException();
 		[IpcCommand(1432)]
@@ -121,7 +124,7 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1453)]
 		void IsPlayTimerEnabled(out bool unknown0) => throw new NotImplementedException();
 		[IpcCommand(1454)]
-		void GetPlayTimerRemainingTime(out ulong /* nn::TimeSpanType */ unknown0) => throw new NotImplementedException();
+		void GetPlayTimerRemainingTime(out ulong /* nn::TimeMemoryType */ unknown0) => throw new NotImplementedException();
 		[IpcCommand(1455)]
 		void IsRestrictedByPlayTimer(out bool unknown0) => throw new NotImplementedException();
 		[IpcCommand(1456)]
@@ -165,11 +168,11 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(1951)]
 		void SetPlayTimerSettingsForDebug([Bytes(0x68 /* 52 x 2 */)] byte[] /* nn::pctl::PlayTimerSettings */ unknown0) => throw new NotImplementedException();
 		[IpcCommand(1952)]
-		void GetPlayTimerSpentTimeForTest(out ulong /* nn::TimeSpanType */ unknown0) => throw new NotImplementedException();
+		void GetPlayTimerSpentTimeForTest(out ulong /* nn::TimeMemoryType */ unknown0) => throw new NotImplementedException();
 		[IpcCommand(1953)]
 		void SetPlayTimerAlarmDisabledForDebug(bool unknown0) => throw new NotImplementedException();
 		[IpcCommand(2001)]
-		void RequestPairingAsync([Buffer(0x9)] Span<byte> unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, [Move] out KObject unknown2) => throw new NotImplementedException();
+		void RequestPairingAsync([Buffer(0x9)] Buffer<byte> unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, [Move] out KObject unknown2) => throw new NotImplementedException();
 		[IpcCommand(2002)]
 		void FinishRequestPairing([Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown0, [Bytes(0x80 /* 16 x 8 */)] out byte[] /* nn::pctl::detail::PairingInfoBase */ unknown1) => throw new NotImplementedException();
 		[IpcCommand(2003)]
@@ -185,13 +188,13 @@ namespace Supercell.IpcServices.nn.pctl.detail.ipc {
 		[IpcCommand(2008)]
 		void FinishUnlinkPairing(bool unknown0, [Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown1) => throw new NotImplementedException();
 		[IpcCommand(2009)]
-		void GetAccountMiiImageAsync([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, out uint unknown2, [Move] out KObject unknown3, [Buffer(0x6)] Span<byte> unknown4) => throw new NotImplementedException();
+		void GetAccountMiiImageAsync([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, out uint unknown2, [Move] out KObject unknown3, [Buffer(0x6)] Buffer<byte> unknown4) => throw new NotImplementedException();
 		[IpcCommand(2010)]
-		void FinishGetAccountMiiImage([Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown0, out uint unknown1, [Buffer(0x6)] Span<byte> unknown2) => throw new NotImplementedException();
+		void FinishGetAccountMiiImage([Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown0, out uint unknown1, [Buffer(0x6)] Buffer<byte> unknown2) => throw new NotImplementedException();
 		[IpcCommand(2011)]
-		void GetAccountMiiImageContentTypeAsync([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, out uint unknown2, [Move] out KObject unknown3, [Buffer(0xa)] Span<byte> unknown4) => throw new NotImplementedException();
+		void GetAccountMiiImageContentTypeAsync([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::pctl::detail::PairingAccountInfoBase */ unknown0, [Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown1, out uint unknown2, [Move] out KObject unknown3, [Buffer(0xa)] Buffer<byte> unknown4) => throw new NotImplementedException();
 		[IpcCommand(2012)]
-		void FinishGetAccountMiiImageContentType([Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown0, out uint unknown1, [Buffer(0xa)] Span<byte> unknown2) => throw new NotImplementedException();
+		void FinishGetAccountMiiImageContentType([Bytes(0x20 /* 8 x 4 */)] byte[] /* nn::pctl::detail::AsyncData */ unknown0, out uint unknown1, [Buffer(0xa)] Buffer<byte> unknown2) => throw new NotImplementedException();
 		[IpcCommand(2013)]
 		void SynchronizeParentalControlSettingsAsync([Bytes(0x20 /* 8 x 4 */)] out byte[] /* nn::pctl::detail::AsyncData */ unknown0, [Move] out KObject unknown1) => throw new NotImplementedException();
 		[IpcCommand(2014)]

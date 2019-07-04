@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Common;
 using Cpu64;
+using LibHac;
+using LibHac.Fs;
+using LibHac.Fs.NcaUtils;
 using MoreLinq.Extensions;
 using PrettyPrinter;
 using static Supercell.Globals;
@@ -39,11 +43,57 @@ namespace Supercell {
 		}
 		
 		readonly List<(ulong, ulong, string)> BinaryNames = new List<(ulong, ulong, string)>();
+
+		public IStorage RomFs;
 		
-		public unsafe void LoadAndRun(string[] fns) {
+		public unsafe void LoadAndRun(string fn) {
+			var pfs = new PartitionFileSystem(new FileStream(fn, FileMode.Open, FileAccess.Read).AsStorage());
+
+			var keyset = ExternalKeys.ReadKeyFile(
+				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch/prod.keys"));
+
+			foreach(var ticketEntry in pfs.EnumerateEntries("*.tik")) {
+				var ticket = new Ticket(pfs.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+				if(!keyset.TitleKeys.ContainsKey(ticket.RightsId))
+					keyset.TitleKeys[ticket.RightsId] = ticket.GetTitleKey(keyset);
+			}
+
+			Nca main = null, patch = null, control = null;
+			foreach(var ncaEntry in pfs.EnumerateEntries("*.nca")) {
+				var storage = pfs.OpenFile(ncaEntry.FullPath, OpenMode.Read).AsStorage();
+				var nca = new Nca(keyset, storage);
+				if(nca.Header.ContentType == ContentType.Program) {
+					if(nca.Header.GetFsHeader(Nca.GetSectionIndexFromType(NcaSectionType.Data, ContentType.Program))
+						.IsPatchSection())
+						patch = nca;
+					else
+						main = nca;
+				} else if(nca.Header.ContentType == ContentType.Control)
+					control = nca;
+			}
+
+			IStorage data = null;
+			IFileSystem code = null;
+			
+			Debug.Assert(main != null);
+
+			if(patch == null) {
+				if(main.CanOpenSection(NcaSectionType.Data))
+					data = main.OpenStorage(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+				if(main.CanOpenSection(NcaSectionType.Code))
+					code = main.OpenFileSystem(NcaSectionType.Code, IntegrityCheckLevel.ErrorOnInvalid);
+			} else {
+				if(patch.CanOpenSection(NcaSectionType.Data))
+					data = main.OpenStorageWithPatch(patch, NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
+				if(patch.CanOpenSection(NcaSectionType.Code))
+					code = main.OpenFileSystemWithPatch(patch, NcaSectionType.Code, IntegrityCheckLevel.ErrorOnInvalid);
+			}
+			
+			Debug.Assert(code != null && data != null);
+			
 			(ulong Addr, ulong Size, Nxo Nxo) LoadBinary(ulong preferred, string path) {
 				$"Loading {path}".Debug();
-				var bin = Nxo.Load(File.OpenRead(path));
+				var bin = Nxo.Load(code.OpenFile(path, OpenMode.Read).AsStream());
 
 				var size = (ulong) bin.Data.Length + (bin.BssEnd - bin.BssStart + 0x2000);
 				var addr = Memory.AllocateAligned(size, preferred);
@@ -57,7 +107,7 @@ namespace Supercell {
 				return (addr, size, bin);
 			}
 
-			var filemap = fns.Select(x => (Path.GetFileName(x), x)).ToDictionary();
+			var filemap = code.EnumerateEntries().Select(x => (Path.GetFileName(x.FullPath), x.FullPath)).ToDictionary();
 			var nfns = new List<string>();
 			if(filemap.ContainsKey("rtld"))
 				nfns.Add(filemap["rtld"]);
@@ -69,6 +119,8 @@ namespace Supercell {
 				nfns.Add(filemap["sdk"]);
 			var binaries = nfns.Select((x, i) => LoadBinary(0x7100000000U + ((ulong) i << 32), x)).ToList();
 			binaries.ForEach((x, i) => BinaryNames.Add((x.Addr, x.Addr + x.Size, Path.GetFileName(nfns[i]))));
+
+			RomFs = data;
 			
 			Thread.CurrentThread.Run(binaries[0].Addr);
 		}

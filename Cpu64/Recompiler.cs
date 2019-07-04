@@ -1,6 +1,8 @@
+//#define DUMPINSNS
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -61,20 +63,22 @@ namespace Cpu64 {
 			public RuntimeValue<byte> this[int reg] {
 				get => new RuntimeValue<float>(() => {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 4);
+					Ilg.LoadConstant(reg);
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(byte)));
-					Ilg.LoadConstant(reg & 15);
+					Ilg.LoadConstant(0);
 					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 4);
-					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 4);
-					Ilg.LoadElement<Vector128<float>>();
-					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(byte)));
-					Ilg.LoadConstant(reg & 15);
+					Ilg.LoadConstant(reg);
+
+					var local = Ilg.DeclareLocal<Vector128<byte>>();
+					Ilg.LoadLocalAddress(local);
+					Ilg.InitializeObject<Vector128<byte>>();
+					Ilg.LoadLocal(local);
+					
+					Ilg.LoadConstant(0);
 					value.Emit();
 					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte)));
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(byte), typeof(float)));
@@ -91,20 +95,22 @@ namespace Cpu64 {
 			public RuntimeValue<ushort> this[int reg] {
 				get => new RuntimeValue<float>(() => {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 3);
+					Ilg.LoadConstant(reg);
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(ushort)));
-					Ilg.LoadConstant(reg & 7);
+					Ilg.LoadConstant(0);
 					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 3);
-					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 3);
-					Ilg.LoadElement<Vector128<float>>();
-					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(ushort)));
-					Ilg.LoadConstant(reg & 7);
+					Ilg.LoadConstant(reg);
+					
+					var local = Ilg.DeclareLocal<Vector128<ushort>>();
+					Ilg.LoadLocalAddress(local);
+					Ilg.InitializeObject<Vector128<ushort>>();
+					Ilg.LoadLocal(local);
+					
+					Ilg.LoadConstant(0);
 					value.Emit();
 					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort)));
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ushort), typeof(float)));
@@ -121,18 +127,21 @@ namespace Cpu64 {
 			public RuntimeValue<float> this[int reg] {
 				get => new RuntimeValue<float>(() => {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 2);
+					Ilg.LoadConstant(reg);
 					Ilg.LoadElement<Vector128<float>>();
-					Ilg.LoadConstant(reg & 3);
+					Ilg.LoadConstant(0);
 					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 2);
-					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 2);
-					Ilg.LoadElement<Vector128<float>>();
-					Ilg.LoadConstant(reg & 3);
+					Ilg.LoadConstant(reg);
+
+					var local = Ilg.DeclareLocal<Vector128<float>>();
+					Ilg.LoadLocalAddress(local);
+					Ilg.InitializeObject<Vector128<float>>();
+					Ilg.LoadLocal(local);
+
+					Ilg.LoadConstant(0);
 					value.Emit();
 					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float)));
 					Ilg.StoreElement<Vector128<float>>();
@@ -148,20 +157,22 @@ namespace Cpu64 {
 			public RuntimeValue<double> this[int reg] {
 				get => new RuntimeValue<double>(() => {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 1);
+					Ilg.LoadConstant(reg);
 					Ilg.LoadElement<Vector128<float>>();
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(double)));
-					Ilg.LoadConstant(reg & 1);
+					Ilg.LoadConstant(0);
 					Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double)));
 				});
 				set {
 					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 1);
-					Recompiler.Field<Vector128<float>[]>("V").Emit();
-					Ilg.LoadConstant(reg >> 1);
-					Ilg.LoadElement<Vector128<float>>();
-					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(double)));
-					Ilg.LoadConstant(reg & 1);
+					Ilg.LoadConstant(reg);
+					
+					var local = Ilg.DeclareLocal<Vector128<double>>();
+					Ilg.LoadLocalAddress(local);
+					Ilg.InitializeObject<Vector128<double>>();
+					Ilg.LoadLocal(local);
+					
+					Ilg.LoadConstant(0);
 					value.Emit();
 					Ilg.Call(typeof(Vector128).GetMethod("WithElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double)));
 					Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double), typeof(float)));
@@ -251,84 +262,107 @@ namespace Cpu64 {
 		}
 		
 		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {
-			SP = sp;
-			while(true) {
-				var block = BranchToBlock ?? CacheManager.GetBlock(pc);
-				lock(block)
-					if(block.Func == null) {
-						$"Recompiling block at {Kernel.MapAddress(pc)}".Debug();
-						//DebugRegs();
-						BlockStart = pc;
-						BlockInstLabels = new Dictionary<ulong, Label>();
-						CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
-						
-						var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()), AssemblyBuilderAccess.Run);
-						var mb = ab.DefineDynamicModule("Block");
-						Tb = mb.DefineType("Block");
-						var mname = $"Block_{pc:X}";
-						Ilg = Emit<Action<Recompiler>>.BuildMethod(Tb, mname, MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+			try {
+				SP = sp;
+				while(true) {
+					var block = BranchToBlock ?? CacheManager.GetBlock(pc);
+					lock(block)
+						if(block.Func == null) {
+							//$"Recompiling block at {Kernel.MapAddress(pc)}".Debug();
+							//DebugRegs();
+							BlockStart = pc;
+							BlockInstLabels = new Dictionary<ulong, Label>();
+							CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
 
-						Branched = false;
-						while(!Branched) {
-							PC = CurPc = pc;
-							var inst = *(uint*) pc;
-							var asm = Disassemble(inst, pc);
-							if(asm == null) {
-								$"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}".Debug();
-								Environment.Exit(1);
+							var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
+								AssemblyBuilderAccess.Run);
+							var mb = ab.DefineDynamicModule("Block");
+							Tb = mb.DefineType("Block");
+							var mname = $"Block_{pc:X}";
+							Ilg = Emit<Action<Recompiler>>.BuildMethod(Tb, mname,
+								MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+
+							Branched = false;
+							while(!Branched) {
+								PC = CurPc = pc;
+								var inst = *(uint*) pc;
+								var asm = Disassemble(inst, pc);
+								if(asm == null) {
+									$"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}".Debug();
+									Environment.Exit(1);
+								}
+
+								var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
+								Ilg.MarkLabel(blabel);
+
+								Field<ulong>(nameof(PC), pc);
+#if DUMPINSNS
+								CallVoid(nameof(Test));
+#endif
+
+								LogIf(0, () => {
+									$"{Kernel.MapAddress(pc)}:  {asm}".Debug();
+									//CallVoid(nameof(DebugRegs));
+								});
+
+								if(!Recompile(inst, pc))
+									throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
+								pc += 4;
 							}
 
-							var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
-							Ilg.MarkLabel(blabel);
+							try {
+								Ilg.Return();
+							} catch(SigilVerificationException) { }
 
-							Field<ulong>(nameof(PC), pc);
-							CallVoid(nameof(Test));
+							//Ilg.Instructions().Debug();
+							Ilg.CreateMethod();
+							var type = Tb.CreateType();
+							foreach(var (key, value) in CurBlockRefs)
+								type.GetField(key).SetValue(null, value.Item2);
+							var func = type.GetMethod(mname).CreateDelegate<Action<Recompiler>>();
 
-							LogIf(0, () => {
-								$"{Kernel.MapAddress(pc)}:  {asm}".Debug();
-								//CallVoid(nameof(DebugRegs));
-							});
-
-							if(!Recompile(inst, pc))
-								throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
-							pc += 4;
+							block.End = pc;
+							block.Func = func;
+							pc = BlockStart;
 						}
-						try { Ilg.Return(); } catch (SigilVerificationException) { }
 
-						//Ilg.Instructions().Debug();
-						Ilg.CreateMethod();
-						var type = Tb.CreateType();
-						foreach(var (key, value) in CurBlockRefs)
-							type.GetField(key).SetValue(null, value.Item2);
-						var func = type.GetMethod(mname).CreateDelegate<Action<Recompiler>>();
+					LogIf(0, () => $"Running block at 0x{pc:X}".Debug());
 
-						block.End = pc;
-						block.Func = func;
-						pc = BlockStart;
-					}
-				LogIf(0, () => $"Running block at 0x{pc:X}".Debug());
-				
-				BranchToBlock = null;
-				BranchTo = unchecked((ulong) -1);
-				block.Func(this);
+					BranchToBlock = null;
+					BranchTo = unchecked((ulong) -1);
+					block.Func(this);
 
-				if(!one && (SP < 0x100000 || SP >> 48 != 0))
-					throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
-				PC = pc = BranchTo;
-				Debug.Assert((pc & 3) == 0);
-				if(one)
-					break;
+					if(!one && (SP < 0x100000 || SP >> 48 != 0))
+						throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
+					PC = pc = BranchTo;
+					Debug.Assert((pc & 3) == 0);
+					if(one)
+						break;
+				}
+			} catch(Exception) {
+#if DUMPINSNS
+				BW.BaseStream.Close();
+				BW.Close();
+#endif
+				throw;
 			}
 		}
 
-		bool PlanZ;
+#if DUMPINSNS
+		BinaryWriter BW = new BinaryWriter(File.OpenWrite("recinsns.bin"));
+		ulong Count;
 		public void Test() {
-			return;
-			if(PC == 0x7200990864) PlanZ = true;
-			if(!PlanZ) return;
-			var regs = Enumerable.Range(0, 31).Select(i => $"X{i} == {X[i]:X}");
-			$"{Kernel.MapAddress(PC)}  {NZCV >> 28:X} {string.Join(' ', regs)} SP == {SP:X}".Debug();
+			//if(Count++ < 131_200_000) return;
+			//if(Count++ > 10_000_000) return;
+			BW.Write(PC);
+			BW.Write((byte) (NZCV >> 28));
+			for(var i = 0; i < 31; ++i)
+				BW.Write(X[i]);
+			for(var i = 0; i < 32; ++i)
+				BW.Write(V[i].As<float, ulong>().GetElement(0));
+			BW.Write(SP);
 		}
+#endif
 
 		static void LoadConstant(object c) {
 			switch(c) {
@@ -502,12 +536,7 @@ namespace Cpu64 {
 
 		void LogIf(ulong addr, Action func) {
 			return;
-			//if(addr >= 0x7100B51004 && addr <= 0x71008D50D0)
-			if(
-				(PC >= 0x7100B4A07C + 0x7000 && PC <= 0x7100B4A20C + 0x7000) ||
-				(addr >= 0x7102465A50 + 0x7000 && addr <= 0x7102465A80 + 0x7000) ||
-				(PC >= 0x7100A39CC8 + 0x7000 && PC <= 0x7100A39DBC + 0x7000)
-			)
+			if(addr >= 0x1001FFF970 && addr <= 0x1001FFF9A0)
 				func();
 		}
 

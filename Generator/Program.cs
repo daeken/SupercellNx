@@ -168,16 +168,16 @@ namespace Generator {
 								return;
 							
 							case PName("vec-b"):
-								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 4)] = V[(int) (({GenerateExpression(sub[1])}) >> 4)].As<float, byte>().WithElement((int) (({GenerateExpression(sub[1])}) & 15), {GenerateExpression(list[2])}).As<byte, float>();";
+								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<byte>().WithElement(0, {GenerateExpression(list[2])}).As<byte, float>();";
 								return;
 							case PName("vec-h"):
-								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 3)] = V[(int) (({GenerateExpression(sub[1])}) >> 3)].As<float, ushort>().WithElement((int) (({GenerateExpression(sub[1])}) & 7), {GenerateExpression(list[2])}).As<ushort, float>();";
+								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<ushort>().WithElement(0, {GenerateExpression(list[2])}).As<ushort, float>();";
 								return;
 							case PName("vec-s"):
-								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 2)] = V[(int) (({GenerateExpression(sub[1])}) >> 2)].WithElement((int) (({GenerateExpression(sub[1])}) & 3), {GenerateExpression(list[2])});";
+								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<float>().WithElement(0, {GenerateExpression(list[2])});";
 								return;
 							case PName("vec-d"):
-								c += $"V[(int) (({GenerateExpression(sub[1])}) >> 1)] = V[(int) (({GenerateExpression(sub[1])}) >> 1)].As<float, double>().WithElement((int) (({GenerateExpression(sub[1])}) & 1), {GenerateExpression(list[2])}).As<double, float>();";
+								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<double>().WithElement(0, {GenerateExpression(list[2])}).As<double, float>();";
 								return;
 							
 							case PName("sr"):
@@ -433,10 +433,10 @@ namespace Generator {
 				case PName("gpr64"): return $"({GenerateExpression(list[1])}) == 31 ? 0UL : X[(int) {GenerateExpression(list[1])}]";
 				case PName("gpr-or-sp64"): return $"({GenerateExpression(list[1])}) == 31 ? SP : X[(int) {GenerateExpression(list[1])}]";
 				case PName("vec"): return $"V[{GenerateExpression(list[1])}]";
-				case PName("vec-b"): return $"V[{GenerateExpression(list[1])} >> 4].As<float, byte>().GetElement((int) {GenerateExpression(list[1])} & 15)";
-				case PName("vec-h"): return $"V[{GenerateExpression(list[1])} >> 3].As<float, ushort>().GetElement((int) {GenerateExpression(list[1])} & 7)";
-				case PName("vec-s"): return $"V[{GenerateExpression(list[1])} >> 2].GetElement((int) {GenerateExpression(list[1])} & 3)";
-				case PName("vec-d"): return $"V[{GenerateExpression(list[1])} >> 1].As<float, double>().GetElement((int) {GenerateExpression(list[1])} & 1)";
+				case PName("vec-b"): return $"V[{GenerateExpression(list[1])}].As<float, byte>().GetElement(0)";
+				case PName("vec-h"): return $"V[{GenerateExpression(list[1])}].As<float, ushort>().GetElement(0)";
+				case PName("vec-s"): return $"V[{GenerateExpression(list[1])}].GetElement(0)";
+				case PName("vec-d"): return $"V[{GenerateExpression(list[1])}].As<float, double>().GetElement(0)";
 				case PName("make-tmask"):
 					return $"MakeTMask({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[5])}, {GenerateExpression(list[4])})";
 				case PName("make-wmask"):
@@ -461,6 +461,7 @@ namespace Generator {
 				
 				case PName("vector-all"): return $"Vector128.Create({GenerateExpression(list[1])}).As<{GenerateType(list[1].Type)}, float>()";
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
+				case PName("vector-insert"): return $"V[(int) ({GenerateExpression(list[1])})] = Insert(V[(int) ({GenerateExpression(list[1])})], {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");
@@ -566,6 +567,9 @@ namespace Generator {
 				case PName("vector-all"):
 					return $"(({GenerateType(list[1].Type.AsRuntime())}) ({GenerateExpression(list[1])})).CreateVector()";
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
+				
+				case PName("vector-insert"):
+					return $"VR[(int) ({GenerateExpression(list[1])})] = VR[(int) ({GenerateExpression(list[1])})].Insert({GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");

@@ -389,6 +389,46 @@ namespace Cpu64 {
 				}
 				return $"fcvt {r1}{rd}, {r2}{rn}";
 			}
+			/* FCVTZS-scalar-integer */
+			if((inst & 0x7F3FFC00U) == 0x1E380000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+				var r1 = "";
+				var r2 = "";
+				switch(st) {
+					case 0x3:
+						r1 = "W";
+						r2 = "H";
+						break;
+					case 0x7:
+						r1 = "X";
+						r2 = "H";
+						break;
+					case 0x0:
+						r1 = "W";
+						r2 = "S";
+						break;
+					case 0x4:
+						r1 = "X";
+						r2 = "S";
+						break;
+					case 0x1:
+						r1 = "W";
+						r2 = "D";
+						break;
+					case 0x5:
+						r1 = "X";
+						r2 = "D";
+						break;
+					default:
+						throw new NotImplementedException();
+						break;
+				}
+				return $"fcvtzs {r1}{rd}, {r2}{rn}";
+			}
 			/* FDIV-scalar */
 			if((inst & 0xFF20FC00U) == 0x1E201800U) {
 				var type = (inst >> 22) & 0x3U;
@@ -530,6 +570,14 @@ namespace Cpu64 {
 				}
 				return $"ins V{rd}.{ts}[0x{index:X}], {r}{rn}";
 			}
+			/* LDAR */
+			if((inst & 0xBFFFFC00U) == 0x88DFFC00U) {
+				var size = (inst >> 30) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"ldar {r}{rt}, [X{rn}]";
+			}
 			/* LDARB */
 			if((inst & 0xFFFFFC00U) == 0x08DFFC00U) {
 				var rn = (inst >> 5) & 0x1FU;
@@ -638,13 +686,29 @@ namespace Cpu64 {
 			if((inst & 0x3F400000U) == 0x3D400000U) {
 				var size = (inst >> 30) & 0x3U;
 				var ropc = (inst >> 23) & 0x1U;
-				var imm = (inst >> 10) & 0xFFFU;
+				var rawimm = (inst >> 10) & 0xFFFU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var opc = (byte) ((byte) (((byte) (((byte) ((byte) ((byte) (0x1)))) << 0)) | ((byte) (((byte) (ropc)) << 1))));
 				var m = (byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 2))));
 				var r = (string) ((m) switch { 0x1 => "B", 0x5 => "H", 0x9 => "S", 0xD => "D", _ => "Q" });
-				return $"LDR {r}{rt}, [X{rn}, #0x{imm:X}]";
+				var imm = (uint) (((uint) ((uint) (rawimm))) << (int) ((long) ((m) switch { 0x1 => 0x0, 0x5 => 0x1, 0x9 => 0x2, 0xD => 0x3, _ => 0x4 })));
+				return $"ldr {r}{rt}, [X{rn}, #0x{imm:X}]";
+			}
+			/* LDR-simd-register */
+			if((inst & 0x3F600C00U) == 0x3C600800U) {
+				var size = (inst >> 30) & 0x3U;
+				var opc = (inst >> 23) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var option = (inst >> 13) & 0x7U;
+				var scale = (inst >> 12) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r1 = (string) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
+				var r2 = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
+				var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
+				return $"ldr {r1}{rt}, [X{rn}, {r2}{rm}, {extend} 0x{amount:X}]";
 			}
 			/* LDR-register */
 			if((inst & 0xBFE00C00U) == 0xB8600800U) {
@@ -723,11 +787,11 @@ namespace Cpu64 {
 			}
 			/* LDRSB-immediate-unsigned-offset */
 			if((inst & 0xFF800000U) == 0x39800000U) {
-				var size = (inst >> 22) & 0x1U;
+				var opc = (inst >> 22) & 0x1U;
 				var imm = (inst >> 10) & 0xFFFU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"ldrsb {r}{rt}, [X{rn}, #0x{imm:X}]";
 			}
 			/* LDRSH-immediate-postindex */
@@ -749,6 +813,14 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var imm = (ushort) ((rawimm) << (int) (0x1));
 				return $"ldrsh {r}{rt}, [X{rn}, #0x{imm:X}]";
+			}
+			/* LDRSW-immediate-preindex */
+			if((inst & 0xFFE00C00U) == 0xB8800C00U) {
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				return $"ldrsw X{rt}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]!";
 			}
 			/* LDRSW-immediate-unsigned-offset */
 			if((inst & 0xFFC00000U) == 0xB9800000U) {
@@ -1393,7 +1465,47 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"ubfm {r}{rd}, {r}{rn}, #{immr}, #{imms}";
 			}
-			/* UCVTF */
+			/* UCVTF-scalar-integer */
+			if((inst & 0x7F3FFC00U) == 0x1E230000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+				var r1 = "";
+				var r2 = "";
+				switch(st) {
+					case 0x3:
+						r1 = "H";
+						r2 = "W";
+						break;
+					case 0x0:
+						r1 = "S";
+						r2 = "W";
+						break;
+					case 0x1:
+						r1 = "D";
+						r2 = "W";
+						break;
+					case 0x7:
+						r1 = "H";
+						r2 = "X";
+						break;
+					case 0x4:
+						r1 = "S";
+						r2 = "X";
+						break;
+					case 0x5:
+						r1 = "D";
+						r2 = "X";
+						break;
+					default:
+						throw new NotImplementedException();
+						break;
+				}
+				return $"ucvtf {r1}{rd}, {r2}{rn}";
+			}
+			/* UCVTF-vector-integer */
 			if((inst & 0xFFBFFC00U) == 0x7E21D800U) {
 				var size = (inst >> 22) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;

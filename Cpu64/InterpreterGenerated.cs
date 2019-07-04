@@ -587,13 +587,13 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
 						case 0x3:
-							V[(int) ((rd) >> 3)] = V[(int) ((rd) >> 3)].As<float, ushort>().WithElement((int) ((rd) & 7), (ushort) ((ushort) ((float) ((float) ((float) (V[rn >> 3].As<float, ushort>().GetElement((int) rn & 7))) + (float) ((float) (V[rm >> 3].As<float, ushort>().GetElement((int) rm & 7))))))).As<ushort, float>();
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((float) ((float) ((float) (V[rn].As<float, ushort>().GetElement(0))) + (float) ((float) (V[rm].As<float, ushort>().GetElement(0))))))).As<ushort, float>();
 							break;
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((float) (V[rn >> 2].GetElement((int) rn & 3))) + (float) ((float) (V[rm >> 2].GetElement((int) rm & 3)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[rn].GetElement(0))) + (float) ((float) (V[rm].GetElement(0)))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))) + (double) ((double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((double) (V[rn].As<float, double>().GetElement(0))) + (double) ((double) (V[rm].As<float, double>().GetElement(0))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -614,10 +614,10 @@ namespace Cpu64 {
 					if(((byte) (((byte) ((byte) ((byte) ((ulong) (cond) & (ulong) (0x1))) & (byte) ((byte) (((cond) != (0xF)) ? 1U : 0U))) != 0) ? ((byte) ((result) != 0 ? 0U : 1U)) : (result))) != 0) {
 						switch(type) {
 							case 0x0:
-								FloatCompare((float) (V[rn >> 2].GetElement((int) rn & 3)), (float) (V[rm >> 2].GetElement((int) rm & 3)));
+								FloatCompare((float) (V[rn].GetElement(0)), (float) (V[rm].GetElement(0)));
 								break;
 							case 0x1:
-								FloatCompare((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1)), (double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1)));
+								FloatCompare((double) (V[rn].As<float, double>().GetElement(0)), (double) (V[rm].As<float, double>().GetElement(0)));
 								break;
 							default:
 								throw new NotImplementedException();
@@ -638,10 +638,10 @@ namespace Cpu64 {
 					var zero = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("/0") : (""));
 					switch(type) {
 						case 0x0:
-							FloatCompare((float) (V[rn >> 2].GetElement((int) rn & 3)), (float) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ((float) ((float) (0x0))) : ((float) (V[rm >> 2].GetElement((int) rm & 3)))));
+							FloatCompare((float) (V[rn].GetElement(0)), (float) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ((float) ((float) (0x0))) : ((float) (V[rm].GetElement(0)))));
 							break;
 						case 0x1:
-							FloatCompare((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1)), (double) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ((double) ((double) (0x0))) : ((double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1)))));
+							FloatCompare((double) (V[rn].As<float, double>().GetElement(0)), (double) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ((double) ((double) (0x0))) : ((double) (V[rm].As<float, double>().GetElement(0)))));
 							break;
 						default:
 							throw new NotImplementedException();
@@ -662,10 +662,10 @@ namespace Cpu64 {
 					if(((byte) (((byte) ((byte) ((byte) ((ulong) (cond) & (ulong) (0x1))) & (byte) ((byte) (((cond) != (0xF)) ? 1U : 0U))) != 0) ? ((byte) ((result) != 0 ? 0U : 1U)) : (result))) != 0) {
 						switch(type) {
 							case 0x0:
-								V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) (V[rn >> 2].GetElement((int) rn & 3)));
+								V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (V[rn].GetElement(0)));
 								break;
 							case 0x1:
-								V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))).As<double, float>();
+								V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (V[rn].As<float, double>().GetElement(0))).As<double, float>();
 								break;
 							default:
 								throw new NotImplementedException();
@@ -674,10 +674,10 @@ namespace Cpu64 {
 					} else {
 						switch(type) {
 							case 0x0:
-								V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) (V[rm >> 2].GetElement((int) rm & 3)));
+								V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (V[rm].GetElement(0)));
 								break;
 							case 0x1:
-								V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1))).As<double, float>();
+								V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (V[rm].As<float, double>().GetElement(0))).As<double, float>();
 								break;
 							default:
 								throw new NotImplementedException();
@@ -726,22 +726,79 @@ namespace Cpu64 {
 					}
 					switch(tf) {
 						case 0xC:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((float) (V[rn >> 3].As<float, ushort>().GetElement((int) rn & 7)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[rn].As<float, ushort>().GetElement(0)))));
 							break;
 						case 0xD:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((float) (V[rn >> 3].As<float, ushort>().GetElement((int) rn & 7))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((float) (V[rn].As<float, ushort>().GetElement(0))))).As<double, float>();
 							break;
 						case 0x3:
-							V[(int) ((rd) >> 3)] = V[(int) ((rd) >> 3)].As<float, ushort>().WithElement((int) ((rd) & 7), (ushort) ((ushort) ((float) (V[rn >> 2].GetElement((int) rn & 3))))).As<ushort, float>();
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((float) (V[rn].GetElement(0))))).As<ushort, float>();
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((float) (V[rn >> 2].GetElement((int) rn & 3))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((float) (V[rn].GetElement(0))))).As<double, float>();
 							break;
 						case 0x7:
-							V[(int) ((rd) >> 3)] = V[(int) ((rd) >> 3)].As<float, ushort>().WithElement((int) ((rd) & 7), (ushort) ((ushort) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))))).As<ushort, float>();
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((double) (V[rn].As<float, double>().GetElement(0))))).As<ushort, float>();
 							break;
 						case 0x4:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((double) (V[rn].As<float, double>().GetElement(0)))));
+							break;
+						default:
+							throw new NotImplementedException();
+							break;
+					}
+					return true;
+				}
+				/* FCVTZS-scalar-integer */
+				if((inst & 0x7F3FFC00U) == 0x1E380000U) {
+					var size = (inst >> 31) & 0x1U;
+					var type = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+					var r1 = "";
+					var r2 = "";
+					switch(st) {
+						case 0x3:
+							r1 = "W";
+							r2 = "H";
+							break;
+						case 0x7:
+							r1 = "X";
+							r2 = "H";
+							break;
+						case 0x0:
+							r1 = "W";
+							r2 = "S";
+							break;
+						case 0x4:
+							r1 = "X";
+							r2 = "S";
+							break;
+						case 0x1:
+							r1 = "W";
+							r2 = "D";
+							break;
+						case 0x5:
+							r1 = "X";
+							r2 = "D";
+							break;
+						default:
+							throw new NotImplementedException();
+							break;
+					}
+					switch(st) {
+						case 0x0:
+							W[(int) rd] = (uint) ((uint) ((uint) ((int) ((int) ((float) (V[rn].GetElement(0)))))));
+							break;
+						case 0x4:
+							X[(int) rd] = (ulong) ((ulong) ((long) ((long) ((float) (V[rn].GetElement(0))))));
+							break;
+						case 0x1:
+							W[(int) rd] = (uint) ((uint) ((uint) ((int) ((int) ((double) (V[rn].As<float, double>().GetElement(0)))))));
+							break;
+						case 0x5:
+							X[(int) rd] = (ulong) ((ulong) ((long) ((long) ((double) (V[rn].As<float, double>().GetElement(0))))));
 							break;
 						default:
 							throw new NotImplementedException();
@@ -761,10 +818,10 @@ namespace Cpu64 {
 							throw new NotImplementedException();
 							break;
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((float) (V[rn >> 2].GetElement((int) rn & 3))) / (float) ((float) (V[rm >> 2].GetElement((int) rm & 3)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[rn].GetElement(0))) / (float) ((float) (V[rm].GetElement(0)))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))) / (double) ((double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((double) (V[rn].As<float, double>().GetElement(0))) / (double) ((double) (V[rm].As<float, double>().GetElement(0))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -833,34 +890,34 @@ namespace Cpu64 {
 					var index2 = (string) (((byte) (((r2) == ("V")) ? 1U : 0U) != 0) ? (".D[1]") : (""));
 					switch(tf) {
 						case 0x66:
-							W[(int) rd] = (uint) ((uint) ((uint) ((float) (V[rn >> 3].As<float, ushort>().GetElement((int) rn & 7)))));
+							W[(int) rd] = (uint) ((uint) ((uint) ((float) (V[rn].As<float, ushort>().GetElement(0)))));
 							break;
 						case 0xE6:
-							X[(int) rd] = (ulong) ((ulong) ((float) (V[rn >> 3].As<float, ushort>().GetElement((int) rn & 7))));
+							X[(int) rd] = (ulong) ((ulong) ((float) (V[rn].As<float, ushort>().GetElement(0))));
 							break;
 						case 0x67:
-							V[(int) ((rd) >> 3)] = V[(int) ((rd) >> 3)].As<float, ushort>().WithElement((int) ((rd) & 7), (ushort) ((ushort) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))).As<ushort, float>();
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))).As<ushort, float>();
 							break;
 						case 0x7:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) (Bitcast<uint, float>((uint) ((rn) == 31 ? 0U : W[(int) rn]))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (Bitcast<uint, float>((uint) ((rn) == 31 ? 0U : W[(int) rn]))));
 							break;
 						case 0x6:
-							W[(int) rd] = (uint) ((uint) (Bitcast<float, uint>((float) (V[rn >> 2].GetElement((int) rn & 3)))));
+							W[(int) rd] = (uint) ((uint) (Bitcast<float, uint>((float) (V[rn].GetElement(0)))));
 							break;
 						case 0xE7:
-							V[(int) ((rd) >> 3)] = V[(int) ((rd) >> 3)].As<float, ushort>().WithElement((int) ((rd) & 7), (ushort) ((ushort) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<ushort, float>();
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<ushort, float>();
 							break;
 						case 0xA7:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) (Bitcast<ulong, double>((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (Bitcast<ulong, double>((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<double, float>();
 							break;
 						case 0xA6:
-							X[(int) rd] = (ulong) (Bitcast<double, ulong>((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))));
+							X[(int) rd] = (ulong) (Bitcast<double, ulong>((double) (V[rn].As<float, double>().GetElement(0))));
 							break;
 						case 0xCE:
-							X[(int) rd] = (ulong) (Bitcast<double, ulong>((double) (V[(byte) ((ulong) ((byte) ((rn) << (int) (0x1))) | (ulong) (0x1)) >> 1].As<float, double>().GetElement((int) (byte) ((ulong) ((byte) ((rn) << (int) (0x1))) | (ulong) (0x1)) & 1))));
+							X[(int) rd] = (ulong) (Bitcast<double, ulong>((double) (V[(byte) ((ulong) ((byte) ((rn) << (int) (0x1))) | (ulong) (0x1))].As<float, double>().GetElement(0))));
 							break;
 						case 0xCF:
-							V[(int) (((byte) ((ulong) ((byte) ((rd) << (int) (0x1))) | (ulong) (0x1))) >> 1)] = V[(int) (((byte) ((ulong) ((byte) ((rd) << (int) (0x1))) | (ulong) (0x1))) >> 1)].As<float, double>().WithElement((int) (((byte) ((ulong) ((byte) ((rd) << (int) (0x1))) | (ulong) (0x1))) & 1), (double) (Bitcast<ulong, double>((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<double, float>();
+							V[(int) ((byte) ((ulong) ((byte) ((rd) << (int) (0x1))) | (ulong) (0x1)))] = new Vector128<double>().WithElement(0, (double) (Bitcast<ulong, double>((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -877,10 +934,10 @@ namespace Cpu64 {
 					var sv = (float) (Bitcast<uint, float>((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((byte) ((byte) (0x0)))) << 0)) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 1)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 2)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 3)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 4)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 5)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 6)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 7)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 8)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 9)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 10)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 11)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 12)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 13)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 14)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 15)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 16)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 17)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 18)))))) << 0)) | ((uint) (((uint) ((byte) ((byte) ((byte) ((ulong) (imm) & (ulong) (0xF)))))) << 19)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x4))) & (ulong) (0x3)))))) << 23)))) | ((uint) (((uint) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 4)))))) << 25)))) | ((uint) (((uint) ((byte) (((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1))) != 0 ? 0U : 1U))) << 30)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 31))))));
 					switch(type) {
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), sv);
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, sv);
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) (Bitcast<ulong, double>((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 1)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 2)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 3)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 4)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 5)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 6)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 7)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 8)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 9)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 10)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 11)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 12)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 13)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 14)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 15)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 16)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 17)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 18)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 19)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 20)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 21)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 22)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 23)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 24)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 25)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 26)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 27)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 28)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 29)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 30)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 31)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 32)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 33)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 34)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 35)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 36)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 37)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 38)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 39)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 40)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 41)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 42)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 43)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 44)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 45)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 46)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 47)))))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((ulong) (imm) & (ulong) (0xF)))))) << 48)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x4))) & (ulong) (0x3)))))) << 52)))) | ((ulong) (((ulong) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 4)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 5)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 6)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 7)))))) << 54)))) | ((ulong) (((ulong) ((byte) (((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1))) != 0 ? 0U : 1U))) << 62)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 63))))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (Bitcast<ulong, double>((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 1)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 2)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 3)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 4)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 5)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 6)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 7)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 8)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 9)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 10)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 11)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 12)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 13)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 14)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 15)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 16)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 17)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 18)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 19)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 20)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 21)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 22)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 23)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 24)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 25)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 26)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 27)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 28)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 29)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 30)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 31)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 32)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 33)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 34)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 35)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 36)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 37)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 38)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 39)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 40)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 41)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 42)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 43)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 44)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 45)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 46)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 47)))))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((ulong) (imm) & (ulong) (0xF)))))) << 48)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x4))) & (ulong) (0x3)))))) << 52)))) | ((ulong) (((ulong) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 4)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 5)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 6)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 7)))))) << 54)))) | ((ulong) (((ulong) ((byte) (((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1))) != 0 ? 0U : 1U))) << 62)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 63))))))).As<double, float>();
 							break;
 					}
 					return true;
@@ -897,10 +954,10 @@ namespace Cpu64 {
 							throw new NotImplementedException();
 							break;
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((float) (V[rn >> 2].GetElement((int) rn & 3))) * (float) ((float) (V[rm >> 2].GetElement((int) rm & 3)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[rn].GetElement(0))) * (float) ((float) (V[rm].GetElement(0)))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))) * (double) ((double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((double) (V[rn].As<float, double>().GetElement(0))) * (double) ((double) (V[rm].As<float, double>().GetElement(0))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -916,10 +973,10 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) (-((float) (V[rn >> 2].GetElement((int) rn & 3)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (-((float) (V[rn].GetElement(0)))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) (-((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (-((double) (V[rn].As<float, double>().GetElement(0))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -938,10 +995,10 @@ namespace Cpu64 {
 							throw new NotImplementedException();
 							break;
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) Math.Sqrt((double) ((float) (V[rn >> 2].GetElement((int) rn & 3))))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) Math.Sqrt((double) ((float) (V[rn].GetElement(0))))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) Math.Sqrt((double) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1)))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) Math.Sqrt((double) ((double) (V[rn].As<float, double>().GetElement(0)))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -961,10 +1018,10 @@ namespace Cpu64 {
 							throw new NotImplementedException();
 							break;
 						case 0x0:
-							V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((float) (V[rn >> 2].GetElement((int) rn & 3))) - (float) ((float) (V[rm >> 2].GetElement((int) rm & 3)))));
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[rn].GetElement(0))) - (float) ((float) (V[rm].GetElement(0)))));
 							break;
 						case 0x1:
-							V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))) - (double) ((double) (V[rm >> 1].As<float, double>().GetElement((int) rm & 1))))).As<double, float>();
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((double) (V[rn].As<float, double>().GetElement(0))) - (double) ((double) (V[rm].As<float, double>().GetElement(0))))).As<double, float>();
 							break;
 						default:
 							throw new NotImplementedException();
@@ -999,17 +1056,32 @@ namespace Cpu64 {
 						}
 					}
 					if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U)) != 0) {
-						V[(int) ((index) >> 4)] = V[(int) ((index) >> 4)].As<float, byte>().WithElement((int) ((index) & 15), (byte) ((byte) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<byte, float>();
+						V[(int) (rd)] = Insert(V[(int) (rd)], index, (byte) ((byte) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn]))));
 					} else {
 						if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x2))) == (0x2)) ? 1U : 0U)) != 0) {
-							V[(int) ((index) >> 3)] = V[(int) ((index) >> 3)].As<float, ushort>().WithElement((int) ((index) & 7), (ushort) ((ushort) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<ushort, float>();
+							V[(int) (rd)] = Insert(V[(int) (rd)], index, (ushort) ((ushort) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn]))));
 						} else {
 							if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x4))) == (0x4)) ? 1U : 0U)) != 0) {
-								V[(int) ((index) >> 2)] = V[(int) ((index) >> 2)].WithElement((int) ((index) & 3), (float) ((float) ((int) ((int) ((uint) ((rn) == 31 ? 0U : W[(int) rn]))))));
+								V[(int) (rd)] = Insert(V[(int) (rd)], index, (float) (Bitcast<uint, float>((uint) ((rn) == 31 ? 0U : W[(int) rn]))));
 							} else {
-								V[(int) ((index) >> 1)] = V[(int) ((index) >> 1)].As<float, double>().WithElement((int) ((index) & 1), (double) ((double) ((long) ((long) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))))).As<double, float>();
+								V[(int) (rd)] = Insert(V[(int) (rd)], index, (double) (Bitcast<ulong, double>((ulong) ((rn) == 31 ? 0UL : X[(int) rn]))));
 							}
 						}
+					}
+					return true;
+				}
+				/* LDAR */
+				if((inst & 0xBFFFFC00U) == 0x88DFFC00U) {
+					var size = (inst >> 30) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+						W[(int) rt] = (uint) ((uint) (*(uint*) (address)));
+					} else {
+						var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+						X[(int) rt] = (ulong) (*(ulong*) (address));
 					}
 					return true;
 				}
@@ -1096,12 +1168,12 @@ namespace Cpu64 {
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
 					switch(opc) {
 						case 0x0:
-							V[(int) ((rt1) >> 2)] = V[(int) ((rt1) >> 2)].WithElement((int) ((rt1) & 3), (float) (*(float*) (address)));
-							V[(int) ((rt2) >> 2)] = V[(int) ((rt2) >> 2)].WithElement((int) ((rt2) & 3), (float) (*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4)))));
+							V[(int) (rt1)] = new Vector128<float>().WithElement(0, (float) (*(float*) (address)));
+							V[(int) (rt2)] = new Vector128<float>().WithElement(0, (float) (*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4)))));
 							break;
 						case 0x1:
-							V[(int) ((rt1) >> 1)] = V[(int) ((rt1) >> 1)].As<float, double>().WithElement((int) ((rt1) & 1), (double) (*(double*) (address))).As<double, float>();
-							V[(int) ((rt2) >> 1)] = V[(int) ((rt2) >> 1)].As<float, double>().WithElement((int) ((rt2) & 1), (double) (*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))))).As<double, float>();
+							V[(int) (rt1)] = new Vector128<double>().WithElement(0, (double) (*(double*) (address))).As<double, float>();
+							V[(int) (rt2)] = new Vector128<double>().WithElement(0, (double) (*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))))).As<double, float>();
 							break;
 						default:
 							V[rt1] = (Vector128<float>) (Sse.LoadVector128((float*) (address)));
@@ -1126,12 +1198,12 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (simm));
 					switch(opc) {
 						case 0x0:
-							V[(int) ((rt1) >> 2)] = V[(int) ((rt1) >> 2)].WithElement((int) ((rt1) & 3), (float) (*(float*) (address)));
-							V[(int) ((rt2) >> 2)] = V[(int) ((rt2) >> 2)].WithElement((int) ((rt2) & 3), (float) (*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4)))));
+							V[(int) (rt1)] = new Vector128<float>().WithElement(0, (float) (*(float*) (address)));
+							V[(int) (rt2)] = new Vector128<float>().WithElement(0, (float) (*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4)))));
 							break;
 						case 0x1:
-							V[(int) ((rt1) >> 1)] = V[(int) ((rt1) >> 1)].As<float, double>().WithElement((int) ((rt1) & 1), (double) (*(double*) (address))).As<double, float>();
-							V[(int) ((rt2) >> 1)] = V[(int) ((rt2) >> 1)].As<float, double>().WithElement((int) ((rt2) & 1), (double) (*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))))).As<double, float>();
+							V[(int) (rt1)] = new Vector128<double>().WithElement(0, (double) (*(double*) (address))).As<double, float>();
+							V[(int) (rt2)] = new Vector128<double>().WithElement(0, (double) (*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))))).As<double, float>();
 							break;
 						default:
 							V[rt1] = (Vector128<float>) (Sse.LoadVector128((float*) (address)));
@@ -1206,16 +1278,16 @@ namespace Cpu64 {
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
 					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0:
-							V[(int) ((rt) >> 4)] = V[(int) ((rt) >> 4)].As<float, byte>().WithElement((int) ((rt) & 15), (byte) (*(byte*) (address))).As<byte, float>();
+							V[(int) (rt)] = new Vector128<byte>().WithElement(0, (byte) (*(byte*) (address))).As<byte, float>();
 							break;
 						case 0x2:
-							V[(int) ((rt) >> 3)] = V[(int) ((rt) >> 3)].As<float, ushort>().WithElement((int) ((rt) & 7), (ushort) (*(ushort*) (address))).As<ushort, float>();
+							V[(int) (rt)] = new Vector128<ushort>().WithElement(0, (ushort) (*(ushort*) (address))).As<ushort, float>();
 							break;
 						case 0x4:
-							V[(int) ((rt) >> 2)] = V[(int) ((rt) >> 2)].WithElement((int) ((rt) & 3), (float) (*(float*) (address)));
+							V[(int) (rt)] = new Vector128<float>().WithElement(0, (float) (*(float*) (address)));
 							break;
 						case 0x6:
-							V[(int) ((rt) >> 1)] = V[(int) ((rt) >> 1)].As<float, double>().WithElement((int) ((rt) & 1), (double) (*(double*) (address))).As<double, float>();
+							V[(int) (rt)] = new Vector128<double>().WithElement(0, (double) (*(double*) (address))).As<double, float>();
 							break;
 						case 0x1:
 							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) (address)));
@@ -1234,27 +1306,62 @@ namespace Cpu64 {
 				if((inst & 0x3F400000U) == 0x3D400000U) {
 					var size = (inst >> 30) & 0x3U;
 					var ropc = (inst >> 23) & 0x1U;
-					var imm = (inst >> 10) & 0xFFFU;
+					var rawimm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var opc = (byte) ((byte) (((byte) (((byte) ((byte) ((byte) (0x1)))) << 0)) | ((byte) (((byte) (ropc)) << 1))));
 					var m = (byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 2))));
 					var r = (string) ((m) switch { 0x1 => "B", 0x5 => "H", 0x9 => "S", 0xD => "D", _ => "Q" });
+					var imm = (uint) (((uint) ((uint) (rawimm))) << (int) ((long) ((m) switch { 0x1 => 0x0, 0x5 => 0x1, 0x9 => 0x2, 0xD => 0x3, _ => 0x4 })));
 					switch(m) {
 						case 0x1:
-							V[(int) ((rt) >> 4)] = V[(int) ((rt) >> 4)].As<float, byte>().WithElement((int) ((rt) & 15), (byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))).As<byte, float>();
+							V[(int) (rt)] = new Vector128<byte>().WithElement(0, (byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))).As<byte, float>();
 							break;
 						case 0x5:
-							V[(int) ((rt) >> 3)] = V[(int) ((rt) >> 3)].As<float, ushort>().WithElement((int) ((rt) & 7), (ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x1))))))).As<ushort, float>();
+							V[(int) (rt)] = new Vector128<ushort>().WithElement(0, (ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))).As<ushort, float>();
 							break;
 						case 0x9:
-							V[(int) ((rt) >> 2)] = V[(int) ((rt) >> 2)].WithElement((int) ((rt) & 3), (float) (*(float*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x2)))))));
+							V[(int) (rt)] = new Vector128<float>().WithElement(0, (float) (*(float*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))));
 							break;
 						case 0xD:
-							V[(int) ((rt) >> 1)] = V[(int) ((rt) >> 1)].As<float, double>().WithElement((int) ((rt) & 1), (double) (*(double*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x3))))))).As<double, float>();
+							V[(int) (rt)] = new Vector128<double>().WithElement(0, (double) (*(double*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))).As<double, float>();
 							break;
 						default:
-							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (0x4)))))));
+							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))));
+							break;
+					}
+					return true;
+				}
+				/* LDR-simd-register */
+				if((inst & 0x3F600C00U) == 0x3C600800U) {
+					var size = (inst >> 30) & 0x3U;
+					var opc = (inst >> 23) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var option = (inst >> 13) & 0x7U;
+					var scale = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r1 = (string) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
+					var r2 = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
+					var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
+					var offset = (ulong) (((ulong) ((option) switch { 0x2 => (ulong) ((ulong) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))), 0x3 => (ulong) ((rm) == 31 ? 0UL : X[(int) rm]), 0x6 => (ulong) ((ulong) ((long) (SignExt<long>((uint) ((rm) == 31 ? 0U : W[(int) rm]), 32)))), 0x7 => (ulong) ((rm) == 31 ? 0UL : X[(int) rm]), _ => throw new NotImplementedException() })) << (int) (amount));
+					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset));
+					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0:
+							V[(int) (rt)] = new Vector128<byte>().WithElement(0, (byte) (*(byte*) (address))).As<byte, float>();
+							break;
+						case 0x4:
+							V[(int) (rt)] = new Vector128<float>().WithElement(0, (float) (*(float*) (address)));
+							break;
+						case 0x6:
+							V[(int) (rt)] = new Vector128<double>().WithElement(0, (double) (*(double*) (address))).As<double, float>();
+							break;
+						case 0x1:
+							V[rt] = (Vector128<float>) (Sse.LoadVector128((float*) (address)));
+							break;
+						default:
+							throw new NotImplementedException();
 							break;
 					}
 					return true;
@@ -1364,12 +1471,12 @@ namespace Cpu64 {
 				}
 				/* LDRSB-immediate-unsigned-offset */
 				if((inst & 0xFF800000U) == 0x39800000U) {
-					var size = (inst >> 22) & 0x1U;
+					var opc = (inst >> 22) & 0x1U;
 					var imm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
-					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
 						W[(int) rt] = (uint) ((uint) ((uint) ((int) (SignExt<int>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 8)))));
 					} else {
 						X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 8))));
@@ -1409,6 +1516,20 @@ namespace Cpu64 {
 					} else {
 						X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 16))));
 					}
+					return true;
+				}
+				/* LDRSW-immediate-preindex */
+				if((inst & 0xFFE00C00U) == 0xB8800C00U) {
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
+					X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((uint) (*(uint*) (address)), 32))));
+					if(rn == 31)
+						SP = address;
+					else
+						X[(int) rn] = address;
 					return true;
 				}
 				/* LDRSW-immediate-unsigned-offset */
@@ -1762,7 +1883,7 @@ namespace Cpu64 {
 					var ra = (inst >> 10) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					X[(int) rd] = (ulong) ((ulong) ((long) ((long) ((long) ((long) ((ulong) ((ra) == 31 ? 0UL : X[(int) ra])))) + (long) ((long) (SignExt<long>((uint) ((uint) ((int) ((int) ((int) ((int) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))) * (int) ((int) ((int) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))))))), 32))))));
+					X[(int) rd] = (ulong) ((ulong) ((long) ((long) ((long) ((long) ((ulong) ((ra) == 31 ? 0UL : X[(int) ra])))) + (long) ((long) ((long) ((long) (SignExt<long>((uint) ((rn) == 31 ? 0U : W[(int) rn]), 32))) * (long) ((long) (SignExt<long>((uint) ((rm) == 31 ? 0U : W[(int) rm]), 32))))))));
 					return true;
 				}
 				/* SMULH */
@@ -1895,12 +2016,12 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rd) == 31 ? SP : X[(int) rd])) + (ulong) (simm));
 					switch(opc) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt1 >> 2].GetElement((int) rt1 & 3));
-							*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4))) = (float) (V[rt2 >> 2].GetElement((int) rt2 & 3));
+							*(float*) (address) = (float) (V[rt1].GetElement(0));
+							*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4))) = (float) (V[rt2].GetElement(0));
 							break;
 						case 0x1:
-							*(double*) (address) = (double) (V[rt1 >> 1].As<float, double>().GetElement((int) rt1 & 1));
-							*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))) = (double) (V[rt2 >> 1].As<float, double>().GetElement((int) rt2 & 1));
+							*(double*) (address) = (double) (V[rt1].As<float, double>().GetElement(0));
+							*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))) = (double) (V[rt2].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt1]));
@@ -1928,12 +2049,12 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rd) == 31 ? SP : X[(int) rd])) + (ulong) (simm));
 					switch(opc) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt1 >> 2].GetElement((int) rt1 & 3));
-							*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4))) = (float) (V[rt2 >> 2].GetElement((int) rt2 & 3));
+							*(float*) (address) = (float) (V[rt1].GetElement(0));
+							*(float*) ((ulong) ((ulong) (address) + (ulong) (0x4))) = (float) (V[rt2].GetElement(0));
 							break;
 						case 0x1:
-							*(double*) (address) = (double) (V[rt1 >> 1].As<float, double>().GetElement((int) rt1 & 1));
-							*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))) = (double) (V[rt2 >> 1].As<float, double>().GetElement((int) rt2 & 1));
+							*(double*) (address) = (double) (V[rt1].As<float, double>().GetElement(0));
+							*(double*) ((ulong) ((ulong) (address) + (ulong) (0x8))) = (double) (V[rt2].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt1]));
@@ -2033,16 +2154,16 @@ namespace Cpu64 {
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
 					switch(rop) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt >> 4].As<float, byte>().GetElement((int) rt & 15));
+							*(float*) (address) = (float) (V[rt].As<float, byte>().GetElement(0));
 							break;
 						case 0x4:
-							*(float*) (address) = (float) (V[rt >> 3].As<float, ushort>().GetElement((int) rt & 7));
+							*(float*) (address) = (float) (V[rt].As<float, ushort>().GetElement(0));
 							break;
 						case 0x8:
-							*(float*) (address) = (float) (V[rt >> 2].GetElement((int) rt & 3));
+							*(float*) (address) = (float) (V[rt].GetElement(0));
 							break;
 						case 0xC:
-							*(double*) (address) = (double) (V[rt >> 1].As<float, double>().GetElement((int) rt & 1));
+							*(double*) (address) = (double) (V[rt].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt]));
@@ -2071,16 +2192,16 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (simm));
 					switch(rop) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt >> 4].As<float, byte>().GetElement((int) rt & 15));
+							*(float*) (address) = (float) (V[rt].As<float, byte>().GetElement(0));
 							break;
 						case 0x4:
-							*(float*) (address) = (float) (V[rt >> 3].As<float, ushort>().GetElement((int) rt & 7));
+							*(float*) (address) = (float) (V[rt].As<float, ushort>().GetElement(0));
 							break;
 						case 0x8:
-							*(float*) (address) = (float) (V[rt >> 2].GetElement((int) rt & 3));
+							*(float*) (address) = (float) (V[rt].GetElement(0));
 							break;
 						case 0xC:
-							*(double*) (address) = (double) (V[rt >> 1].As<float, double>().GetElement((int) rt & 1));
+							*(double*) (address) = (double) (V[rt].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt]));
@@ -2108,16 +2229,16 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) ((ushort) ((imm) << (int) (scale))));
 					switch(rop) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt >> 4].As<float, byte>().GetElement((int) rt & 15));
+							*(float*) (address) = (float) (V[rt].As<float, byte>().GetElement(0));
 							break;
 						case 0x4:
-							*(float*) (address) = (float) (V[rt >> 3].As<float, ushort>().GetElement((int) rt & 7));
+							*(float*) (address) = (float) (V[rt].As<float, ushort>().GetElement(0));
 							break;
 						case 0x8:
-							*(float*) (address) = (float) (V[rt >> 2].GetElement((int) rt & 3));
+							*(float*) (address) = (float) (V[rt].GetElement(0));
 							break;
 						case 0xC:
-							*(double*) (address) = (double) (V[rt >> 1].As<float, double>().GetElement((int) rt & 1));
+							*(double*) (address) = (double) (V[rt].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt]));
@@ -2255,16 +2376,16 @@ namespace Cpu64 {
 					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (simm));
 					switch(rop) {
 						case 0x0:
-							*(float*) (address) = (float) (V[rt >> 4].As<float, byte>().GetElement((int) rt & 15));
+							*(float*) (address) = (float) (V[rt].As<float, byte>().GetElement(0));
 							break;
 						case 0x4:
-							*(float*) (address) = (float) (V[rt >> 3].As<float, ushort>().GetElement((int) rt & 7));
+							*(float*) (address) = (float) (V[rt].As<float, ushort>().GetElement(0));
 							break;
 						case 0x8:
-							*(float*) (address) = (float) (V[rt >> 2].GetElement((int) rt & 3));
+							*(float*) (address) = (float) (V[rt].GetElement(0));
 							break;
 						case 0xC:
-							*(double*) (address) = (double) (V[rt >> 1].As<float, double>().GetElement((int) rt & 1));
+							*(double*) (address) = (double) (V[rt].As<float, double>().GetElement(0));
 							break;
 						case 0x2:
 							Sse.Store((float*) (address), (Vector128<float>) (V[rt]));
@@ -2513,16 +2634,73 @@ namespace Cpu64 {
 					}
 					return true;
 				}
-				/* UCVTF */
+				/* UCVTF-scalar-integer */
+				if((inst & 0x7F3FFC00U) == 0x1E230000U) {
+					var size = (inst >> 31) & 0x1U;
+					var type = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+					var r1 = "";
+					var r2 = "";
+					switch(st) {
+						case 0x3:
+							r1 = "H";
+							r2 = "W";
+							break;
+						case 0x0:
+							r1 = "S";
+							r2 = "W";
+							break;
+						case 0x1:
+							r1 = "D";
+							r2 = "W";
+							break;
+						case 0x7:
+							r1 = "H";
+							r2 = "X";
+							break;
+						case 0x4:
+							r1 = "S";
+							r2 = "X";
+							break;
+						case 0x5:
+							r1 = "D";
+							r2 = "X";
+							break;
+						default:
+							throw new NotImplementedException();
+							break;
+					}
+					switch(st) {
+						case 0x0:
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((uint) ((rn) == 31 ? 0U : W[(int) rn]))));
+							break;
+						case 0x1:
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))).As<double, float>();
+							break;
+						case 0x4:
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn]))));
+							break;
+						case 0x5:
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))).As<double, float>();
+							break;
+						default:
+							throw new NotImplementedException();
+							break;
+					}
+					return true;
+				}
+				/* UCVTF-vector-integer */
 				if((inst & 0xFFBFFC00U) == 0x7E21D800U) {
 					var size = (inst >> 22) & 0x1U;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						V[(int) ((rd) >> 2)] = V[(int) ((rd) >> 2)].WithElement((int) ((rd) & 3), (float) ((float) ((uint) (Bitcast<float, uint>((float) (V[rn >> 2].GetElement((int) rn & 3)))))));
+						V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((uint) (Bitcast<float, uint>((float) (V[rn].GetElement(0)))))));
 					} else {
-						V[(int) ((rd) >> 1)] = V[(int) ((rd) >> 1)].As<float, double>().WithElement((int) ((rd) & 1), (double) ((double) ((ulong) (Bitcast<double, ulong>((double) (V[rn >> 1].As<float, double>().GetElement((int) rn & 1))))))).As<double, float>();
+						V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((ulong) (Bitcast<double, ulong>((double) (V[rn].As<float, double>().GetElement(0))))))).As<double, float>();
 					}
 					return true;
 				}
@@ -2535,10 +2713,10 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						var operand2 = (uint) ((rm) == 31 ? 0U : W[(int) rm]);
-						W[(int) rd] = (uint) ((uint) (((byte) (((operand2) == (0x0)) ? 1U : 0U) != 0) ? ((uint) ((uint) (0x0))) : ((uint) ((uint) ((float) ((float) ((float) ((float) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))) / (float) ((float) ((float) (operand2)))))))));
+						W[(int) rd] = (uint) ((uint) (((byte) (((operand2) == (0x0)) ? 1U : 0U) != 0) ? ((uint) ((uint) (0x0))) : ((uint) ((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn])) / (uint) (operand2)))));
 					} else {
 						var operand2 = (ulong) ((rm) == 31 ? 0UL : X[(int) rm]);
-						X[(int) rd] = (ulong) (((byte) (((operand2) == (0x0)) ? 1U : 0U) != 0) ? ((ulong) ((ulong) (0x0))) : ((ulong) ((ulong) ((double) ((double) ((double) ((double) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])))) / (double) ((double) ((double) (operand2))))))));
+						X[(int) rd] = (ulong) (((byte) (((operand2) == (0x0)) ? 1U : 0U) != 0) ? ((ulong) ((ulong) (0x0))) : ((ulong) ((ulong) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) / (ulong) (operand2))));
 					}
 					return true;
 				}

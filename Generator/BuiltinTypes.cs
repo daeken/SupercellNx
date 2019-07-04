@@ -90,6 +90,7 @@ namespace Generator {
 			["vec-d"] = _ => new EFloat(64).AsRuntime(), 
 			["vector-all"] = _ => EType.Vector.AsRuntime(), 
 			["vector-zero-top"] = _ => EType.Vector.AsRuntime(), 
+			["vector-insert"] = _ => EType.Unit, 
 		};
 	}
 }

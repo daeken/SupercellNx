@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics;
 using Common;
 using Cpu64;
 using UnicornSharp;
@@ -81,6 +82,8 @@ namespace CpuTest {
 			uc[Arm64Register.NZCV] = cpu.NZCV;
 			for(var i = 0; i < 31; ++i)
 				uc[i < 29 ? Arm64Register.X0 + i : Arm64Register.X29 + (i - 29)] = cpu.X[i];
+			for(var i = 0; i < 32; ++i)
+				uc[Arm64Register.D0 + i] = cpu.V[i].As<float, ulong>().GetElement(0);
 		}
 
 		static string Hex<T>(T value) => $"{value:X}";
@@ -131,6 +134,40 @@ namespace CpuTest {
 			Assert.Equal(Hex(uc[Arm64Register.X29]), Hex(cpu.X[29]));
 			
 			Assert.Equal(Hex(uc[Arm64Register.X30]), Hex(cpu.X[30]));
+			
+			Assert.Equal(Hex(uc[Arm64Register.D0]), Hex(cpu.V[0].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D1]), Hex(cpu.V[1].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D2]), Hex(cpu.V[2].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D3]), Hex(cpu.V[3].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D4]), Hex(cpu.V[4].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D5]), Hex(cpu.V[5].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D6]), Hex(cpu.V[6].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D7]), Hex(cpu.V[7].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D8]), Hex(cpu.V[8].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D9]), Hex(cpu.V[9].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D10]), Hex(cpu.V[10].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D11]), Hex(cpu.V[11].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D12]), Hex(cpu.V[12].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D13]), Hex(cpu.V[13].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D14]), Hex(cpu.V[14].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D15]), Hex(cpu.V[15].As<float, ulong>().GetElement(0)));
+			
+			Assert.Equal(Hex(uc[Arm64Register.D16]), Hex(cpu.V[16].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D17]), Hex(cpu.V[17].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D18]), Hex(cpu.V[18].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D19]), Hex(cpu.V[19].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D20]), Hex(cpu.V[20].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D21]), Hex(cpu.V[21].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D22]), Hex(cpu.V[22].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D23]), Hex(cpu.V[23].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D24]), Hex(cpu.V[24].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D25]), Hex(cpu.V[25].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D26]), Hex(cpu.V[26].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D27]), Hex(cpu.V[27].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D28]), Hex(cpu.V[28].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D29]), Hex(cpu.V[29].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D30]), Hex(cpu.V[30].As<float, ulong>().GetElement(0)));
+			Assert.Equal(Hex(uc[Arm64Register.D31]), Hex(cpu.V[31].As<float, ulong>().GetElement(0)));
 		}
 	}
 }

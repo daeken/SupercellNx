@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <PackageReference Include="K4os.Compression.LZ4" Version="1.1.10" />
+      <PackageReference Include="LibHac" Version="0.4.1" />
       <PackageReference Include="morelinq" Version="3.1.1" />
       <PackageReference Include="PrettyPrinter" Version="1.0.0" />
     </ItemGroup>

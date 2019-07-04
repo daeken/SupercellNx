@@ -55,6 +55,11 @@ namespace SigilLite {
 				Ilg.Emit(opcode, label);
 		}
 
+		void GEmit(OpCode opcode, ConstructorInfo ci) {
+			if(ShouldEmit(opcode))
+				Ilg.Emit(opcode, ci);
+		}
+
 		void GEmitCall(OpCode opcode, MethodInfo mi, Type[] types) {
 			if(ShouldEmit(opcode))
 				Ilg.EmitCall(opcode, mi, types);
@@ -159,6 +164,8 @@ namespace SigilLite {
 		
 		public Emit<DelegateT> Duplicate() => Do(() => GEmit(OpCodes.Dup));
 
+		public Emit<DelegateT> InitializeObject<ObjT>() => Do(() => GEmit(OpCodes.Initobj, typeof(ObjT)));
+
 		public Emit<DelegateT> LoadArgument(int index) {
 			if(index > 3)
 				GEmit(OpCodes.Ldarg, index);
@@ -248,8 +255,11 @@ namespace SigilLite {
 
 		public Emit<DelegateT> Multiply() => Do(() => GEmit(OpCodes.Mul));
 		
+		public Emit<DelegateT> Negate() => Do(() => GEmit(OpCodes.Neg));
+
+		public Emit<DelegateT> NewObject<ObjT>() => Do(() => GEmit(OpCodes.Newobj, typeof(ObjT).GetConstructor(new Type[0])));
+		
 		public Emit<DelegateT> Not() => Do(() => GEmit(OpCodes.Not));
-		public Emit<DelegateT> Neg() => Do(() => GEmit(OpCodes.Neg));
 		
 		public Emit<DelegateT> Or() => Do(() => GEmit(OpCodes.Or));
 

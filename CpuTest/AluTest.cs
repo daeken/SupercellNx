@@ -61,6 +61,13 @@ namespace CpuTest {
 				cpu.X[8] = 0xFFFFFFFFFFFFEBE0;
 				cpu.X[20] = 0x4000;
 			});
+			// SUBS WZR, W26, W13
+			InsnTester.Disassembly("subs W31, W26, W13, LSL #0", 0x6B0D035F);
+			InsnTester.Test(0x6B0D035F, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[26] = 0xFFFFFFFF;
+				cpu.X[13] = 0x7FFFFFFF;
+			});
 		}
 
 		[Fact]
@@ -111,5 +118,37 @@ namespace CpuTest {
 
 		[Fact]
 		public void Adrp() => InsnTester.Test(0xB000C4A9);
+
+		[Fact]
+		public void Smaddl() {
+			// SMADDL X11, W0, W11, XZR
+			InsnTester.Test(0x9B2B7C0B, (cpu, pc) => {
+				if(cpu == null) return;
+				cpu.X[0] = 0x7B2;
+				cpu.X[11] = 0xAE147AE1;
+			});
+		}
+
+		[Fact]
+		public void Smulh() {
+			// SMULH X8, X8, X9
+			InsnTester.Disassembly("smulh X8, X8, X9", 0x9B497D08);
+			InsnTester.Test(0x9B497D08, (cpu, pc) => {
+				if(cpu == null) return;
+				cpu.X[8] = 0x124F800;
+				cpu.X[9] = 0x29F16B11C6D1E109;
+			});
+		}
+
+		[Fact]
+		public void Udiv() {
+			// UDIV X10, X22, X9
+			InsnTester.Disassembly("udiv X10, X22, X9", 0x9AC90ACA);
+			InsnTester.Test(0x9AC90ACA, (cpu, pc) => {
+				if(cpu == null) return;
+				cpu.X[22] = 0xFFFF_FFFF_FFFF_FFFFUL;
+				cpu.X[9] = 0x18UL;
+			});
+		}
 	}
 }
