@@ -98,6 +98,17 @@ namespace CpuTest {
 		}
 
 		[Fact]
+		public void Add() {
+			// ADD X9, X11, W10,SXTW
+			InsnTester.Disassembly("add X9, X11, W10, SXTW #0", 0x8B2AC169);
+			InsnTester.Test(0x8B2AC169, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[11] = 0x1001FFF9F0;
+				cpu.X[10] = 0xFFFFFFD8;
+			});
+		}
+
+		[Fact]
 		public void Adds1() {
 			// ADDS WZR, W9, #1
 			InsnTester.Test(0x3100053F, (cpu, pc) => {
@@ -113,6 +124,17 @@ namespace CpuTest {
 			InsnTester.Test(0x3100053F, (cpu, pc) => {
 				if(cpu == null) return;
 				cpu.X[9] = 0xDEADBEEFU;
+			});
+		}
+
+		[Fact]
+		public void Adds() {
+			// ADDS X11, X8, X23
+			InsnTester.Disassembly("adds X11, X8, X23, LSL #0", 0xAB17010B);
+			InsnTester.Test(0xAB17010B, (cpu, pc) => {
+				if(cpu == null) return;
+				cpu.X[8] = 0x8;
+				cpu.X[23] = 0x1001FFF908;
 			});
 		}
 

@@ -58,18 +58,22 @@ namespace Supercell.IpcServices.nn.visrv.sf {
 		void SetDisplayEnabled(bool unknown0, ulong unknown1) => throw new NotImplementedException();
 		[IpcCommand(1102)]
 		void GetDisplayResolution(ulong unknown0, out ulong unknown1, out ulong unknown2) => throw new NotImplementedException();
-		
+
 		[IpcCommand(2020)]
-		void OpenLayer([Bytes(0x40)] byte[] displayName, ulong layerId, ulong userId, [Pid] ulong pid, out ulong parcelLength, [Buffer(0x6)] Buffer<byte> parcel) => throw new NotImplementedException();
-		
+		void OpenLayer([Bytes(0x40)] byte[] displayName, ulong layerId, ulong userId, [Pid] ulong pid,
+			out ulong parcelLength, [Buffer(0x6)] Buffer<byte> parcel) =>
+			parcelLength = MakeIGraphicsBufferProducer(parcel);
+
 		[IpcCommand(2021)]
 		void CloseLayer(ulong unknown0) => throw new NotImplementedException();
 		[IpcCommand(2030)]
 		void CreateStrayLayer(uint unknown0, ulong unknown1, out ulong unknown2, out ulong unknown3, [Buffer(0x6)] Buffer<byte> unknown4) => throw new NotImplementedException();
 		[IpcCommand(2031)]
 		void DestroyStrayLayer(ulong unknown0) => throw new NotImplementedException();
+
 		[IpcCommand(2101)]
-		void SetLayerScalingMode(uint unknown0, ulong unknown1) => throw new NotImplementedException();
+		void SetLayerScalingMode(uint unknown0, ulong unknown1) {}
+		
 		[IpcCommand(2102)]
 		void ConvertScalingMode(object unknown0, out object unknown1) => throw new NotImplementedException();
 		[IpcCommand(2450)]
@@ -78,10 +82,33 @@ namespace Supercell.IpcServices.nn.visrv.sf {
 		void GetIndirectLayerImageCropMap(float unknown0, float unknown1, float unknown2, float unknown3, ulong unknown4, ulong unknown5, ulong unknown6, ulong /* nn::applet::AppletResourceUserId */ unknown7, [Pid] ulong pid, out ulong unknown8, out ulong unknown9, [Buffer(0x46)] Buffer<byte> unknown10) => throw new NotImplementedException();
 		[IpcCommand(2460)]
 		void GetIndirectLayerImageRequiredMemoryInfo(ulong unknown0, ulong unknown1, out ulong unknown2, out ulong unknown3) => throw new NotImplementedException();
+		
 		[IpcCommand(5202)]
-		void GetDisplayVsyncEvent(ulong unknown0, [Move] out KObject unknown1) => throw new NotImplementedException();
+		void GetDisplayVsyncEvent(ulong unknown0, [Move] out KEvent evt) => evt = new KEvent();
+		
 		[IpcCommand(5203)]
 		void GetDisplayVsyncEventForDebug(ulong unknown0, [Move] out KObject unknown1) => throw new NotImplementedException();
+
+
+		ulong MakeIGraphicsBufferProducer(Buffer<byte> parcelBuffer) =>
+			Parcel.MakeParcel(parcelBuffer, bw => {
+				//flat_binder_object (size is 0x28)
+				bw.Write(2); //Type (BINDER_TYPE_WEAK_BINDER)
+				bw.Write(0); //Flags
+				bw.Write(0x20);
+				bw.Write(0);
+				bw.Write(0);
+				bw.Write(0);
+				bw.Write((byte)'d');
+				bw.Write((byte)'i');
+				bw.Write((byte)'s');
+				bw.Write((byte)'p');
+				bw.Write((byte)'d');
+				bw.Write((byte)'r');
+				bw.Write((byte)'v');
+				bw.Write((byte)'\0');
+				bw.Write(0L); //Pad
+			}, new byte[4]);
 	}
 	
 	public class IManagerDisplayService : IpcInterface {

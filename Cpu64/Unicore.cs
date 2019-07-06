@@ -58,22 +58,25 @@ namespace Cpu64 {
 			};*/
 
 			var resetTicks = false;
-			var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
-			var count = 0UL;
+			//var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
+			//var skip = 131_000_000L;
 			Uc.OnCode += (_, addr, __) => {
 				if(resetTicks) {
 					resetTicks = false;
 					Uc[Arm64Register.X0] = 0;
 				} else if(*(uint*) addr == 0xD53BE020) resetTicks = true;
 
-				//if(count++ > 10_000_000) return;
+				/*if(skip > 0) {
+					skip--;
+					return;
+				}
 				BW.Write(addr);
 				BW.Write((byte) (Uc[Arm64Register.NZCV] >> 28));
 				for(var i = 0; i < 31; ++i)
 					BW.Write(this[i]);
 				for(var i = 0; i < 32; ++i)
 					BW.Write(Uc[Arm64Register.D0 + i]);
-				BW.Write(Uc[Arm64Register.SP]);
+				BW.Write(Uc[Arm64Register.SP]);*/
 			};
 			
 			//Uc.AddCodeHook((_, __, ___) => throw new NotImplementedException(), 0x7200000024, 0x7200000030);
@@ -100,8 +103,8 @@ namespace Cpu64 {
 			} catch (Exception) {
 				$"{Uc[Arm64Register.PC]:X}".Debug();
 			}
-			BW.BaseStream.Close();
-			BW.Close();
+			/*BW.BaseStream.Close();
+			BW.Close();*/
 		}
 	}
 }

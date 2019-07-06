@@ -34,7 +34,7 @@ namespace ExeDiff {
 		}
 		
 		static void Main(string[] args) {
-			var skip = 129000000L;
+			var skip = 0L;
 			var a = Read("../App/uniinsns.bin", skip);
 			var b = Read("../App/recinsns.bin", skip);
 			

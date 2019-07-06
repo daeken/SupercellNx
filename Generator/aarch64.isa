@@ -41,7 +41,7 @@
                     0b010 (& m 0xFFFFFFFF)
                     0b100 (cast (signext (cast m u8) i64) u64)
                     0b101 (cast (signext (cast m u16) i64) u64)
-                    0b110 (cast (signext m i64) u64)
+                    0b110 (cast (signext (cast m u32) i64) u64)
                     m) imm)))))))
 
 (def ADD-immediate
@@ -92,6 +92,31 @@
     (if (== size 0)
         (= (gpr32 rd) (add-with-carry-set-nzcv (gpr-or-sp32 rn) simm 0))
         (= (gpr64 rd) (add-with-carry-set-nzcv (gpr-or-sp64 rn) simm 0))))
+
+(def ADDS-shifted-register
+    "f 0 1 01011 ss 0 mmmmm iiiiii nnnnn ddddd"
+    "adds $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
+    (names (size f) (shift s) (rm m) (imm i) (rn n) (rd d))
+    (block
+        (let r (if (== size 0) "W" "X"))
+        (let shiftstr (match shift
+                    0b00 "LSL"
+                    0b01 "LSR"
+                    0b10 "ASR"
+                    "ROR")))
+    (if (== size 0)
+        (let b (gpr32 rm)
+            (= (gpr32 rd) (add-with-carry-set-nzcv (gpr32 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i32) imm) u32)
+                (>>> b imm)) 0)))
+        (let b (gpr64 rm)
+            (= (gpr64 rd) (add-with-carry-set-nzcv (gpr64 rn) (match shift
+                0b00 (<< b imm)
+                0b01 (>> b imm)
+                0b10 (cast (>> (cast b i64) imm) u64)
+                (>>> b imm)) 0)))))
 
 (def ADRP
     "1 ll 10000 iiiiiiiiiiiiiiiiiii ddddd"

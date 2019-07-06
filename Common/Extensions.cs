@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using MoreLinq;
 
 namespace Common {
 	public static class Extensions {
@@ -57,5 +59,17 @@ namespace Common {
 		}
 
 		public static string Repeat(this string str, int count) => string.Concat(Enumerable.Repeat(str, count));
+
+		public static byte[] ToArray(this Action<BinaryWriter> func) {
+			using var ms = new MemoryStream();
+			using var bw = new BinaryWriter(ms);
+			func(bw);
+			return ms.ToArray();
+		}
+
+		public static T Get<T>(this Span<byte> span, int index) where T : struct =>
+			MemoryMarshal.Cast<byte, T>(span)[index];
+
+		public static void WriteAll(this BinaryWriter bw, params int[] args) => args.ForEach(bw.Write);
 	}
 }

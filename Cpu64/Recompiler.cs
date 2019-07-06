@@ -288,6 +288,7 @@ namespace Cpu64 {
 								var inst = *(uint*) pc;
 								var asm = Disassemble(inst, pc);
 								if(asm == null) {
+									DebugRegs();
 									$"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}".Debug();
 									Environment.Exit(1);
 								}
@@ -330,7 +331,13 @@ namespace Cpu64 {
 
 					BranchToBlock = null;
 					BranchTo = unchecked((ulong) -1);
-					block.Func(this);
+					try {
+						block.Func(this);
+					} catch(NullReferenceException) {
+						"Null reference!".Debug();
+						DebugRegs();
+						Environment.Exit(0);
+					}
 
 					if(!one && (SP < 0x100000 || SP >> 48 != 0))
 						throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
@@ -351,9 +358,15 @@ namespace Cpu64 {
 #if DUMPINSNS
 		BinaryWriter BW = new BinaryWriter(File.OpenWrite("recinsns.bin"));
 		ulong Count;
+		long Skip = 131_000_000L;
 		public void Test() {
 			//if(Count++ < 131_200_000) return;
 			//if(Count++ > 10_000_000) return;
+			if(Skip > 0) {
+				Skip--;
+				return;
+			}
+
 			BW.Write(PC);
 			BW.Write((byte) (NZCV >> 28));
 			for(var i = 0; i < 31; ++i)
@@ -361,6 +374,8 @@ namespace Cpu64 {
 			for(var i = 0; i < 32; ++i)
 				BW.Write(V[i].As<float, ulong>().GetElement(0));
 			BW.Write(SP);
+			BW.Flush();
+			BW.BaseStream.Flush();
 		}
 #endif
 

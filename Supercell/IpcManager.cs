@@ -92,7 +92,7 @@ namespace Supercell {
 		public static Func<IncomingMessage, object> BytesGetter(uint offset, uint size) => im =>
 			new Span<byte>(im.Buffer + im.SfciOffset + 8 + offset, (int) size).ToArray();
 
-		public unsafe Buffer<T> GetBuffer<T>(uint type, int num) where T : struct {
+		public Buffer<T> GetBuffer<T>(uint type, int num) where T : struct {
 			if((type & 0x20) != 0)
 				return GetBuffer<T>((type & ~0x20U) | 4U, num) ?? GetBuffer<T>((type & ~0x20U) | 8U, num);
 
@@ -100,14 +100,17 @@ namespace Supercell {
 			var flags_ = type & 0xC0U;
 			var flags = flags_ == 0x80 ? 3 : flags_ == 0x40 ? 1UL : 0UL;
 			var cx = (type & 0xC) == 8 ? 1 : 0;
-
+			
 			switch((ax << 1) | cx) {
 				case 0: { // B
 					var t = (uint*) (Buffer + DescOffset + XCount * 8 + ACount * 12 + num * 12);
 					ulong a = t[0], b = t[1], c = t[2];
 					Debug.Assert((c & 0x3U) == flags);
-					return new Buffer<T>(b | (((((c >> 2) << 4) & 0x70) | ((c >> 28) & 0xFU)) << 32),
+					var buffer = new Buffer<T>(b | (((((c >> 2) << 4) & 0x70) | ((c >> 28) & 0xFU)) << 32),
 						a | (((c >> 24) & 0xFU) << 32));
+					if(BCount <= num || buffer.Size == 0)
+						goto case 1; //  C buffer
+					return buffer;
 				}
 				case 1: { // C
 					var t = (uint*) (Buffer + RawOffset + WLen * 4);
@@ -118,8 +121,11 @@ namespace Supercell {
 					var t = (uint*) (Buffer + DescOffset + XCount * 8 + num * 12);
 					ulong a = t[0], b = t[1], c = t[2];
 					Debug.Assert((c & 0x3) == flags);
-					return new Buffer<T>(b | (((((c >> 2) << 4) & 0x70) | ((c >> 28) & 0xFU)) << 32),
+					var buffer = new Buffer<T>(b | (((((c >> 2) << 4) & 0x70) | ((c >> 28) & 0xFU)) << 32),
 						a | (((c >> 24) & 0xFU) << 32));
+					if(ACount <= num || buffer.Size == 0)
+						goto case 3; // X buffer
+					return buffer;
 				}
 				case 3: { // X
 					var t = (uint*) (Buffer + DescOffset + num * 8);
@@ -147,6 +153,8 @@ namespace Supercell {
 		public void Initialize(uint moveCount, uint copyCount, uint dataBytes) {
 			CopyCount = copyCount;
 			var buf = (uint *) Buffer;
+			for(var i = 0; i < 100; ++i)
+				buf[i] = 0;
 			buf[0] = 0;
 			buf[1] = 0;
 			if(moveCount != 0 || copyCount != 0) {
@@ -345,13 +353,24 @@ namespace Supercell {
 		public readonly ulong Address;
 		public readonly int Size;
 
+		public T Value {
+			get => GetSpan()[0];
+			set => GetSpan()[0] = value;
+		}
+
 		public Buffer(ulong address, ulong size) {
 			Address = address;
 			Size = (int) size;
 		}
 		
+		public Buffer<OtherT> As<OtherT>() where OtherT : struct => new Buffer<OtherT>(Address, (ulong) Size);
 		public unsafe Span<T> GetSpan() => new Span<T>((void *) Address, Size);
 		public static implicit operator Span<T>(Buffer<T> buffer) => buffer.GetSpan();
+
+		public static unsafe void ScopedSpan(Span<byte> span, Action<Buffer<T>> func) {
+			fixed(byte* ptr = span)
+				func(new Buffer<T>((ulong) ptr, (ulong) span.Length));
+		}
 	}
 	
 	public class IpcManager {

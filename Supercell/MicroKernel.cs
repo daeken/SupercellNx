@@ -21,6 +21,9 @@ namespace Supercell {
 		public KObject() => Handle = Kernel.Add(this);
 		public virtual void Close() {}
 	}
+
+	public class KEvent : KObject {
+	}
 	
 	public class MicroKernel : IKernel {
 		uint HandleIter;

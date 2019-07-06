@@ -53,6 +53,18 @@ namespace Cpu64 {
 				var simm = (ushort) ((imm) << (int) (shift));
 				return $"adds {r}{rd}, {r}{rn}, #0x{imm:X}, LSL #{(shift < 0 ? $"-0x{-shift:X}" : $"0x{shift:X}")}";
 			}
+			/* ADDS-shifted-register */
+			if((inst & 0x7F200000U) == 0x2B000000U) {
+				var size = (inst >> 31) & 0x1U;
+				var shift = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var imm = (inst >> 10) & 0x3FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
+				return $"adds {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
+			}
 			/* ADRP */
 			if((inst & 0x9F000000U) == 0x90000000U) {
 				var immlo = (inst >> 29) & 0x3U;
