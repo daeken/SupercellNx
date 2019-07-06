@@ -389,6 +389,7 @@ namespace Cpu64 {
 				case uint v: Ilg.LoadConstant(v); break;
 				case int v: Ilg.LoadConstant(v); break;
 				case string v: Ilg.LoadConstant(v); break;
+				case long v: Ilg.LoadConstant(v); break;
 				default: throw new NotImplementedException($"Unknown type for object LoadConstant: {c.GetType()}");
 			}
 		}
@@ -548,6 +549,12 @@ namespace Cpu64 {
 
 		RuntimeValue<ulong> CallSR(uint op0, uint op1, uint crn, uint crm, uint op2) => Call<ulong>(nameof(SR), op0, op1, crn, crm, op2);
 		void CallSR(uint op0, uint op1, uint crn, uint crm, uint op2, RuntimeValue<ulong> value) => CallVoid(nameof(SR), op0, op1, crn, crm, op2, value);
+
+		RuntimeValue<Vector128<float>> CallVectorCountBits(RuntimeValue<Vector128<float>> vec, long elems) =>
+			Call<Vector128<float>>(nameof(VectorCountBits), vec, elems);
+
+		RuntimeValue<ulong> CallVectorSumUnsigned(RuntimeValue<Vector128<float>> vec, long esize, long count) =>
+			Call<ulong>(nameof(VectorSumUnsigned), vec, esize, count);
 
 		void LogIf(ulong addr, Action func) {
 			return;

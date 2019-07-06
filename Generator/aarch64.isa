@@ -427,6 +427,16 @@
         (= (gpr32 rd) (count-leading-zeros (gpr32 rn)))
         (= (gpr64 rd) (count-leading-zeros (gpr64 rn)))))
 
+(def CNT
+    "0 q 0 01110 ss 10000 00101 10 nnnnn ddddd"
+    "cnt V$rd.$t, V$rn.$t"
+    (names (Q q) (size s) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00_0 "8B"
+        0b00_1 "16B"
+        (unimplemented)))
+    (= (vec rd) (vector-count-bits (vec rn) (match (: size Q) 0b00_0 8 16))))
+
 (def CSEL
     "s 0 0 11010100 mmmmm cccc 0 0 nnnnn ddddd"
     "csel $r$rd, $r$rn, $r$rm, $condstr"
@@ -2222,6 +2232,31 @@
     (if (!= (& (>> (gpr64 rt) imm) 1) 0)
         (branch addr)
         (branch-default)))
+
+(def UADDLV
+    "0 q 1 01110 ss 11000 00011 10 nnnnn ddddd"
+    "uaddlv $r$rd, V$rn.$t"
+    (names (Q q) (size s) (rn n) (rd d))
+    (block
+        (let r (match size
+            0b00 "H"
+            0b01 "S"
+            0b10 "D"
+            (unimplemented)))
+        (let t (match (: size Q)
+            0b00_0 "8B"
+            0b00_1 "16B"
+            0b01_0 "4H"
+            0b01_1 "8H"
+            0b10_1 "4S"
+            (unimplemented)))
+        (let esize (<< 8 size))
+        (let count (/ (if Q 128 64) esize)))
+    (match size
+        0b00 (= (vec-h rd) (cast (vector-sum-unsigned (vec rn) esize count) u16))
+        0b01 (= (vec-s rd) (bitcast (vector-sum-unsigned (vec rn) esize count) f32))
+        0b10 (= (vec-d rd) (bitcast (cast (vector-sum-unsigned (vec rn) esize count) u64) f64))
+        (unimplemented)))
 
 (def UBFM
     "f 10 100110 o pppppp ssssss nnnnn ddddd"

@@ -224,6 +224,15 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"clz {r}{rd}, {r}{rn}";
 			}
+			/* CNT */
+			if((inst & 0xBF3FFC00U) == 0x0E205800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", _ => throw new NotImplementedException() });
+				return $"cnt V{rd}.{t}, V{rn}.{t}";
+			}
 			/* CSEL */
 			if((inst & 0x7FE00C00U) == 0x1A800000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -1465,6 +1474,18 @@ namespace Cpu64 {
 				var imm = (byte) ((byte) ((byte) ((upper) << (int) (0x5))) | (byte) (bottom));
 				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
 				return $"tbnz {r}{rt}, #{imm}, 0x{addr:X}";
+			}
+			/* UADDLV */
+			if((inst & 0xBF3FFC00U) == 0x2E303800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((size) switch { 0x0 => "H", 0x1 => "S", 0x2 => "D", _ => throw new NotImplementedException() });
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x5 => "4S", _ => throw new NotImplementedException() });
+				var esize = (long) ((0x8) << (int) (size));
+				var count = (long) ((long) ((long) ((Q != 0) ? (0x80) : (0x40))) / (long) (esize));
+				return $"uaddlv {r}{rd}, V{rn}.{t}";
 			}
 			/* UBFM */
 			if((inst & 0x7F800000U) == 0x53000000U) {

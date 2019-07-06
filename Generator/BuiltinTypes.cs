@@ -91,6 +91,8 @@ namespace Generator {
 			["vector-all"] = _ => EType.Vector.AsRuntime(), 
 			["vector-zero-top"] = _ => EType.Vector.AsRuntime(), 
 			["vector-insert"] = _ => EType.Unit, 
+			["vector-count-bits"] = _ => EType.Vector, 
+			["vector-sum-unsigned"] = _ => new EInt(false, 32), 
 		};
 	}
 }

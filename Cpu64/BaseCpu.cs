@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using Common;
 using UltimateOrb;
 
@@ -231,5 +232,26 @@ namespace Cpu64 {
 
 		protected Vector128<float> Insert<ElementT>(Vector128<float> vec, uint index, ElementT value)
 			where ElementT : struct => vec.As<float, ElementT>().WithElement((int) index, value).As<ElementT, float>();
+
+		public Vector128<float> VectorCountBits(Vector128<float> vec, long elems) {
+			var ret = Vector128<byte>.Zero;
+			var ivec = vec.As<float, byte>();
+			for(var i = 0; i < elems; ++i)
+				ret = ret.WithElement(i, (byte) Popcnt.PopCount(ivec.GetElement(i)));
+			return ret.As<byte, float>();
+		}
+
+		public ulong VectorSumUnsigned(Vector128<float> vec, long esize, long count) {
+			switch(esize) {
+				case 8: {
+					var bvec = vec.As<float, byte>();
+					var sum = 0UL;
+					for(var i = 0; i < count; ++i)
+						sum += bvec.GetElement(i);
+					return sum;
+				}
+				default: throw new NotSupportedException($"Unknown size for VectorSumUnsigned: {esize}");
+			}
+		}
 	}
 }

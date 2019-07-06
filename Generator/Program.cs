@@ -462,6 +462,8 @@ namespace Generator {
 				case PName("vector-all"): return $"Vector128.Create({GenerateExpression(list[1])}).As<{GenerateType(list[1].Type)}, float>()";
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
 				case PName("vector-insert"): return $"V[(int) ({GenerateExpression(list[1])})] = Insert(V[(int) ({GenerateExpression(list[1])})], {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("vector-count-bits"): return $"VectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
+				case PName("vector-sum-unsigned"): return $"VectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");
@@ -570,6 +572,9 @@ namespace Generator {
 				
 				case PName("vector-insert"):
 					return $"VR[(int) ({GenerateExpression(list[1])})] = VR[(int) ({GenerateExpression(list[1])})].Insert({GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				
+				case PName("vector-count-bits"): return $"CallVectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
+				case PName("vector-sum-unsigned"): return $"CallVectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");

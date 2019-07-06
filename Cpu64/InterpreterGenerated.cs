@@ -420,6 +420,16 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* CNT */
+				if((inst & 0xBF3FFC00U) == 0x0E205800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", _ => throw new NotImplementedException() });
+					V[rd] = (Vector128<float>) (VectorCountBits((Vector128<float>) (V[rn]), (long) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => 0x8, _ => 0x10 })));
+					return true;
+				}
 				/* CSEL */
 				if((inst & 0x7FE00C00U) == 0x1A800000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -2626,6 +2636,32 @@ namespace Cpu64 {
 						Branch(addr);
 					} else {
 						Branch(pc + 4);
+					}
+					return true;
+				}
+				/* UADDLV */
+				if((inst & 0xBF3FFC00U) == 0x2E303800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) ((size) switch { 0x0 => "H", 0x1 => "S", 0x2 => "D", _ => throw new NotImplementedException() });
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x5 => "4S", _ => throw new NotImplementedException() });
+					var esize = (long) ((0x8) << (int) (size));
+					var count = (long) ((long) ((long) ((Q != 0) ? (0x80) : (0x40))) / (long) (esize));
+					switch(size) {
+						case 0x0:
+							V[(int) (rd)] = new Vector128<ushort>().WithElement(0, (ushort) ((ushort) ((uint) (VectorSumUnsigned((Vector128<float>) (V[rn]), esize, count))))).As<ushort, float>();
+							break;
+						case 0x1:
+							V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (Bitcast<uint, float>((uint) (VectorSumUnsigned((Vector128<float>) (V[rn]), esize, count)))));
+							break;
+						case 0x2:
+							V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (Bitcast<ulong, double>((ulong) ((ulong) ((uint) (VectorSumUnsigned((Vector128<float>) (V[rn]), esize, count))))))).As<double, float>();
+							break;
+						default:
+							throw new NotImplementedException();
+							break;
 					}
 					return true;
 				}

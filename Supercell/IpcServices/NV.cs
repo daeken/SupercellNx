@@ -108,6 +108,19 @@ namespace Supercell.IpcServices.nns.nvdrv {
 
 		[Ioctl(0xC0404108)]
 		void GetVaRegions(Buffer<byte> input, Buffer<byte> output) {}
+
+		struct AllocSpaceStruct {
+			public int  Pages;
+			public int  PageSize;
+			public int  Flags;
+			public int  Padding;
+			public long Offset;
+		}
+		
+		[Ioctl(0xC0184102)]
+		void AllocSpace(Buffer<AllocSpaceStruct> input, Buffer<AllocSpaceStruct> output) {
+			throw new NotSupportedException();
+		}
 	}
 
 	class NvhostCtrlGpu : NvDevice {
