@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using System.Threading;
 using Common;
 using UltimateOrb;
 
@@ -12,6 +13,9 @@ namespace Cpu64 {
 		public ulong PC, SP;
 		public readonly ulong[] X = new ulong[32];
 		public readonly Vector128<float>[] V = new Vector128<float>[32];
+
+		public uint Exclusive32;
+		public ulong Exclusive64;
 
 		public ulong NZCV {
 			get => (NZCV_N << 31) | (NZCV_Z << 30) | (NZCV_C << 29) | (NZCV_V << 28);
@@ -280,5 +284,11 @@ namespace Cpu64 {
 		public ulong FloatToFixed64(double fvalue, int fbits) {
 			return unchecked((ulong) (long) Math.Round(fvalue * (1 << fbits)));
 		}
+
+		public unsafe byte CompareAndSwap(uint* ptr, uint value, uint comparand) =>
+			unchecked(Interlocked.CompareExchange(ref *(int*) ptr, (int) value, (int) comparand) == (int) comparand ? (byte) 0 : (byte) 1);
+
+		public unsafe byte CompareAndSwap(ulong* ptr, ulong value, ulong comparand) =>
+			unchecked(Interlocked.CompareExchange(ref *(long*) ptr, (long) value, (long) comparand) == (long) comparand ? (byte) 0 : (byte) 1);
 	}
 }

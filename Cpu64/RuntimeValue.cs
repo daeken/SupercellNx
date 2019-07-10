@@ -407,5 +407,10 @@ namespace Cpu64 {
 
 		public static implicit operator RuntimeValue<T>(RuntimePointer<T> value) => value.Value;
 		public static implicit operator RuntimePointer<T>(RuntimeValue<ulong> address) => new RuntimePointer<T>(address);
+
+		public void Emit() {
+			Address.Emit();
+			Recompiler.Ilg.Convert<IntPtr>();
+		}
 	}
 }

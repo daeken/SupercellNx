@@ -477,10 +477,14 @@ namespace Generator {
 					if(list[2].Type is EVector || list[2].Type is EFloat(128))
 						return $"Sse.Store((float*) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])})";
 					return $"*({GenerateType(list[2].Type)}*) ({GenerateExpression(list[1])}) = {GenerateExpression(list[2])}";
+				case PName("store-exclusive"):
+					return $"CompareAndSwap(({GenerateType(list[2].Type)}*) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])}, Exclusive{(list[2].Type is EInt(_, var sewidth) ? sewidth : throw new NotSupportedException())})";
 				case PName("load"):
 					if(list.Type is EVector || list.Type is EFloat(128))
 						return $"Sse.LoadVector128((float*) ({GenerateExpression(list[1])}))";
 					return $"*({GenerateType(list.Type)}*) ({GenerateExpression(list[1])})";
+				case PName("load-exclusive"):
+					return $"Exclusive{(list.Type is EInt(_, var ewidth) ? ewidth : throw new NotSupportedException())} = *({GenerateType(list.Type)}*) ({GenerateExpression(list[1])})";
 				
 				case PName("svc"): return $"Svc({GenerateExpression(list[1])})";
 				case PName("sr"): return $"SR({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])}, {GenerateExpression(list[5])})";
@@ -608,8 +612,12 @@ namespace Generator {
 					return $"({GenerateExpression(list[1])}).Bitcast<{GenerateType(list.Type.AsCompiletime())}>()";
 				case PName("store"):
 					return $"((RuntimePointer<{GenerateType(list[2].Type.AsCompiletime())}>) ({GenerateExpression(list[1])})).Value = {GenerateExpression(list[2])}";
+				case PName("store-exclusive"):
+					return $"CallCompareAndSwap((RuntimePointer<{GenerateType(list[2].Type.AsCompiletime())}>) ({GenerateExpression(list[1])}), {GenerateExpression(list[2])}, Exclusive{(list[2].Type is EInt(_, var sewidth) ? sewidth : throw new NotSupportedException())}R)";
 				case PName("load"):
 					return $"((RuntimePointer<{GenerateType(list.Type.AsCompiletime())}>) ({GenerateExpression(list[1])})).Value";
+				case PName("load-exclusive"):
+					return $"Exclusive{(list.Type is EInt(_, var width) ? width : throw new NotSupportedException())}R = ((RuntimePointer<{GenerateType(list.Type.AsCompiletime())}>) ({GenerateExpression(list[1])})).Value";
 				
 				case PName("svc"): return $"CallVoid(nameof(Svc), {GenerateExpression(list[1])})";
 				case PName("sr"): return $"CallSR({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])}, {GenerateExpression(list[5])})";

@@ -2163,9 +2163,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rt] = (uint) ((uint) (*(uint*) ((ulong) ((rn) == 31 ? SP : X[(int) rn]))));
+						W[(int) rt] = (uint) ((uint) (Exclusive32 = *(uint*) ((ulong) ((rn) == 31 ? SP : X[(int) rn]))));
 					} else {
-						X[(int) rt] = (ulong) (*(ulong*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])));
+						X[(int) rt] = (ulong) (Exclusive64 = *(ulong*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])));
 					}
 					return true;
 				}
@@ -3209,12 +3209,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						*(uint*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) = (uint) ((rt) == 31 ? 0U : W[(int) rt]);
-					} else {
-						*(ulong*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) = (ulong) ((rt) == 31 ? 0UL : X[(int) rt]);
-					}
-					W[(int) rs] = (uint) (0x0);
+					W[(int) rs] = (uint) ((byte) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((byte) (CompareAndSwap((uint*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])), (uint) ((rt) == 31 ? 0U : W[(int) rt]), Exclusive32))) : ((byte) (CompareAndSwap((ulong*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])), (ulong) ((rt) == 31 ? 0UL : X[(int) rt]), Exclusive64)))));
 					return true;
 				}
 				/* SUB-immediate */

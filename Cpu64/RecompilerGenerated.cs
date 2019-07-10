@@ -2442,10 +2442,10 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Exclusive32R = ((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value));
 					} else {
 						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value);
+						XR[(int) rt] = (RuntimeValue<ulong>) (Exclusive64R = ((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value);
 					}
 					return true;
 				}
@@ -3626,14 +3626,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
-					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
-					}
-					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (0x0);
+					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<byte>) (((byte) (((size) == (0x0)) ? 1U : 0U)) != 0 ? ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]), Exclusive32R))) : ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]), Exclusive64R)))));
 					return true;
 				}
 				/* SUB-immediate */

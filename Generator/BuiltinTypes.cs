@@ -39,7 +39,9 @@ namespace Generator {
 			["branch"] = _ => EType.Unit.AsRuntime(), 
 			["branch-default"] = _ => EType.Unit.AsRuntime(), 
 			["store"] = _ => EType.Unit.AsRuntime(), 
+			["store-exclusive"] = _ => new EInt(false, 1).AsRuntime(), 
 			["load"] = x => TypeFromName(x[2]).AsRuntime(),
+			["load-exclusive"] = x => TypeFromName(x[2]).AsRuntime(),
 			
 			["svc"] = _ => EType.Unit.AsRuntime(),
 			["sr"] = _ => new EInt(false, 64).AsRuntime(),

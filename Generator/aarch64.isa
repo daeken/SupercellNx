@@ -1687,8 +1687,8 @@
     (names (size s) (rn n) (rt t))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rt) (load (gpr-or-sp64 rn) u32))
-        (= (gpr64 rt) (load (gpr-or-sp64 rn) u64))))
+        (= (gpr32 rt) (load-exclusive (gpr-or-sp64 rn) u32))
+        (= (gpr64 rt) (load-exclusive (gpr-or-sp64 rn) u64))))
 
 (def LSL-register
     "s 0 0 11010110 mmmmm 0010 00 nnnnn ddddd"
@@ -2438,11 +2438,10 @@
     "stxr W$rs, $r$rt, [X$rn]"
     (names (size f) (rs s) (rn n) (rt t))
     (let r (if (== size 0) "W" "X"))
-    (block
+    (= (gpr32 rs)
         (if (== size 0)
-            (store (gpr-or-sp64 rn) (gpr32 rt))
-            (store (gpr-or-sp64 rn) (gpr64 rt)))
-        (= (gpr32 rs) 0)))
+            (store-exclusive (gpr-or-sp64 rn) (gpr32 rt))
+            (store-exclusive (gpr-or-sp64 rn) (gpr64 rt)))))
 
 (def SUB-immediate
     "f 1 0 10001 0s iiiiiiiiiiii nnnnn ddddd"

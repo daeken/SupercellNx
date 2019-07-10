@@ -207,6 +207,15 @@ namespace Cpu64 {
 			}
 		}
 
+		RuntimeValue<uint> Exclusive32R {
+			get => Field<uint>(nameof(Exclusive32));
+			set => Field<uint>(nameof(Exclusive32), value);
+		}
+		RuntimeValue<ulong> Exclusive64R {
+			get => Field<ulong>(nameof(Exclusive64));
+			set => Field<ulong>(nameof(Exclusive64), value);
+		}
+
 		RuntimeValue<ulong> NZCVR {
 			get =>
 				(Field<ulong>(nameof(NZCV_N)) << 31) |
@@ -569,6 +578,43 @@ namespace Cpu64 {
 		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<double> value, ulong fbits) => Call<uint>(nameof(FloatToFixed32), value, (int) fbits);
 		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<float> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
 		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<double> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
+
+		RuntimeValue<byte> CallCompareAndSwap<T>(RuntimePointer<T> ptr, RuntimeValue<T> value, RuntimeValue<T> comparand)
+			=> new RuntimeValue<byte>(() => {
+				Type btype;
+				if(typeof(T) == typeof(uint))
+					btype = typeof(int);
+				else if(typeof(T) == typeof(ulong))
+					btype = typeof(long);
+				else
+					throw new NotSupportedException($"Unknown type for CallCompareAndSwap: {typeof(T).Name}");
+				
+				ptr.Emit();
+				value.Emit();
+				if(typeof(T) == typeof(uint))
+					Ilg.Convert<int>();
+				else if(typeof(T) == typeof(ulong))
+					Ilg.Convert<long>();
+				comparand.Emit();
+				Ilg.Duplicate();
+				var local = Ilg.DeclareLocal<T>();
+				Ilg.StoreLocal(local);
+				if(typeof(T) == typeof(uint))
+					Ilg.Convert<int>();
+				else if(typeof(T) == typeof(ulong))
+					Ilg.Convert<long>();
+				Ilg.Call(typeof(Interlocked).GetMethod("CompareExchange", new[] { btype.MakeByRefType(), btype, btype }));
+				Ilg.Convert<T>();
+				Ilg.LoadLocal(local);
+				var if_ = Ilg.DefineLabel();
+				var end = Ilg.DefineLabel();
+				Ilg.BranchIfEqual(if_);
+				Ilg.LoadConstant(1);
+				Ilg.Branch(end);
+				Ilg.MarkLabel(if_);
+				Ilg.LoadConstant(0);
+				Ilg.MarkLabel(end);
+			});
 
 		void LogIf(ulong addr, Action func) {
 			return;
