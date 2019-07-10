@@ -1911,11 +1911,26 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					W[(int) rt] = (uint) ((uint) ((uint) ((ushort) (*(ushort*) ((ulong) ((rn) == 31 ? SP : X[(int) rn]))))));
+					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+					W[(int) rt] = (uint) ((uint) ((uint) ((ushort) (*(ushort*) (address)))));
 					if(rn == 31)
-						SP = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
+						SP = (ulong) ((ulong) (address) + (ulong) (imm));
 					else
-						X[(int) rn] = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
+						X[(int) rn] = (ulong) ((ulong) (address) + (ulong) (imm));
+					return true;
+				}
+				/* LDRH-immediate-preindex */
+				if((inst & 0xFFE00C00U) == 0x78400C00U) {
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
+					W[(int) rt] = (uint) ((uint) ((uint) ((ushort) (*(ushort*) (address)))));
+					if(rn == 31)
+						SP = address;
+					else
+						X[(int) rn] = address;
 					return true;
 				}
 				/* LDRH-immediate-unsigned-offset */

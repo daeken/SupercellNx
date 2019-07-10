@@ -3,8 +3,37 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Common;
+using static Supercell.Globals;
 
 namespace Supercell {
+	public class KSharedMemory : KObject {
+		readonly int Size;
+		byte[] InitialBackingMemory;
+		ulong _Address;
+		public ulong Address {
+			set => SetAddress(value);
+		}
+
+		unsafe void SetAddress(ulong value) {
+			var data = _Address != 0 ? new Span<byte>((byte*) _Address, Size).ToArray() : InitialBackingMemory;
+			_Address = value;
+			if(_Address == 0) {
+				InitialBackingMemory = new byte[Size];
+				return;
+			}
+			if(data != null) {
+				var span = new Span<byte>((byte*) _Address, Size);
+				for(var i = 0; i < Size; ++i)
+					span[i] = data[i];
+			}
+		}
+
+		public KSharedMemory(int size) {
+			Size = size;
+			InitialBackingMemory = new byte[size];
+		}
+	}
+	
 	public unsafe class MemoryManager {
 		[DllImport("libc")]
 		static extern ulong mmap(ulong addr, ulong len, int prot, int flags, int fd, ulong offset);
@@ -130,6 +159,17 @@ namespace Supercell {
 				break;
 			}
 			*(uint*) _pageInfo = 0;
+			return 0;
+		}
+
+		[Svc(0x13)]
+		public uint MapSharedMemory(uint handle, ulong addr, ulong size, uint perm) {
+			$"MapSharedMemory(0x{handle:X}, 0x{addr:X}, 0x{size:X}, 0x{perm:X})".Debug();
+			var shmem = Kernel.Get<KSharedMemory>(handle);
+			var raddr = mmap(addr, size, 1 | 2, 0x1000 | 0x0001 | 0x0010, 0, 0);
+			Debug.Assert(addr == raddr);
+			shmem.Address = addr;
+			Regions.Add(addr, (addr, size));
 			return 0;
 		}
 

@@ -179,6 +179,7 @@ namespace Supercell {
 				case (5, 0): value = Memory.HeapSize; break;
 				case (6, 0): value = 0x400000; break;
 				case (7, 0): value = 0x10000; break;
+				case (8, 0): value = 0; break;
 				case (12, 0): value = 0; break;
 				case (13, 0): value = 1UL << 40; break;
 				case (14, 0): value = Memory.StackBase; break;

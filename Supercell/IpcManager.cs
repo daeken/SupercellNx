@@ -186,6 +186,9 @@ namespace Supercell {
 				buf[3 + CopyCount + offset] = handle;
 		}
 
+		public void Copy(uint offset, uint handle) =>
+			((uint*) Buffer)[3 + offset] = handle;
+
 		public void Bake() {
 			var buf = (uint*) Buffer;
 			buf[(SfcoOffset >> 2) + 2] = ErrCode;
@@ -406,6 +409,9 @@ namespace Supercell {
 						if(p.HasAttribute<MoveAttribute>()) {
 							var movePos = moveCount++;
 							post[i] = (s, om, v) => om.Move(movePos, s.CreateHandle((KObject) v));
+						} else if(p.HasAttribute<CopyAttribute>()) {
+							var copyPos = copyCount++;
+							post[i] = (s, om, v) => om.Copy(copyPos, s.CreateHandle((KObject) v));
 						} else throw new NotSupportedException();
 					} else if(p.TryGetAttribute<BytesAttribute>(out var bytesAttribute)) {
 						var bs = OutgoingMessage.BytesSetter(outputOffset, bytesAttribute.Count);

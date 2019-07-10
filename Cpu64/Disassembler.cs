@@ -989,6 +989,14 @@ namespace Cpu64 {
 				var imm = (long) (SignExt<long>(rawimm, 9));
 				return $"ldrh W{rt}, [X{rn}], #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}";
 			}
+			/* LDRH-immediate-preindex */
+			if((inst & 0xFFE00C00U) == 0x78400C00U) {
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				return $"ldrh W{rt}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]!";
+			}
 			/* LDRH-immediate-unsigned-offset */
 			if((inst & 0xFFC00000U) == 0x79400000U) {
 				var rawimm = (inst >> 10) & 0xFFFU;

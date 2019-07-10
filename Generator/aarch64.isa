@@ -1486,9 +1486,18 @@
     "ldrh W$rt, [X$rn], #$imm"
     (names (rawimm i) (rn n) (rt t))
     (let imm (signext rawimm i64))
-    (block
-        (= (gpr32 rt) (cast (load (gpr-or-sp64 rn) u16) u32))
-        (= (gpr-or-sp64 rn) (+ (gpr-or-sp64 rn) imm))))
+    (let address (gpr-or-sp64 rn)
+        (= (gpr32 rt) (cast (load address u16) u32))
+        (= (gpr-or-sp64 rn) (+ address imm))))
+
+(def LDRH-immediate-preindex
+    "01 111 0 00 01 0 iiiiiiiii 11 nnnnn ttttt"
+    "ldrh W$rt, [X$rn, #$imm]!"
+    (names (rawimm i) (rn n) (rt t))
+    (let imm (signext rawimm i64))
+    (let address (+ (gpr-or-sp64 rn) imm)
+        (= (gpr32 rt) (cast (load address u16) u32))
+        (= (gpr-or-sp64 rn) address)))
 
 (def LDRH-immediate-unsigned-offset
     "01 111 0 01 01 iiiiiiiiiiii nnnnn ttttt"
