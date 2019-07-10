@@ -1,97 +1,48 @@
-//#define DUMPINSNS
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.ExceptionServices;
 using System.Runtime.Intrinsics;
-using System.Threading;
 using Common;
-using UnicornSharp;
-#if FULLSIGIL
-using Sigil;
-using Emitter = Sigil.Emit<System.Action<Cpu64.Recompiler>>;
-using Label = Sigil.Label;
-#else
-using SigilLite;
-using Emitter = SigilLite.Emit<System.Action<Cpu64.Recompiler>>;
-using Label = SigilLite.Label;
-#endif
 
 namespace Cpu64 {
 	public class Dynarec : BaseCpu {
 		public Block BranchToBlock;
 		public ulong BranchTo;
+		readonly Recompiler Recompiler = new Recompiler();
 		
 		public Dynarec(IKernel kernel) : base(kernel) {}
 
 		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {
-			try {
-				SP = sp;
-				while(true) {
-					var block = BranchToBlock ?? CacheManager.GetBlock(pc);
-					if(block.Func == null)
-						lock(block)
-							if(block.Func == null) // Seems redundant, but really just prevents unnecessary locking
-								Recompiler.Instance.Recompile(block, this);
+			SP = sp;
+			while(true) {
+				var block = BranchToBlock ?? CacheManager.GetBlock(pc);
+				if(block.Func == null)
+					lock(block)
+						if(block.Func == null) // Seems redundant, but really just prevents unnecessary locking
+							Recompiler.Recompile(block, this);
 
-					//LogIf(0, () => Log($"Running block at 0x{pc:X}"));
+				//LogIf(0, () => Log($"Running block at 0x{pc:X}"));
 
-					BranchToBlock = null;
-					BranchTo = unchecked((ulong) -1);
-					try {
-						block.Func(this);
-					} catch(NullReferenceException) {
-						Kernel.LogExclusive(() => {
-							Log("Null reference!");
-							DebugRegs();
-							Environment.Exit(1);
-						});
-					}
-
-					if(!one && (SP < 0x100000 || SP >> 48 != 0))
-						throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
-					PC = pc = BranchTo;
-					Debug.Assert((pc & 3) == 0);
-					if(one)
-						break;
+				BranchToBlock = null;
+				BranchTo = unchecked((ulong) -1);
+				block.HitCount++;
+				try {
+					block.Func(this);
+				} catch(NullReferenceException) {
+					Kernel.LogExclusive(() => {
+						Log("Null reference!");
+						DebugRegs();
+						Environment.Exit(1);
+					});
 				}
-			} catch(Exception) {
-#if DUMPINSNS
-				BW.BaseStream.Close();
-				BW.Close();
-#endif
-				throw;
+
+				if(!one && (SP < 0x100000 || SP >> 48 != 0))
+					throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
+				PC = pc = BranchTo;
+				Debug.Assert((pc & 3) == 0);
+				if(one)
+					break;
 			}
 		}
-
-#if DUMPINSNS
-		BinaryWriter BW = new BinaryWriter(File.OpenWrite("recinsns.bin"));
-		ulong Count;
-		long Skip = 131_000_000L;
-		public void Test() {
-			//if(Count++ < 131_200_000) return;
-			//if(Count++ > 10_000_000) return;
-			if(Skip > 0) {
-				Skip--;
-				return;
-			}
-
-			BW.Write(PC);
-			BW.Write((byte) (NZCV >> 28));
-			for(var i = 0; i < 31; ++i)
-				BW.Write(X[i]);
-			for(var i = 0; i < 32; ++i)
-				BW.Write(V[i].As<float, ulong>().GetElement(0));
-			BW.Write(SP);
-			BW.Flush();
-			//((FileStream) BW.BaseStream).Flush(true);
-			BW.BaseStream.Flush();
-		}
-#endif
 		
 		public int SignExtRuntimeInt(ulong value, int size) => SignExt<int>(value, size);
 		public long SignExtRuntimeLong(ulong value, int size) => SignExt<long>(value, size);

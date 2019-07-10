@@ -263,6 +263,8 @@ namespace SigilLite {
 		
 		public Emit<DelegateT> Or() => Do(() => GEmit(OpCodes.Or));
 
+		public Emit<DelegateT> Pop() => Do(() => GEmit(OpCodes.Pop));
+
 		public Emit<DelegateT> Remainder() => Do(() => GEmit(OpCodes.Rem));
 		public Emit<DelegateT> UnsignedRemainder() => Do(() => GEmit(OpCodes.Rem_Un));
 		

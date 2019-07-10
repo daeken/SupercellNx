@@ -21,34 +21,38 @@ using Label = SigilLite.Label;
 #endif
 
 namespace Cpu64 {
-	public class Block {
-		public readonly ulong Addr;
-		public ulong End;
-		public Action<Dynarec> Func;
-
-		public Block(ulong addr) => Addr = End = addr;
-	}
-
 	public partial class Recompiler : BaseCpu {
-		public static readonly Recompiler Instance = new Recompiler();
-		
 		class RegisterMap<T> {
 			readonly Recompiler Recompiler;
 			readonly string Underlying;
 			public RuntimeValue<T> this[int reg] {
 				get => new RuntimeValue<T>(() => {
-						Recompiler.Field<T[]>(Underlying).Emit();
-						Ilg.LoadConstant(reg);
-						Ilg.LoadElement<T>();
-					});
+					if(Recompiler.Optimizing && Underlying == "X") {
+						Recompiler.RegistersUsed[reg] = true;
+						Ilg.LoadLocal(Recompiler.RegisterLocals[reg]);
+						return;
+					}
+					Recompiler.Field<T[]>(Underlying).Emit();
+					Ilg.LoadConstant(reg);
+					Ilg.LoadElement<T>();
+				});
 				set {
-					//$"Setting {Underlying}[{reg}]".Debug();
-					//Ilg.WriteLine($"Setting {Underlying}[{reg}]");
+					if(reg == 31 && Underlying == "X") {
+						value.Emit();
+						Ilg.Pop();
+						return;
+					}
+					if(Recompiler.Optimizing && Underlying == "X") {
+						Recompiler.RegistersUsed[reg] = true;
+						value.Emit();
+						Ilg.StoreLocal(Recompiler.RegisterLocals[reg]);
+						return;
+					}
+
 					Recompiler.Field<T[]>(Underlying).Emit();
 					Ilg.LoadConstant(reg);
 					value.Emit();
 					Ilg.StoreElement<T>();
-					//Ilg.WriteLine($"Set {Underlying}[{reg}]");
 				}
 			}
 			
@@ -248,12 +252,21 @@ namespace Cpu64 {
 		}
 		
 		TypeBuilder Tb;
-		public static Emitter Ilg;
+		static readonly ThreadLocal<Emitter> TlsIlg = new ThreadLocal<Emitter>();
+		public static Emitter Ilg {
+			get => TlsIlg.Value;
+			set => TlsIlg.Value = value;
+		}
 
+		bool Optimizing;
 		bool Branched;
 		ulong BlockStart, CurPc;
-		Dictionary<ulong, Label> BlockInstLabels;
+		Dictionary<ulong, Label> BlockLabels;
 		Dictionary<string, (FieldBuilder, Block)> CurBlockRefs;
+		Queue<ulong> BlocksNeeded;
+		bool[] RegistersUsed;
+		Local[] RegisterLocals;
+		Label StoreRegistersLabel;
 
 		public Recompiler() : base(null) {
 			XR = new RegisterMap<ulong>(this, nameof(Dynarec.X));
@@ -267,59 +280,141 @@ namespace Cpu64 {
 		public override void Run(ulong pc, ulong sp, bool one = false) => throw new NotImplementedException();
 
 		public unsafe void Recompile(Block block, Dynarec cpu) {
-			lock(this) {
-				//Log($"Recompiling block at {Kernel.MapAddress(pc)}");
-				//DebugRegs();
-				var pc = block.Addr;
-				BlockStart = pc;
-				BlockInstLabels = new Dictionary<ulong, Label>();
-				CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
+			//Log($"Recompiling block at {Kernel.MapAddress(pc)}");
+			//DebugRegs();
+			var pc = block.Addr;
+			Optimizing = false;
+			BlockStart = pc;
+			BlockLabels = new Dictionary<ulong, Label>();
+			CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
 
-				var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
-					AssemblyBuilderAccess.Run);
-				var mb = ab.DefineDynamicModule("Block");
-				Tb = mb.DefineType("Block");
-				var mname = $"Block_{pc:X}";
-				Ilg = Emit<Action<Dynarec>>.BuildMethod(Tb, mname,
-					MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+			var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
+				AssemblyBuilderAccess.Run);
+			var mb = ab.DefineDynamicModule("Block");
+			Tb = mb.DefineType("Block");
+			var mname = $"Block_{pc:X}";
+			Ilg = Emit<Action<Dynarec>>.BuildMethod(Tb, mname,
+				MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+
+			Branched = false;
+			while(!Branched) {
+				CurPc = pc;
+				var inst = *(uint*) pc;
+				var asm = Disassemble(inst, pc);
+				if(asm == null)
+					cpu.LogError($"Disassembly failed at {cpu.Kernel.MapAddress(pc)} --- {inst:X8}");
+
+				var blabel = BlockLabels[pc] = Ilg.DefineLabel();
+				Ilg.MarkLabel(blabel);
+
+				Field<ulong>(nameof(PC), pc);
+				if(!Recompile(inst, pc))
+					throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
+				pc += 4;
+			}
+
+			try {
+				Ilg.Return();
+			} catch(SigilVerificationException) { }
+
+			//Ilg.Instructions().Debug();
+			Ilg.CreateMethod();
+			var type = Tb.CreateType();
+			foreach(var (key, value) in CurBlockRefs)
+				type.GetField(key).SetValue(null, value.Item2);
+			block.Func = type.GetMethod(mname).CreateDelegate<Action<Dynarec>>();
+		}
+		
+		public unsafe void RecompileMultiple(Block block) {
+			Optimizing = true;
+			BlockLabels = new Dictionary<ulong, Label>();
+			CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
+			BlocksNeeded = new Queue<ulong>();
+			
+			BlocksNeeded.Enqueue(block.Addr);
+			var blockCount = 0;
+
+			var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
+				AssemblyBuilderAccess.Run);
+			var mb = ab.DefineDynamicModule("Block");
+			Tb = mb.DefineType("Block");
+			var mname = $"Block_{block.Addr:X}_Optimized";
+			Ilg = Emit<Action<Dynarec>>.BuildMethod(Tb, mname,
+				MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+
+			RegistersUsed = new bool[31];
+			RegisterLocals = Enumerable.Range(0, 31).Select(_ => Ilg.DeclareLocal<ulong>()).ToArray();
+
+			var preRegisterLoad = Ilg.DefineLabel();
+			var postRegisterLoad = Ilg.DefineLabel();
+			Ilg.Branch(preRegisterLoad);
+			Ilg.MarkLabel(postRegisterLoad);
+			StoreRegistersLabel = Ilg.DefineLabel();
+			
+			var recompiled = new HashSet<ulong>();
+
+			void CompileOneBlock(ulong pc) {
+				blockCount++;
+				if(recompiled.Contains(pc)) {
+					Console.WriteLine($"Early bailout for block {blockCount}");
+					return;
+				}
 
 				Branched = false;
 				while(!Branched) {
-					CurPc = pc;
+					recompiled.Add(pc);
 					var inst = *(uint*) pc;
 					var asm = Disassemble(inst, pc);
 					if(asm == null) {
-						cpu.DebugRegs();
-						cpu.LogError($"Disassembly failed at {cpu.Kernel.MapAddress(pc)} --- {inst:X8}");
+						Console.WriteLine($"Disassembly failed at 0x{pc:X} (multiple) --- {inst:X8}");
+						Environment.Exit(1);
 					}
 
-					var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
-					Ilg.MarkLabel(blabel);
+					try {
+						Ilg.MarkLabel(BlockLabels.TryGetValue(pc, out var label)
+							? label
+							: BlockLabels[pc] = Ilg.DefineLabel());
+					} catch(Exception) { }
 
 					Field<ulong>(nameof(PC), pc);
-#if DUMPINSNS
-									CallVoid(nameof(Dynarec.Test));
-#endif
-
 					if(!Recompile(inst, pc))
 						throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
 					pc += 4;
 				}
-
 				try {
 					Ilg.Return();
 				} catch(SigilVerificationException) { }
-
-				//Ilg.Instructions().Debug();
-				Ilg.CreateMethod();
-				var type = Tb.CreateType();
-				foreach(var (key, value) in CurBlockRefs)
-					type.GetField(key).SetValue(null, value.Item2);
-				var func = type.GetMethod(mname).CreateDelegate<Action<Dynarec>>();
-
-				block.End = pc;
-				block.Func = func;
 			}
+			
+			while(BlocksNeeded.TryDequeue(out var pc))
+				CompileOneBlock(pc);
+
+			Ilg.MarkLabel(preRegisterLoad);
+			for(var i = 0; i < 31; ++i) {
+				if(!RegistersUsed[i]) continue;
+				Field<ulong[]>(nameof(Dynarec.X)).Emit();
+				Ilg.LoadConstant(i);
+				Ilg.LoadElement<ulong>();
+				Ilg.StoreLocal(RegisterLocals[i]);
+			}
+			Ilg.Branch(postRegisterLoad);
+
+			Ilg.MarkLabel(StoreRegistersLabel);
+			for(var i = 0; i < 31; ++i) {
+				if(!RegistersUsed[i]) continue;
+				Field<ulong[]>(nameof(Dynarec.X)).Emit();
+				Ilg.LoadConstant(i);
+				Ilg.LoadLocal(RegisterLocals[i]);
+				Ilg.StoreElement<ulong>();
+			}
+			Ilg.Return();
+
+			//Ilg.Instructions().Debug();
+			Ilg.CreateMethod();
+			var type = Tb.CreateType();
+			foreach(var (key, value) in CurBlockRefs)
+				type.GetField(key).SetValue(null, value.Item2);
+			block.Func = type.GetMethod(mname).CreateDelegate<Action<Dynarec>>();
 		}
 
 		static void LoadConstant(object c) {
@@ -383,8 +478,16 @@ namespace Cpu64 {
 
 		void Branch(ulong target) {
 			Branched = true;
-			if(BlockStart <= target && target <= CurPc) {
-				Ilg.Branch(BlockInstLabels[target]);
+			if(!Optimizing && BlockStart <= target && target <= CurPc) {
+				Ilg.Branch(BlockLabels[target]);
+				return;
+			}
+			if(Optimizing) {
+				if(!BlockLabels.TryGetValue(target, out var label)) {
+					label = BlockLabels[target] = Ilg.DefineLabel();
+					BlocksNeeded.Enqueue(target);
+				}
+				Ilg.Branch(label);
 				return;
 			}
 
@@ -411,6 +514,8 @@ namespace Cpu64 {
 			CpuRef.Emit();
 			addr.Emit();
 			Ilg.StoreField(typeof(Dynarec).GetField(nameof(Dynarec.BranchTo)));
+			if(Optimizing)
+				Ilg.Branch(StoreRegistersLabel);
 		}
 
 		void Branch(Label label) {
