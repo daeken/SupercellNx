@@ -73,6 +73,12 @@ namespace Supercell {
 			return 0;
 		}
 		
+		[Svc(0xB)]
+		public void SleepThread(long nanoseconds) {
+			if(nanoseconds > 0)
+				System.Threading.Thread.Sleep(new TimeSpan(nanoseconds / 100));
+		}
+
 		[Svc(0xC)]
 		public static (uint, uint) GetThreadPriority(ulong _, uint threadHandle) {
 			$"GetThreadPriority(0x{threadHandle:X})".Debug();

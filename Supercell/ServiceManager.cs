@@ -85,8 +85,7 @@ namespace Supercell {
 		}
 		
 		public void Svc(int svc) {
-			if(svc != 0x1C)
-				$"Incoming SVC 0x{svc:X}".Debug();
+			$"Incoming SVC 0x{svc:X}".Debug();
 			if(Handlers.ContainsKey(svc))
 				Handlers[svc]();
 			else

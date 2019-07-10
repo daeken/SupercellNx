@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Common;
 
@@ -18,6 +19,7 @@ namespace Supercell {
 				wait.Set();
 				return 1;
 			});
+			wait.WaitOne();
 			return canceled;
 		}
 		public void Wait(Func<int> cb) => Wait(_ => cb());
@@ -103,21 +105,39 @@ namespace Supercell {
 		}
 
 		[Svc(0x1A)]
-		public uint LockMutex(uint curThreadHandle, ulong addr, uint reqThreadHandle) {
+		public unsafe uint LockMutex(uint curThreadHandle, ulong addr, uint reqThreadHandle) {
+			$"LockMutex(0x{curThreadHandle:X}, 0x{addr:X}, 0x{reqThreadHandle:X})".Debug();
 			EnsureMutex(addr).WaitOne();
+			"Locked mutex".Debug();
+			*(uint*) addr = (*(uint*) addr & 0x40000000) | reqThreadHandle;
+			return 0;
+		}
+
+		[Svc(0x1B)]
+		public unsafe uint UnlockMutex(ulong addr) {
+			$"UnlockMutex(0x{addr:X})".Debug();
+			*(uint*) addr = *(uint*) addr & 0x40000000;
+			try {
+				EnsureMutex(addr).ReleaseMutex();
+			} catch(ApplicationException) {
+			}
 			return 0;
 		}
 
 		[Svc(0x1C)]
-		public uint WaitProcessWideKeyAtomic(ulong mutexAddr, ulong semaAddr, uint threadHandle, uint timeout) {
+		public unsafe uint WaitProcessWideKeyAtomic(ulong mutexAddr, ulong semaAddr, uint threadHandle, uint timeout) {
 			var mutex = EnsureMutex(mutexAddr);
 			var sema = EnsureSemaphore(semaAddr);
-			mutex.WaitOne();
-			if(sema.Value > 0)
+			Debug.Assert((*(uint*) mutexAddr & ~0x40000000U) == threadHandle);
+			if(sema.Value > 0) {
+				$"Early bailout 0x{sema.Value:X}".Debug();
 				sema.Decrement();
-			mutex.ReleaseMutex();
+				return 0;
+			}
+			UnlockMutex(mutexAddr);
 			sema.Wait();
 			LockMutex(0, mutexAddr, threadHandle);
+			"Waited".Debug();
 			sema.Decrement();
 			return 0;
 		}
@@ -125,6 +145,7 @@ namespace Supercell {
 		[Svc(0x1D)]
 		public uint SignalProcessWideKey(ulong semaAddr, uint target) {
 			var semaphore = EnsureSemaphore(semaAddr);
+			semaphore.Increment();
 			if(target == 1)
 				semaphore.Signal(true);
 			else if(target == 0xFFFFFFFF)
