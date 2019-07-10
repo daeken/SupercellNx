@@ -1,4 +1,3 @@
-//#define DUMPINSNS
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,11 +12,11 @@ using Common;
 using UnicornSharp;
 #if FULLSIGIL
 using Sigil;
-using Emitter = Sigil.Emit<System.Action<Cpu64.Recompiler>>;
+using Emitter = Sigil.Emit<System.Action<Cpu64.Dynarec>>;
 using Label = Sigil.Label;
 #else
 using SigilLite;
-using Emitter = SigilLite.Emit<System.Action<Cpu64.Recompiler>>;
+using Emitter = SigilLite.Emit<System.Action<Cpu64.Dynarec>>;
 using Label = SigilLite.Label;
 #endif
 
@@ -25,12 +24,14 @@ namespace Cpu64 {
 	public class Block {
 		public readonly ulong Addr;
 		public ulong End;
-		public Action<Recompiler> Func;
+		public Action<Dynarec> Func;
 
 		public Block(ulong addr) => Addr = End = addr;
 	}
 
 	public partial class Recompiler : BaseCpu {
+		public static readonly Recompiler Instance = new Recompiler();
+		
 		class RegisterMap<T> {
 			readonly Recompiler Recompiler;
 			readonly string Underlying;
@@ -186,9 +187,9 @@ namespace Cpu64 {
 		static RuntimeValue<object> CpuRef => new RuntimeValue<object>(() => Ilg.LoadArgument(0));
 
 		public RuntimeValue<T> Field<T>(string name) => new RuntimeValue<T>(() =>
-			CpuRef.EmitThen(() => Ilg.LoadField(typeof(Recompiler).GetField(name))));
+			CpuRef.EmitThen(() => Ilg.LoadField(typeof(Dynarec).GetField(name))));
 		public void Field<T>(string name, RuntimeValue<T> value) =>
-			CpuRef.EmitThen(() => value.EmitThen(() => Ilg.StoreField(typeof(Recompiler).GetField(name))));
+			CpuRef.EmitThen(() => value.EmitThen(() => Ilg.StoreField(typeof(Dynarec).GetField(name))));
 		
 		readonly RegisterMap<ulong> XR;
 		readonly RegisterMap<Vector128<float>> VR;
@@ -197,31 +198,31 @@ namespace Cpu64 {
 		readonly VectorSingleMap VSR;
 		readonly VectorDoubleMap VDR;
 		RuntimeValue<ulong> SPR {
-			get => Field<ulong>(nameof(SP));
+			get => Field<ulong>(nameof(Dynarec.SP));
 			set {
 				/*var local = Ilg.DeclareLocal<ulong>();
 				value.Emit();
 				Ilg.StoreLocal(local);
 				Ilg.WriteLine($"Setting SP from {PC:X} -- {{0:X}}", local);*/
-				Field(nameof(SP), value);
+				Field(nameof(Dynarec.SP), value);
 			}
 		}
 
 		RuntimeValue<uint> Exclusive32R {
-			get => Field<uint>(nameof(Exclusive32));
-			set => Field<uint>(nameof(Exclusive32), value);
+			get => Field<uint>(nameof(Dynarec.Exclusive32));
+			set => Field(nameof(Dynarec.Exclusive32), value);
 		}
 		RuntimeValue<ulong> Exclusive64R {
-			get => Field<ulong>(nameof(Exclusive64));
-			set => Field<ulong>(nameof(Exclusive64), value);
+			get => Field<ulong>(nameof(Dynarec.Exclusive64));
+			set => Field(nameof(Dynarec.Exclusive64), value);
 		}
 
 		RuntimeValue<ulong> NZCVR {
 			get =>
-				(Field<ulong>(nameof(NZCV_N)) << 31) |
-				(Field<ulong>(nameof(NZCV_Z)) << 30) |
-				(Field<ulong>(nameof(NZCV_C)) << 29) |
-				(Field<ulong>(nameof(NZCV_V)) << 28);
+				(Field<ulong>(nameof(Dynarec.NZCV_N)) << 31) |
+				(Field<ulong>(nameof(Dynarec.NZCV_Z)) << 30) |
+				(Field<ulong>(nameof(Dynarec.NZCV_C)) << 29) |
+				(Field<ulong>(nameof(Dynarec.NZCV_V)) << 28);
 			set {
 				NZCV_NR = (value >> 31) & 1;
 				NZCV_ZR = (value >> 30) & 1;
@@ -230,171 +231,95 @@ namespace Cpu64 {
 			}
 		}
 		RuntimeValue<ulong> NZCV_NR {
-			get => Field<ulong>(nameof(NZCV_N));
-			set => Field(nameof(NZCV_N), value);
+			get => Field<ulong>(nameof(Dynarec.NZCV_N));
+			set => Field(nameof(Dynarec.NZCV_N), value);
 		}
 		RuntimeValue<ulong> NZCV_ZR {
-			get => Field<ulong>(nameof(NZCV_Z));
-			set => Field(nameof(NZCV_Z), value);
+			get => Field<ulong>(nameof(Dynarec.NZCV_Z));
+			set => Field(nameof(Dynarec.NZCV_Z), value);
 		}
 		RuntimeValue<ulong> NZCV_CR {
-			get => Field<ulong>(nameof(NZCV_C));
-			set => Field(nameof(NZCV_C), value);
+			get => Field<ulong>(nameof(Dynarec.NZCV_C));
+			set => Field(nameof(Dynarec.NZCV_C), value);
 		}
 		RuntimeValue<ulong> NZCV_VR {
-			get => Field<ulong>(nameof(NZCV_V));
-			set => Field(nameof(NZCV_V), value);
+			get => Field<ulong>(nameof(Dynarec.NZCV_V));
+			set => Field(nameof(Dynarec.NZCV_V), value);
 		}
 		
 		TypeBuilder Tb;
-		static readonly ThreadLocal<Emitter> TlsIlg = new ThreadLocal<Emitter>();
-		public static Emitter Ilg {
-			get => TlsIlg.Value;
-			set => TlsIlg.Value = value;
-		}
-
-		public Block BranchToBlock;
-		public ulong BranchTo;
+		public static Emitter Ilg;
 
 		bool Branched;
 		ulong BlockStart, CurPc;
 		Dictionary<ulong, Label> BlockInstLabels;
 		Dictionary<string, (FieldBuilder, Block)> CurBlockRefs;
 
-		public Recompiler(IKernel kernel) : base(kernel) {
-			XR = new RegisterMap<ulong>(this, nameof(X));
-			VR = new RegisterMap<Vector128<float>>(this, nameof(V));
+		public Recompiler() : base(null) {
+			XR = new RegisterMap<ulong>(this, nameof(Dynarec.X));
+			VR = new RegisterMap<Vector128<float>>(this, nameof(Dynarec.V));
 			VBR = new VectorByteMap(this);
 			VHR = new VectorHalfMap(this);
 			VSR = new VectorSingleMap(this);
 			VDR = new VectorDoubleMap(this);
 		}
 
-		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {
-			try {
-				SP = sp;
-				while(true) {
-					var block = BranchToBlock ?? CacheManager.GetBlock(pc);
-					lock(block)
-						if(block.Func == null) {
-							Log($"Recompiling block at {Kernel.MapAddress(pc)}");
-							//DebugRegs();
-							BlockStart = pc;
-							BlockInstLabels = new Dictionary<ulong, Label>();
-							CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
+		public override void Run(ulong pc, ulong sp, bool one = false) => throw new NotImplementedException();
 
-							var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
-								AssemblyBuilderAccess.Run);
-							var mb = ab.DefineDynamicModule("Block");
-							Tb = mb.DefineType("Block");
-							var mname = $"Block_{pc:X}";
-							Ilg = Emit<Action<Recompiler>>.BuildMethod(Tb, mname,
-								MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
+		public unsafe void Recompile(Block block, Dynarec cpu) {
+			lock(this) {
+				//Log($"Recompiling block at {Kernel.MapAddress(pc)}");
+				//DebugRegs();
+				var pc = block.Addr;
+				BlockStart = pc;
+				BlockInstLabels = new Dictionary<ulong, Label>();
+				CurBlockRefs = new Dictionary<string, (FieldBuilder, Block)>();
 
-							Branched = false;
-							while(!Branched) {
-								PC = CurPc = pc;
-								var inst = *(uint*) pc;
-								var asm = Disassemble(inst, pc);
-								if(asm == null) {
-									DebugRegs();
-									LogError($"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}");
-								}
+				var ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(Guid.NewGuid().ToString()),
+					AssemblyBuilderAccess.Run);
+				var mb = ab.DefineDynamicModule("Block");
+				Tb = mb.DefineType("Block");
+				var mname = $"Block_{pc:X}";
+				Ilg = Emit<Action<Dynarec>>.BuildMethod(Tb, mname,
+					MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard);
 
-								var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
-								Ilg.MarkLabel(blabel);
-
-								Field<ulong>(nameof(PC), pc);
-								CallVoid(nameof(Test2));
-#if DUMPINSNS
-								CallVoid(nameof(Test));
-#endif
-
-								LogIf(0, () => {
-									Log($"{Kernel.MapAddress(pc)}:  {asm}");
-									//CallVoid(nameof(DebugRegs));
-								});
-
-								if(!Recompile(inst, pc))
-									throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
-								pc += 4;
-							}
-
-							try {
-								Ilg.Return();
-							} catch(SigilVerificationException) { }
-
-							//Ilg.Instructions().Debug();
-							Ilg.CreateMethod();
-							var type = Tb.CreateType();
-							foreach(var (key, value) in CurBlockRefs)
-								type.GetField(key).SetValue(null, value.Item2);
-							var func = type.GetMethod(mname).CreateDelegate<Action<Recompiler>>();
-
-							block.End = pc;
-							block.Func = func;
-							pc = BlockStart;
-						}
-
-					LogIf(0, () => Log($"Running block at 0x{pc:X}"));
-
-					BranchToBlock = null;
-					BranchTo = unchecked((ulong) -1);
-					try {
-						block.Func(this);
-					} catch(NullReferenceException) {
-						Kernel.LogExclusive(() => {
-							Log("Null reference!");
-							DebugRegs();
-							Environment.Exit(1);
-						});
+				Branched = false;
+				while(!Branched) {
+					CurPc = pc;
+					var inst = *(uint*) pc;
+					var asm = Disassemble(inst, pc);
+					if(asm == null) {
+						cpu.DebugRegs();
+						cpu.LogError($"Disassembly failed at {cpu.Kernel.MapAddress(pc)} --- {inst:X8}");
 					}
 
-					if(!one && (SP < 0x100000 || SP >> 48 != 0))
-						throw new Exception($"SP likely corrupted by block {PC:X}: SP == 0x{SP:X}");
-					PC = pc = BranchTo;
-					Debug.Assert((pc & 3) == 0);
-					if(one)
-						break;
+					var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
+					Ilg.MarkLabel(blabel);
+
+					Field<ulong>(nameof(PC), pc);
+#if DUMPINSNS
+									CallVoid(nameof(Dynarec.Test));
+#endif
+
+					if(!Recompile(inst, pc))
+						throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
+					pc += 4;
 				}
-			} catch(Exception) {
-#if DUMPINSNS
-				BW.BaseStream.Close();
-				BW.Close();
-#endif
-				throw;
+
+				try {
+					Ilg.Return();
+				} catch(SigilVerificationException) { }
+
+				//Ilg.Instructions().Debug();
+				Ilg.CreateMethod();
+				var type = Tb.CreateType();
+				foreach(var (key, value) in CurBlockRefs)
+					type.GetField(key).SetValue(null, value.Item2);
+				var func = type.GetMethod(mname).CreateDelegate<Action<Dynarec>>();
+
+				block.End = pc;
+				block.Func = func;
 			}
-		}
-
-#if DUMPINSNS
-		BinaryWriter BW = new BinaryWriter(File.OpenWrite("recinsns.bin"));
-		ulong Count;
-		long Skip = 131_000_000L;
-		public void Test() {
-			//if(Count++ < 131_200_000) return;
-			//if(Count++ > 10_000_000) return;
-			if(Skip > 0) {
-				Skip--;
-				return;
-			}
-
-			BW.Write(PC);
-			BW.Write((byte) (NZCV >> 28));
-			for(var i = 0; i < 31; ++i)
-				BW.Write(X[i]);
-			for(var i = 0; i < 32; ++i)
-				BW.Write(V[i].As<float, ulong>().GetElement(0));
-			BW.Write(SP);
-			BW.Flush();
-			//((FileStream) BW.BaseStream).Flush(true);
-			BW.BaseStream.Flush();
-		}
-#endif
-
-		public void Test2() {
-			if((TlsBase & 0xFFFFFF) == 0) return;
-			//Log($"Executing PC {Kernel.MapAddress(PC)}");
-			//DebugRegs();
 		}
 
 		static void LoadConstant(object c) {
@@ -416,7 +341,7 @@ namespace Cpu64 {
 			var methods = typeof(BaseCpu)
 				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Concat(
-					typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
+					typeof(Dynarec).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
 					                              BindingFlags.NonPublic));
 			var mi = methods.First(m => m.Name == methodName && m.ReturnType == typeof(void) &&
 			                            m.GetParameters().Length == args.Length &&
@@ -437,7 +362,7 @@ namespace Cpu64 {
 			var methods = typeof(BaseCpu)
 				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Concat(
-					typeof(Recompiler).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
+					typeof(Dynarec).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
 					                              BindingFlags.NonPublic));
 			var mi = methods.First(m => m.Name == methodName && m.ReturnType == typeof(T) &&
 			                            m.GetParameters().Length == args.Length
@@ -468,24 +393,24 @@ namespace Cpu64 {
 			if(CurBlockRefs.TryGetValue(fname, out var br)) {
 				CpuRef.Emit();
 				Ilg.LoadField(br.Item1);
-				Ilg.StoreField(typeof(Recompiler).GetField(nameof(BranchToBlock)));
+				Ilg.StoreField(typeof(Dynarec).GetField(nameof(Dynarec.BranchToBlock)));
 			} else {
 				var fb = Tb.DefineField(fname, typeof(Block), FieldAttributes.Public | FieldAttributes.Static);
 				CurBlockRefs[fname] = (fb, block);
 				CpuRef.Emit();
 				Ilg.LoadField(fb);
-				Ilg.StoreField(typeof(Recompiler).GetField(nameof(BranchToBlock)));
+				Ilg.StoreField(typeof(Dynarec).GetField(nameof(Dynarec.BranchToBlock)));
 			}
 			CpuRef.Emit();
 			Ilg.LoadConstant(target);
-			Ilg.StoreField(typeof(Recompiler).GetField(nameof(BranchTo)));
+			Ilg.StoreField(typeof(Dynarec).GetField(nameof(Dynarec.BranchTo)));
 
 		}
 		void Branch(RuntimeValue<ulong> addr) {
 			Branched = true;
 			CpuRef.Emit();
 			addr.Emit();
-			Ilg.StoreField(typeof(Recompiler).GetField(nameof(BranchTo)));
+			Ilg.StoreField(typeof(Dynarec).GetField(nameof(Dynarec.BranchTo)));
 		}
 
 		void Branch(Label label) {
@@ -499,21 +424,19 @@ namespace Cpu64 {
 
 		void Label(Label label) => Ilg.MarkLabel(label);
 		
-		public void Unsupported() => throw new NotSupportedException();
-		
 		public static RuntimeValue<ValueT> Ternary<CondT, ValueT>(RuntimeValue<CondT> cond, RuntimeValue<ValueT> a, RuntimeValue<ValueT> b) =>
 			new RuntimeValue<ValueT>(() => {
 				Label _if = Ilg.DefineLabel(), end = Ilg.DefineLabel();
 				cond.Emit();
 				Ilg.BranchIfTrue(_if);
 				if((object) b == null)
-					CallVoid(nameof(Unsupported));
+					CallVoid(nameof(Dynarec.Unsupported));
 				else
 					b.Emit();
 				Ilg.Branch(end);
 				Ilg.MarkLabel(_if);
 				if((object) a == null)
-					CallVoid(nameof(Unsupported));
+					CallVoid(nameof(Dynarec.Unsupported));
 				else
 					a.Emit();
 				Ilg.MarkLabel(end);
@@ -540,44 +463,42 @@ namespace Cpu64 {
 		}
 
 		RuntimeValue<uint> CallAddWithCarrySetNzcv(RuntimeValue<uint> operand1, RuntimeValue<uint> operand2, RuntimeValue<uint> carryIn) =>
-			Call<uint>(nameof(AddWithCarrySetNzcv), operand1, operand2, carryIn);
+			Call<uint>(nameof(Dynarec.AddWithCarrySetNzcv), operand1, operand2, carryIn);
 		RuntimeValue<ulong> CallAddWithCarrySetNzcv(RuntimeValue<ulong> operand1, RuntimeValue<ulong> operand2, RuntimeValue<ulong> carryIn) =>
-			Call<ulong>(nameof(AddWithCarrySetNzcv), operand1, operand2, carryIn);
+			Call<ulong>(nameof(Dynarec.AddWithCarrySetNzcv), operand1, operand2, carryIn);
 
 		void CallFloatCompare(RuntimeValue<float> operand1, RuntimeValue<float> operand2) =>
-			CallVoid(nameof(FloatCompare), operand1, operand2);
+			CallVoid(nameof(Dynarec.FloatCompare), operand1, operand2);
 		void CallFloatCompare(RuntimeValue<double> operand1, RuntimeValue<double> operand2) =>
-			CallVoid(nameof(FloatCompare), operand1, operand2);
+			CallVoid(nameof(Dynarec.FloatCompare), operand1, operand2);
 		
 		RuntimeValue<T> SignExtRuntime<T>(RuntimeValue<ulong> value, int size) {
 			if(typeof(T) == typeof(int))
-				return Call<T>(nameof(SignExtRuntimeInt), value, size);
+				return Call<T>(nameof(Dynarec.SignExtRuntimeInt), value, size);
 			if(typeof(T) == typeof(long))
-				return Call<T>(nameof(SignExtRuntimeLong), value, size);
+				return Call<T>(nameof(Dynarec.SignExtRuntimeLong), value, size);
 			throw new NotSupportedException();
 		}
-		public int SignExtRuntimeInt(ulong value, int size) => SignExt<int>(value, size);
-		public long SignExtRuntimeLong(ulong value, int size) => SignExt<long>(value, size);
 		
-		RuntimeValue<uint> CallCountLeadingZeros(RuntimeValue<uint> value) => Call<uint>(nameof(CountLeadingZeros), value);
-		RuntimeValue<ulong> CallCountLeadingZeros(RuntimeValue<ulong> value) => Call<ulong>(nameof(CountLeadingZeros), value);
+		RuntimeValue<uint> CallCountLeadingZeros(RuntimeValue<uint> value) => Call<uint>(nameof(Dynarec.CountLeadingZeros), value);
+		RuntimeValue<ulong> CallCountLeadingZeros(RuntimeValue<ulong> value) => Call<ulong>(nameof(Dynarec.CountLeadingZeros), value);
 		
-		RuntimeValue<uint> CallReverseBits(RuntimeValue<uint> value) => Call<uint>(nameof(ReverseBits), value);
-		RuntimeValue<ulong> CallReverseBits(RuntimeValue<ulong> value) => Call<ulong>(nameof(ReverseBits), value);
+		RuntimeValue<uint> CallReverseBits(RuntimeValue<uint> value) => Call<uint>(nameof(Dynarec.ReverseBits), value);
+		RuntimeValue<ulong> CallReverseBits(RuntimeValue<ulong> value) => Call<ulong>(nameof(Dynarec.ReverseBits), value);
 
-		RuntimeValue<ulong> CallSR(uint op0, uint op1, uint crn, uint crm, uint op2) => Call<ulong>(nameof(SR), op0, op1, crn, crm, op2);
-		void CallSR(uint op0, uint op1, uint crn, uint crm, uint op2, RuntimeValue<ulong> value) => CallVoid(nameof(SR), op0, op1, crn, crm, op2, value);
+		RuntimeValue<ulong> CallSR(uint op0, uint op1, uint crn, uint crm, uint op2) => Call<ulong>(nameof(Dynarec.SR), op0, op1, crn, crm, op2);
+		void CallSR(uint op0, uint op1, uint crn, uint crm, uint op2, RuntimeValue<ulong> value) => CallVoid(nameof(Dynarec.SR), op0, op1, crn, crm, op2, value);
 
 		RuntimeValue<Vector128<float>> CallVectorCountBits(RuntimeValue<Vector128<float>> vec, long elems) =>
-			Call<Vector128<float>>(nameof(VectorCountBits), vec, elems);
+			Call<Vector128<float>>(nameof(Dynarec.VectorCountBits), vec, elems);
 
 		RuntimeValue<ulong> CallVectorSumUnsigned(RuntimeValue<Vector128<float>> vec, long esize, long count) =>
-			Call<ulong>(nameof(VectorSumUnsigned), vec, esize, count);
+			Call<ulong>(nameof(Dynarec.VectorSumUnsigned), vec, esize, count);
 
-		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<float> value, ulong fbits) => Call<uint>(nameof(FloatToFixed32), value, (int) fbits);
-		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<double> value, ulong fbits) => Call<uint>(nameof(FloatToFixed32), value, (int) fbits);
-		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<float> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
-		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<double> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
+		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<float> value, ulong fbits) => Call<uint>(nameof(Dynarec.FloatToFixed32), value, (int) fbits);
+		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<double> value, ulong fbits) => Call<uint>(nameof(Dynarec.FloatToFixed32), value, (int) fbits);
+		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<float> value, ulong fbits) => Call<ulong>(nameof(Dynarec.FloatToFixed64), value, (int) fbits);
+		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<double> value, ulong fbits) => Call<ulong>(nameof(Dynarec.FloatToFixed64), value, (int) fbits);
 
 		RuntimeValue<byte> CallCompareAndSwap<T>(RuntimePointer<T> ptr, RuntimeValue<T> value, RuntimeValue<T> comparand)
 			=> new RuntimeValue<byte>(() => {
@@ -616,38 +537,8 @@ namespace Cpu64 {
 				Ilg.MarkLabel(end);
 			});
 
-		void LogIf(ulong addr, Action func) {
-			return;
-			if(addr >= 0x1001FFF970 && addr <= 0x1001FFF9A0)
-				func();
-		}
-
-		public static void LogLoad<T>(RuntimeValue<ulong> addr) => CallVoid(nameof(LogLoad), addr, typeof(T).Name);
-		public void LogLoad(ulong addr, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loading {type} from {Kernel.MapAddress(addr)}"));
-		public static void LogLoaded<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogLoaded), addr, value, typeof(T).Name);
-		public void LogLoaded(ulong addr, byte value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, ushort value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, uint value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, ulong value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, sbyte value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, short value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, int value, string type)              => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, long value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, float value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, double value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
-		public void LogLoaded(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
-		
-		public static void LogStore<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogStore), addr, value, typeof(T).Name);
-		public void LogStore(ulong addr, byte value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, ushort value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, uint value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, ulong value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, sbyte value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, short value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, int value, string type)              => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, long value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, float value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, double value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
-		public void LogStore(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
+		public static void LogLoad<T>(RuntimeValue<ulong> addr) => CallVoid(nameof(Dynarec.LogLoad), addr, typeof(T).Name);
+		public static void LogLoaded<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(Dynarec.LogLoaded), addr, value, typeof(T).Name);
+		public static void LogStore<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(Dynarec.LogStore), addr, value, typeof(T).Name);
 	}
 }

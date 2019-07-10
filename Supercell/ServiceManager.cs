@@ -63,6 +63,8 @@ namespace Supercell {
 						var t = p.ParameterType;
 						if(t == typeof(uint))
 							return reg => (uint) reg;
+						if(t == typeof(long))
+							return reg => unchecked((long) reg);
 						return reg => reg;
 					}).ToArray();
 					var rethandler = BuildRetHandler(x.ReturnType);

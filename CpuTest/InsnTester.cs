@@ -41,7 +41,7 @@ namespace CpuTest {
 		public static void Disassembly(string dasm, uint inst, ulong pc = 0) {
 			var kernel = new TestKernel();
 			var interpreter = new Interpreter(kernel);
-			Assert.Equal(interpreter.Disassemble(inst, pc), dasm);
+			Assert.Equal(BaseCpu.Disassemble(inst, pc), dasm);
 		}
 		
 		public static unsafe void Test(uint insn, Action<BaseCpu, ulong> pre = null, Action<BaseCpu, bool, ulong> post = null, Action<string> checkAsm = null) {
@@ -51,13 +51,13 @@ namespace CpuTest {
 			fixed(uint* ptr = mem) {
 				var addr = (ulong) ptr + 8;
 				var interpreter = new Interpreter(kernel);
-				var recompiler = new Recompiler(kernel);
+				var recompiler = new Dynarec(kernel);
 				var uc = new UnicornArm64 { [Arm64Register.CPACR_EL1] = 3 << 20 };
 				MapAll(uc, addr, 16);
 				foreach(var (maddr, msize) in Mapped)
 					MapAll(uc, maddr, msize);
 
-				checkAsm?.Invoke(interpreter.Disassemble(insn, addr));
+				checkAsm?.Invoke(BaseCpu.Disassemble(insn, addr));
 
 				interpreter.PC = addr;
 				pre?.Invoke(interpreter, addr);

@@ -3,7 +3,7 @@ using System;
 
 namespace Cpu64 {
 	public partial class BaseCpu {
-		public unsafe string Disassemble(uint inst, ulong pc) {
+		public static unsafe string Disassemble(uint inst, ulong pc) {
 			/* ADD-extended-register */
 			if((inst & 0x7FE00000U) == 0x0B200000U) {
 				var size = (inst >> 31) & 0x1U;

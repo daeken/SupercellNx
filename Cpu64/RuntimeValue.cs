@@ -8,10 +8,10 @@ using Common;
 using PrettyPrinter;
 #if FULLSIGIL
 using Sigil;
-using Emitter = Sigil.Emit<System.Action<Cpu64.Recompiler>>;
+using Emitter = Sigil.Emit<System.Action<Cpu64.Dynarec>>;
 #else
 using SigilLite;
-using Emitter = SigilLite.Emit<System.Action<Cpu64.Recompiler>>;
+using Emitter = SigilLite.Emit<System.Action<Cpu64.Dynarec>>;
 #endif
 using UltimateOrb;
 

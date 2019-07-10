@@ -51,7 +51,7 @@ namespace Cpu64 {
 			});
 		}
 		
-		public T SignExt<T>(ulong value, int size) {
+		public static T SignExt<T>(ulong value, int size) {
 			if(typeof(T) == typeof(long))
 				return (T) (object) ((value & (1UL << (size - 1))) != 0 ? (long) value - (1L << size) : (long) value);
 			if(typeof(T) == typeof(int))
@@ -59,20 +59,20 @@ namespace Cpu64 {
 			throw new NotImplementedException($"Unknown return for SignExt: {typeof(T)}");
 		}
 
-		protected ulong MakeWMask(uint n, uint imms, uint immr, long m, int immediate) =>
+		protected static ulong MakeWMask(uint n, uint imms, uint immr, long m, int immediate) =>
 			MakeMasks(n, imms, immr, (int) m, immediate != 0).Item1;
-		protected ulong MakeTMask(uint n, uint imms, uint immr, long m, int immediate) =>
+		protected static ulong MakeTMask(uint n, uint imms, uint immr, long m, int immediate) =>
 			MakeMasks(n, imms, immr, (int) m, immediate != 0).Item2;
 
-		int HighestSetBit(ulong v, int bits) {
+		static int HighestSetBit(ulong v, int bits) {
 			for(var i = bits - 1; i >= 0; --i)
 				if((v & (1UL << i)) != 0)
 					return i;
 			return -1;
 		}
-		ulong ZeroExtend(ulong v, int bits) => v & Ones(bits);
-		ulong Ones(int bits) => Enumerable.Range(0, bits).Select(i => 1UL << i).Aggregate((a, b) => a | b);
-		ulong Replicate(ulong v, int bits, int start, int rep, int ext) {
+		static ulong ZeroExtend(ulong v, int bits) => v & Ones(bits);
+		static ulong Ones(int bits) => Enumerable.Range(0, bits).Select(i => 1UL << i).Aggregate((a, b) => a | b);
+		static ulong Replicate(ulong v, int bits, int start, int rep, int ext) {
 			var repval = (v >> start) & Ones(rep);
 			var times = ext / rep;
 			var val = 0UL;
@@ -80,8 +80,8 @@ namespace Cpu64 {
 				val = (val << rep) | repval;
 			return v | (val << start);
 		}
-		ulong RollRight(ulong v, int size, int rotate) => ((v << (size - rotate)) | (v >> rotate)) & Ones(size);
-		(ulong, ulong) MakeMasks(uint n, uint imms, uint immr, int m, bool immediate) {
+		static ulong RollRight(ulong v, int size, int rotate) => ((v << (size - rotate)) | (v >> rotate)) & Ones(size);
+		static (ulong, ulong) MakeMasks(uint n, uint imms, uint immr, int m, bool immediate) {
 			var len = HighestSetBit((n << 6) | (imms ^ 0b111111U), 7);
 			Debug.Assert(len > 0);
 			Debug.Assert(m >= 1 << len);
@@ -218,7 +218,7 @@ namespace Cpu64 {
 			}
 		}
 
-		protected unsafe OutT Bitcast<InT, OutT>(InT value) {
+		protected static unsafe OutT Bitcast<InT, OutT>(InT value) {
 			var ov = Activator.CreateInstance<OutT>();
 			switch(value) {
 				case uint v:

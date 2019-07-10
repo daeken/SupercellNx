@@ -12,7 +12,7 @@ namespace Supercell {
 		public static Thread CurrentThread => _CurrentThread.Value;
 		static ulong ThreadIdIter;
 		//public readonly BaseCpu Cpu = new Interpreter(Kernel);
-		public readonly BaseCpu Cpu = new Recompiler(Kernel);
+		public readonly BaseCpu Cpu = new Dynarec(Kernel);
 		//public readonly BaseCpu Cpu = new Unicore(Kernel);
 
 		public readonly ulong Id;

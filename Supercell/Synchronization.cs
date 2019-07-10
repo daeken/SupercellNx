@@ -126,6 +126,7 @@ namespace Supercell {
 
 		[Svc(0x1C)]
 		public unsafe uint WaitProcessWideKeyAtomic(ulong mutexAddr, ulong semaAddr, uint threadHandle, uint timeout) {
+			$"WaitProcessWideKeyAtomic(0x{mutexAddr:X}, 0x{semaAddr:X}, 0x{threadHandle:X})".Debug();
 			var mutex = EnsureMutex(mutexAddr);
 			var sema = EnsureSemaphore(semaAddr);
 			Debug.Assert((*(uint*) mutexAddr & ~0x40000000U) == threadHandle);
