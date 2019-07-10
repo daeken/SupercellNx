@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Common;
 
 namespace Supercell {
@@ -9,6 +10,16 @@ namespace Supercell {
 		
 		protected bool Presignalable => true;
 
+		public bool Wait() {
+			var wait = new AutoResetEvent(false);
+			var canceled = false;
+			Wait(_canceled => {
+				canceled = _canceled;
+				wait.Set();
+				return 1;
+			});
+			return canceled;
+		}
 		public void Wait(Func<int> cb) => Wait(_ => cb());
 		public virtual void Wait(Func<bool, int> cb) {
 			lock(this) {
@@ -70,22 +81,47 @@ namespace Supercell {
 				(*Addr)--;
 		}
 	}
-	
+
 	public class Synchronization {
 		public static readonly Synchronization Instance = new Synchronization();
 
 		readonly Dictionary<ulong, Semaphore> Semaphores = new Dictionary<ulong, Semaphore>();
+		readonly Dictionary<ulong, Mutex> Mutexes = new Dictionary<ulong, Mutex>();
 
 		Semaphore EnsureSemaphore(ulong addr) => Semaphores.TryGetValue(addr, out var sema)
 			? sema
 			: Semaphores[addr] = new Semaphore(addr);
+
+		Mutex EnsureMutex(ulong addr) => Mutexes.TryGetValue(addr, out var mutex)
+			? mutex
+			: Mutexes[addr] = new Mutex();
 
 		[Svc(0x18)]
 		public (uint, uint) WaitSynchronization(ulong _, ulong handlesAddr, uint numHandles, ulong timeout) {
 			$"WaitSynchronization".Debug();
 			return (0, 0);
 		}
-		
+
+		[Svc(0x1A)]
+		public uint LockMutex(uint curThreadHandle, ulong addr, uint reqThreadHandle) {
+			EnsureMutex(addr).WaitOne();
+			return 0;
+		}
+
+		[Svc(0x1C)]
+		public uint WaitProcessWideKeyAtomic(ulong mutexAddr, ulong semaAddr, uint threadHandle, uint timeout) {
+			var mutex = EnsureMutex(mutexAddr);
+			var sema = EnsureSemaphore(semaAddr);
+			mutex.WaitOne();
+			if(sema.Value > 0)
+				sema.Decrement();
+			mutex.ReleaseMutex();
+			sema.Wait();
+			LockMutex(0, mutexAddr, threadHandle);
+			sema.Decrement();
+			return 0;
+		}
+
 		[Svc(0x1D)]
 		public uint SignalProcessWideKey(ulong semaAddr, uint target) {
 			var semaphore = EnsureSemaphore(semaAddr);

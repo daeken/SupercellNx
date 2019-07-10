@@ -11,7 +11,7 @@ namespace Cpu64 {
 		public readonly IKernel Kernel;
 		public ulong PC, SP;
 		public readonly ulong[] X = new ulong[32];
-		public Vector128<float>[] V = new Vector128<float>[32];
+		public readonly Vector128<float>[] V = new Vector128<float>[32];
 
 		public ulong NZCV {
 			get => (NZCV_N << 31) | (NZCV_Z << 30) | (NZCV_C << 29) | (NZCV_V << 28);
@@ -29,13 +29,22 @@ namespace Cpu64 {
 		protected BaseCpu(IKernel kernel) => Kernel = kernel;
 		public abstract void Run(ulong pc, ulong sp, bool one = false);
 
-		public unsafe void DebugRegs() {
-			"========================".Debug();
-			$"NZCV {NZCV_N}{NZCV_Z}{NZCV_C}{NZCV_V}".Debug();
-			$"PC == {Kernel.MapAddress(PC)}    SP == 0x{SP:X}".Debug();
-			for(var i = 0; i < 31; ++i)
-				$"X{i} == {Kernel.MapAddress(X[i])}".Debug();
-			"========================".Debug();
+		public void Log(string message) => Kernel.Log(message);
+		public void LogError(string message) =>
+			Kernel.LogExclusive(() => {
+				Kernel.Log(message);
+				Environment.Exit(1);
+			});
+
+		public void DebugRegs() {
+			Kernel.LogExclusive(() => {
+				Log("========================");
+				Log($"NZCV {NZCV_N}{NZCV_Z}{NZCV_C}{NZCV_V}");
+				Log($"PC == {Kernel.MapAddress(PC)}    SP == 0x{SP:X}");
+				for(var i = 0; i < 31; ++i)
+					Log($"X{i} == {Kernel.MapAddress(X[i])}");
+				Log("========================");
+			});
 		}
 		
 		public T SignExt<T>(ulong value, int size) {
@@ -127,7 +136,7 @@ namespace Cpu64 {
 				var n = result >> 31;
 				var z = result == 0 ? 1U : 0;
 				var c = (uint) ((((ulong) operand1 + operand2 + carryIn) >> 32) & 1);
-				var v = (int) result == ssum ? 0U : 1;
+				var v = operand1 >> 31 == operand2 >> 31 && usum >> 31 != operand1 >> 31 ? 1U : 0;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
 				return usum;
@@ -142,7 +151,7 @@ namespace Cpu64 {
 				var n = result >> 63;
 				var z = result == 0 ? 1U : 0;
 				var c = (uint) ((((UInt128) operand1 + operand2 + carryIn) >> 64) & 1);
-				var v = (long) result == ssum ? 0U : 1;
+				var v = operand1 >> 63 == operand2 >> 63 && usum >> 63 != operand1 >> 63 ? 1U : 0;
 				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
 				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
 				return usum;
@@ -176,6 +185,8 @@ namespace Cpu64 {
 		public ulong SR(uint op0, uint op1, uint crn, uint crm, uint op2) {
 			var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
 			switch(reg) {
+				case 0b11_011_0000_0000_001: // CtrEl0
+					return 0x8444c004;
 				case 0b11_011_0100_0100_000: // FPCR
 					return 0;
 				case 0b11_011_0100_0100_001: // FPSR
@@ -252,6 +263,22 @@ namespace Cpu64 {
 				}
 				default: throw new NotSupportedException($"Unknown size for VectorSumUnsigned: {esize}");
 			}
+		}
+
+		public uint FloatToFixed32(float fvalue, int fbits) {
+			return unchecked((uint) (int) MathF.Round(fvalue * (1 << fbits)));
+		}
+
+		public ulong FloatToFixed64(float fvalue, int fbits) {
+			return unchecked((ulong) (long) MathF.Round(fvalue * (1 << fbits)));
+		}
+
+		public uint FloatToFixed32(double fvalue, int fbits) {
+			return unchecked((uint) (int) Math.Round(fvalue * (1 << fbits)));
+		}
+
+		public ulong FloatToFixed64(double fvalue, int fbits) {
+			return unchecked((ulong) (long) Math.Round(fvalue * (1 << fbits)));
 		}
 	}
 }

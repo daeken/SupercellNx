@@ -260,7 +260,7 @@ namespace Cpu64 {
 			VSR = new VectorSingleMap(this);
 			VDR = new VectorDoubleMap(this);
 		}
-		
+
 		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {
 			try {
 				SP = sp;
@@ -268,7 +268,7 @@ namespace Cpu64 {
 					var block = BranchToBlock ?? CacheManager.GetBlock(pc);
 					lock(block)
 						if(block.Func == null) {
-							//$"Recompiling block at {Kernel.MapAddress(pc)}".Debug();
+							Log($"Recompiling block at {Kernel.MapAddress(pc)}");
 							//DebugRegs();
 							BlockStart = pc;
 							BlockInstLabels = new Dictionary<ulong, Label>();
@@ -289,20 +289,20 @@ namespace Cpu64 {
 								var asm = Disassemble(inst, pc);
 								if(asm == null) {
 									DebugRegs();
-									$"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}".Debug();
-									Environment.Exit(1);
+									LogError($"Disassembly failed at {Kernel.MapAddress(pc)} --- {inst:X8}");
 								}
 
 								var blabel = BlockInstLabels[pc] = Ilg.DefineLabel();
 								Ilg.MarkLabel(blabel);
 
 								Field<ulong>(nameof(PC), pc);
+								CallVoid(nameof(Test2));
 #if DUMPINSNS
 								CallVoid(nameof(Test));
 #endif
 
 								LogIf(0, () => {
-									$"{Kernel.MapAddress(pc)}:  {asm}".Debug();
+									Log($"{Kernel.MapAddress(pc)}:  {asm}");
 									//CallVoid(nameof(DebugRegs));
 								});
 
@@ -327,16 +327,18 @@ namespace Cpu64 {
 							pc = BlockStart;
 						}
 
-					LogIf(0, () => $"Running block at 0x{pc:X}".Debug());
+					LogIf(0, () => Log($"Running block at 0x{pc:X}"));
 
 					BranchToBlock = null;
 					BranchTo = unchecked((ulong) -1);
 					try {
 						block.Func(this);
 					} catch(NullReferenceException) {
-						"Null reference!".Debug();
-						DebugRegs();
-						Environment.Exit(0);
+						Kernel.LogExclusive(() => {
+							Log("Null reference!");
+							DebugRegs();
+							Environment.Exit(1);
+						});
 					}
 
 					if(!one && (SP < 0x100000 || SP >> 48 != 0))
@@ -375,9 +377,16 @@ namespace Cpu64 {
 				BW.Write(V[i].As<float, ulong>().GetElement(0));
 			BW.Write(SP);
 			BW.Flush();
+			//((FileStream) BW.BaseStream).Flush(true);
 			BW.BaseStream.Flush();
 		}
 #endif
+
+		public void Test2() {
+			if((TlsBase & 0xFFFFFF) == 0) return;
+			//Log($"Executing PC {Kernel.MapAddress(PC)}");
+			//DebugRegs();
+		}
 
 		static void LoadConstant(object c) {
 			switch(c) {
@@ -556,6 +565,11 @@ namespace Cpu64 {
 		RuntimeValue<ulong> CallVectorSumUnsigned(RuntimeValue<Vector128<float>> vec, long esize, long count) =>
 			Call<ulong>(nameof(VectorSumUnsigned), vec, esize, count);
 
+		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<float> value, ulong fbits) => Call<uint>(nameof(FloatToFixed32), value, (int) fbits);
+		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<double> value, ulong fbits) => Call<uint>(nameof(FloatToFixed32), value, (int) fbits);
+		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<float> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
+		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<double> value, ulong fbits) => Call<ulong>(nameof(FloatToFixed64), value, (int) fbits);
+
 		void LogIf(ulong addr, Action func) {
 			return;
 			if(addr >= 0x1001FFF970 && addr <= 0x1001FFF9A0)
@@ -563,31 +577,31 @@ namespace Cpu64 {
 		}
 
 		public static void LogLoad<T>(RuntimeValue<ulong> addr) => CallVoid(nameof(LogLoad), addr, typeof(T).Name);
-		public void LogLoad(ulong addr, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loading {type} from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoad(ulong addr, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loading {type} from {Kernel.MapAddress(addr)}"));
 		public static void LogLoaded<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogLoaded), addr, value, typeof(T).Name);
-		public void LogLoaded(ulong addr, byte value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, ushort value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, uint value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, ulong value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, sbyte value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, short value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, int value, string type)              => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, long value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, float value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, double value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
-		public void LogLoaded(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}".Debug());
+		public void LogLoaded(ulong addr, byte value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, ushort value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, uint value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, ulong value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, sbyte value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, short value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, int value, string type)              => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, long value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{value:X} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, float value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, double value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
+		public void LogLoaded(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Loaded 0x{  value} ({type}) from {Kernel.MapAddress(addr)}"));
 		
 		public static void LogStore<T>(RuntimeValue<ulong> addr, RuntimeValue<T> value) => CallVoid(nameof(LogStore), addr, value, typeof(T).Name);
-		public void LogStore(ulong addr, byte value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, ushort value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, uint value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, ulong value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, sbyte value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, short value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, int value, string type)              => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, long value, string type)             => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, float value, string type)            => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, double value, string type)           => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
-		public void LogStore(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => $"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}".Debug());
+		public void LogStore(ulong addr, byte value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, ushort value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, uint value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, ulong value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, sbyte value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, short value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, int value, string type)              => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, long value, string type)             => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing 0x{value:X} ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, float value, string type)            => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, double value, string type)           => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
+		public void LogStore(ulong addr, Vector128<float> value, string type) => LogIf(addr, () => Log($"[{Kernel.MapAddress(PC)}] Storing {  value  } ({type}) to {Kernel.MapAddress(addr)}"));
 	}
 }

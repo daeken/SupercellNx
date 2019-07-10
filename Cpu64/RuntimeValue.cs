@@ -265,6 +265,13 @@ namespace Cpu64 {
 				Ilg.Convert<double>();
 			});
 
+		public RuntimeValue<T> Store() {
+			var local = Ilg.DeclareLocal<T>();
+			Emit();
+			Ilg.StoreLocal(local);
+			return new RuntimeValue<T>(() => Ilg.LoadLocal(local));
+		}
+
 		public RuntimeValue<OutT> Bitcast<OutT>() {
 			var iv = Activator.CreateInstance<T>();
 			var ov = Activator.CreateInstance<OutT>();

@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Text;
+using LibHac.Fs;
+using PrettyPrinter;
 using static Supercell.Globals;
 
 // ReSharper disable CheckNamespace
@@ -84,8 +87,12 @@ namespace Supercell.IpcServices.nn.fssrv.sf {
 		void DeleteCacheStorage(object unknown0, out object unknown1) => throw new NotImplementedException();
 		[IpcCommand(34)]
 		void GetCacheStorageSize(object unknown0, out object unknown1) => throw new NotImplementedException();
+
 		[IpcCommand(51)]
-		void OpenSaveDataFileSystem(byte save_data_space_id, [Bytes(0x200 /* 64 x 8 */)] byte[] /* nn::fssrv::sf::SaveStruct */ save_struct, [Move] out IFileSystem unknown0) => throw new NotImplementedException();
+		void OpenSaveDataFileSystem(ulong save_data_space_id, ulong titleId, ulong uid1, ulong uid2, ulong saveId,
+			byte saveDataType, [Move] out IFileSystem fs) =>
+			fs = new IFileSystem(new DirectorySaveDataFileSystem(new LocalFileSystem("savegame")));
+
 		[IpcCommand(52)]
 		void OpenSaveDataFileSystemBySystemSaveDataId(byte save_data_space_id, [Bytes(0x200 /* 64 x 8 */)] byte[] /* nn::fssrv::sf::SaveStruct */ save_struct, [Move] out IFileSystem unknown0) => throw new NotImplementedException();
 		[IpcCommand(53)]
@@ -215,6 +222,78 @@ namespace Supercell.IpcServices.nn.fssrv.sf {
 	}
 	
 	public class IFileSystem : IpcInterface {
+		readonly LibHac.Fs.IFileSystem Backing;
+
+		public IFileSystem(LibHac.Fs.IFileSystem backing) => Backing = backing;
+		
+		[IpcCommand(0)]
+		void CreateFile(uint mode, ulong size, [Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(1)]
+		void DeleteFile([Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(2)]
+		void CreateDirectory([Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(3)]
+		void DeleteDirectory([Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(4)]
+		void DeleteDirectoryRecursively([Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(5)]
+		void RenameFile([Buffer(0x19)] Buffer<byte> old_path, [Buffer(0x19)] Buffer<byte> new_path) => throw new NotImplementedException();
+		[IpcCommand(6)]
+		void RenameDirectory([Buffer(0x19)] Buffer<byte> old_path, [Buffer(0x19)] Buffer<byte> new_path) => throw new NotImplementedException();
+		[IpcCommand(7)]
+		void GetEntryType([Buffer(0x19)] Buffer<byte> path, out uint unknown0) => throw new NotImplementedException();
+
+		[IpcCommand(8)]
+		uint OpenFile(uint mode, [Buffer(0x19)] Buffer<byte> path, out object file) {
+			var fn = Encoding.ASCII.GetString(path.Span).Split('\0', 2)[0];
+			if(!Backing.FileExists(fn)) {
+				file = null;
+				return 2U | (1U << 9); // FS.PathDoesNotExist
+			}
+			file = new IFile(Backing.OpenFile(fn, (OpenMode) mode));
+			return 0;
+		}
+		
+		[IpcCommand(9)]
+		void OpenDirectory(uint filter_flags, [Buffer(0x19)] Buffer<byte> path, out object directory) => throw new NotImplementedException();
+		[IpcCommand(10)]
+		void Commit() => throw new NotImplementedException();
+		[IpcCommand(11)]
+		void GetFreeSpaceSize([Buffer(0x19)] Buffer<byte> path, out ulong total_free_space) => throw new NotImplementedException();
+		[IpcCommand(12)]
+		void GetTotalSpaceSize([Buffer(0x19)] Buffer<byte> path, out ulong total_size) => throw new NotImplementedException();
+		[IpcCommand(13)]
+		void CleanDirectoryRecursively([Buffer(0x19)] Buffer<byte> path) => throw new NotImplementedException();
+		[IpcCommand(14)]
+		void GetFileTimeStampRaw([Buffer(0x19)] Buffer<byte> path, [Bytes(0x100 /* 32 x 8 */)] out byte[] timestamp) => throw new NotImplementedException();
+		[IpcCommand(15)]
+		void QueryEntry(uint unknown0, [Buffer(0x19)] Buffer<byte> path, [Buffer(0x45)] Buffer<byte> unknown1, [Buffer(0x46)] Buffer<byte> unknown2) => throw new NotImplementedException();
+	}
+
+	public class IFile : IpcInterface {
+		readonly LibHac.Fs.IFile Backing;
+		
+		public IFile(LibHac.Fs.IFile backing) => Backing = backing;
+		
+		[IpcCommand(0)]
+		void Read(uint readOption, uint _, long offset, ulong size, out ulong out_size, [Buffer(0x46)] Buffer<byte> out_buf) => 
+			out_size = (ulong) Backing.Read(out_buf.Span, offset, (ReadOption) readOption);
+
+		[IpcCommand(1)]
+		void Write(uint writeOption, long offset, ulong size, [Buffer(0x45)] Buffer<byte> in_buf) =>
+			Backing.Write(in_buf.Span, offset, (WriteOption) writeOption);
+
+		[IpcCommand(2)]
+		void Flush() => Backing.Flush();
+
+		[IpcCommand(3)]
+		void SetSize(long size) => Backing.SetSize(size);
+
+		[IpcCommand(4)]
+		void GetSize(out long size) => size = Backing.GetSize();
+		
+		[IpcCommand(5)]
+		void OperateRange(uint unknown0, ulong unknown1, ulong unknown2, [Bytes(0x100 /* 64 x 4 */)] out byte[] unknown3) => throw new NotImplementedException();
 	}
 
 	public class IStorage : IpcInterface {

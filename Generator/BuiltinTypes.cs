@@ -56,6 +56,8 @@ namespace Generator {
 			["="] = x => x[2].Type ?? throw new NotImplementedException(), 
 			["=="] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["!="] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
+			[">"] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
+			["<"] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["+"] = x => LogicalType(x[1].Type, x[2].Type), 
 			["add-with-carry-set-nzcv"] = x => x[1].Type, 
 			["fcmp"] = _ => EType.Unit, 
@@ -66,9 +68,9 @@ namespace Generator {
 			["sqrt"] = x => x[1].Type, 
 			["~"] = x => x[1].Type, 
 			["!"] = x => new EInt(false, 1).AsRuntime(x[1].Type.Runtime), 
-			["|"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
-			["&"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
-			["^"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
+			["|"] = x => x[1].Type.AsRuntime(x.Skip(1).Any(y => y.Type.Runtime)), 
+			["&"] = x => x[1].Type.AsRuntime(x.Skip(1).Any(y => y.Type.Runtime)), 
+			["^"] = x => x[1].Type.AsRuntime(x.Skip(1).Any(y => y.Type.Runtime)), 
 			["<<"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			[">>"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			[">>>"] = x => x[1].Type.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime),
@@ -93,6 +95,7 @@ namespace Generator {
 			["vector-insert"] = _ => EType.Unit, 
 			["vector-count-bits"] = _ => EType.Vector, 
 			["vector-sum-unsigned"] = _ => new EInt(false, 32), 
+			["float-to-fixed-point"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime || x[3].Type.Runtime), 
 		};
 	}
 }

@@ -22,7 +22,12 @@ namespace ExeDiff {
 				SP = br.ReadUInt64()
 			};
 	}
-		
+
+	public static class Extensions {
+		public static void Debug<T>(this T message) =>
+			Console.WriteLine(message);
+	}
+	
 	class Program {
 		static IEnumerable<Insn> Read(string fn, long skip) {
 			using var fp = File.OpenRead(fn);
@@ -82,8 +87,9 @@ namespace ExeDiff {
 				$"SP  {last.SP:X}".Debug();
 				for(var x = 0; x < 31; ++x)
 					$"X{x}  {last.X[x]:X}".Debug();
-				break;
+				return;
 			}
+			$"Final instruction PC: {last.PC:X}".Debug();
 		}
 	}
 }

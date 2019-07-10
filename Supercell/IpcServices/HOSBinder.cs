@@ -4,7 +4,7 @@ using Supercell.Graphics;
 // ReSharper disable CheckNamespace
 namespace Supercell.IpcServices.nns.hosbinder {
 	public class IHOSBinderDriver : IpcInterface {
-		readonly NVFlinger Flinger = new NVFlinger();
+		static readonly NVFlinger Flinger = new NVFlinger();
 		
 		[IpcCommand(0)]
 		void TransactParcel(int id, uint code, [Buffer(5)] Buffer<byte> parcelData, [Buffer(6)] Buffer<byte> parcelReply, uint flags) => throw new NotImplementedException();

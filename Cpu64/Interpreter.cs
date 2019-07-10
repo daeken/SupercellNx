@@ -33,10 +33,8 @@ namespace Cpu64 {
 			var before = PC;
 			var inst = *(uint*) PC;
 			var asm = Disassemble(inst, PC);
-			if(asm == null) {
-				$"Disassembly failed at {PC:X} --- {inst:X8}".Debug();
-				Environment.Exit(1);
-			}
+			if(asm == null)
+				LogError($"Disassembly failed at {PC:X} --- {inst:X8}");
 			//$"{PC:X}: {asm}".Debug();
 			Interpret(inst, PC);
 			if(before == PC)

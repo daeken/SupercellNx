@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Common;
 using Cpu64;
@@ -14,27 +16,63 @@ namespace Supercell {
 		//public readonly BaseCpu Cpu = new Unicore(Kernel);
 
 		public readonly ulong Id;
-		
-		public readonly ulong StackSize = 32UL * 1024 * 1024;
-		public readonly ulong StackBase, TlsBase;
 
-		public Thread() {
-			_CurrentThread.Value = this;
+		public readonly ulong Stack, TlsBase;
+
+		public Thread(ulong isp = 0) {
+			if(isp == 0)
+				_CurrentThread.Value = this;
 			lock(Threading)
 				Id = ThreadIdIter++;
 			
-			StackBase = Memory.AllocateAligned(StackSize, 0x10UL << 32);
-			$"Stack Base: {StackBase:X}".Debug();
-			TlsBase = Cpu.TlsBase = Memory.AllocateAligned(0x1000, 0x11UL << 32);
+			if(isp == 0) {
+				var (stack, stackSize) = Memory.AllocateStack();
+				Stack = stack + stackSize;
+				$"Stack Base: {Stack - stackSize:X}".Debug();
+			} else {
+				Stack = isp;
+				$"Stack Top: {Stack:X}".Debug();
+			}
+			TlsBase = Cpu.TlsBase = Memory.AllocateAligned(0x10000, (0x11UL << 32) + 0x10000UL * Id);
 			$"TLS Base: {TlsBase:X}".Debug();
 		}
 
 		public void Run(ulong ep) {
-			Cpu.Run(ep, StackBase + StackSize);
+			_CurrentThread.Value = this;
+			try {
+				Cpu.Run(ep, Stack);
+			} catch(TargetInvocationException e) {
+				Logger.Exclusive(() => {
+					Console.WriteLine($"Unhandled exception on thread {CurrentThread.Id}");
+					Console.WriteLine(e.InnerException);
+					Environment.Exit(1);
+				});
+			}
+		}
+	}
+
+	public class SpawnedThread : Thread {
+		public readonly ulong EntryPoint;
+		public SpawnedThread(ulong ep, ulong context, ulong stack) : base(stack) {
+			EntryPoint = ep;
+			Cpu.X[0] = context;
 		}
 	}
 	
 	public class ThreadManager {
+		[Svc(0x8)]
+		public static (uint, uint) CreateThread(ulong _, ulong entry, ulong threadContext, ulong stackTop, uint priority, uint processorId) {
+			var nthread = new SpawnedThread(entry, threadContext, stackTop);
+			return (0, nthread.Handle);
+		}
+
+		[Svc(0x9)]
+		public static uint StartThread(uint handle) {
+			var thread = Kernel.Get<SpawnedThread>(handle);
+			new System.Threading.Thread(() => thread.Run(thread.EntryPoint)).Start();
+			return 0;
+		}
+		
 		[Svc(0xC)]
 		public static (uint, uint) GetThreadPriority(ulong _, uint threadHandle) {
 			$"GetThreadPriority(0x{threadHandle:X})".Debug();
@@ -62,7 +100,7 @@ namespace Supercell {
 		[Svc(0x25)]
 		public static (uint, ulong) GetThreadId(ulong _, uint threadHandle) {
 			$"GetThreadId(0x{threadHandle:X})".Debug();
-			return (0, 0xf00);
+			return (0, Thread.CurrentThread.Id);
 		}
 	}
 }

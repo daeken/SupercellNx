@@ -137,6 +137,9 @@ namespace Supercell {
 		public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => Memory.Regions.Values;
 		public void Svc(int svc) => Service.Svc(svc);
 
+		public void Log(string message) => Logger.Log(message);
+		public void LogExclusive(Action cb) => Logger.Exclusive(cb);
+
 		[Svc(0x16)]
 		public uint Close(uint handle) {
 			Close(Get<KObject>(handle));
@@ -178,8 +181,8 @@ namespace Supercell {
 				case (7, 0): value = 0x10000; break;
 				case (12, 0): value = 0; break;
 				case (13, 0): value = 1UL << 40; break;
-				case (14, 0): value = Thread.CurrentThread.StackBase; break;
-				case (15, 0): value = Thread.CurrentThread.StackSize; break;
+				case (14, 0): value = Memory.StackBase; break;
+				case (15, 0): value = Memory.StackSize; break;
 				case (18, 0): value = 0x10000; break;
 				case (11, _): value = 0; break;
 				default:

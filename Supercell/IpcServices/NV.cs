@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Common;
 using MoreLinq;
+using Supercell.Gpu;
+using static Supercell.Globals;
+#pragma warning disable 649
 
 // ReSharper disable CheckNamespace
 namespace Supercell.IpcServices.nns.nvdrv {
@@ -32,7 +36,7 @@ namespace Supercell.IpcServices.nns.nvdrv {
 			Ioctls = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 				.Where(x => x.HasAttribute<IoctlAttribute>())
 				.Select(x => {
-					var cmd = x.GetCustomAttribute<IoctlAttribute>().Cmd;
+					var cmd = x.GetCustomAttribute<IoctlAttribute>().Cmd & 0xFF00FFFFU;
 					switch(cmd >> 28) {
 						case 0x4: {
 							var p = x.GetParameters();
@@ -94,7 +98,7 @@ namespace Supercell.IpcServices.nns.nvdrv {
 				return unchecked((uint) NvStatus.InvalidInput);
 			if((cmd & 0x80000000) != 0 && output.Address == 0)
 				return unchecked((uint) NvStatus.InvalidInput);
-			return !Ioctls.TryGetValue(cmd, out var func)
+			return !Ioctls.TryGetValue(cmd & 0xFF00FFFFU, out var func)
 				? throw new NotSupportedException($"Unknown IOCTL for {GetType().Name}: 0x{cmd:X}")
 				: func(this, input, output);
 		}
@@ -103,6 +107,36 @@ namespace Supercell.IpcServices.nns.nvdrv {
 	}
 
 	class NvhostAsGpu : NvDevice {
+		class Range {
+			public ulong Start, End;
+			public Range(ulong start, ulong size) {
+				Start = start;
+				End = start + size;
+			}
+		}
+
+		class MappedRange : Range {
+			public ulong PhysAddr;
+			public bool VaAllocated;
+			public MappedRange(ulong start, ulong size, ulong physAddr, bool vaAllocated) : base(start, size) {
+				PhysAddr = physAddr;
+				VaAllocated = vaAllocated;
+			}
+		}
+
+		static readonly SortedList<ulong, MappedRange> Maps = new SortedList<ulong, MappedRange>();
+		static readonly SortedList<ulong, Range> Reservations = new SortedList<ulong, Range>();
+
+		bool TryGetMapPhysicalAddress(ulong addr, out ulong physAddr) {
+			var mapping = Maps.FirstOrDefault(x => x.Value.Start <= addr && x.Value.End > addr).Value;
+			if(mapping != null) {
+				physAddr = mapping.PhysAddr;
+				return true;
+			}
+			physAddr = 0;
+			return false;
+		}
+		
 		[Ioctl(0x40284109)]
 		void InitializeEx(Buffer<byte> input) {}
 
@@ -114,12 +148,86 @@ namespace Supercell.IpcServices.nns.nvdrv {
 			public int  PageSize;
 			public int  Flags;
 			public int  Padding;
-			public long Offset;
+			public ulong Offset;
 		}
 		
 		[Ioctl(0xC0184102)]
 		void AllocSpace(Buffer<AllocSpaceStruct> input, Buffer<AllocSpaceStruct> output) {
-			throw new NotSupportedException();
+			var args = input.Value;
+			var size = (ulong) args.Pages * (ulong) args.PageSize;
+			if((args.Flags & 1) != 0) // Fixed offset
+				args.Offset = GpuInstance.Vmm.ReserveFixed(args.Offset, size);
+			else
+				args.Offset = GpuInstance.Vmm.Reserve(size, args.Offset);
+			Debug.Assert(args.Offset != ulong.MaxValue);
+			Reservations.Add(args.Offset, new Range(args.Offset, size));
+			output.Value = args;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct MapBufferExStruct {
+			public uint  Flags;
+			public uint  Kind;
+			public uint  NvMapHandle;
+			public uint  PageSize;
+			public ulong BufferOffset;
+			public ulong MappingSize;
+			public ulong Offset;
+		}
+
+		[Ioctl(0xC0284106)]
+		void MapBufferEx(Buffer<MapBufferExStruct> input, Buffer<MapBufferExStruct> output) {
+			var args = input.Value;
+			var map = Nvmap.Maps[args.NvMapHandle];
+
+			ulong physAddr;
+			if((args.Flags & 0x100) != 0) // Remap sub range
+				lock(Maps) {
+					if(TryGetMapPhysicalAddress(args.Offset, out physAddr)) {
+						var virtAddr = args.Offset + args.BufferOffset;
+						physAddr += args.BufferOffset;
+						GpuInstance.Vmm.Map(physAddr, virtAddr, args.MappingSize);
+						return;
+					} else
+						throw new NotSupportedException();
+				}
+
+			physAddr = map.Address + args.BufferOffset;
+			var size = args.MappingSize;
+			$"Incoming size 0x{size:X} -- flags 0x{args.Flags}".Debug();
+			if(size == 0)
+				size = map.Size;
+
+			lock(Maps) {
+				var vaAllocated = (args.Flags & 1) == 0; // Fixed offset
+				if(vaAllocated)
+					args.Offset = GpuInstance.Vmm.Map(physAddr, size);
+				else
+					//Debug.Assert(ValidateFixedBuffer(args.Offset, size));
+					args.Offset = GpuInstance.Vmm.Map(physAddr, args.Offset, size);
+				
+				Maps.Add(args.Offset, new MappedRange(args.Offset, size, physAddr, vaAllocated));
+			}
+			
+			$"Allocated 0x{size:X} bytes at 0x{args.Offset:X}".Debug();
+			
+			output.Value = args;
+		}
+
+		[Ioctl(0x40044101)]
+		void BindChannel(Buffer<uint> input) {
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x14)]
+		struct RemapEntry {
+			public ushort Flags, Kind;
+			public uint NvMapHandle, _padding, Offset, Pages;
+		}
+
+		[Ioctl(0xC0144114)]
+		void Remap(Buffer<RemapEntry> input, Buffer<RemapEntry> output) {
+			foreach(var entry in input)
+				GpuInstance.Vmm.Map(Nvmap.Maps[entry.NvMapHandle].Address, entry.Offset << 16, entry.Pages << 16);
 		}
 	}
 
@@ -255,7 +363,125 @@ namespace Supercell.IpcServices.nns.nvdrv {
 				SubregionCount             = 0x10
 			};
 
+		[StructLayout(LayoutKind.Sequential)]
+		struct SlotMask {
+			public uint Slot, Mask;
+		}
+
+		[Ioctl(0x80084714)]
+		void ZbcGetActiveSlotMask(Buffer<SlotMask> output) => output.Value = new SlotMask { Slot = 7, Mask = 1 };
+
 		public override KEvent GetEvent(uint eventId) => new KEvent();
+	}
+
+	abstract class NvChannel : NvDevice {
+		ulong UserData;
+		
+		[Ioctl(0x40044801)]
+		protected void SetNvmapFd(Buffer<uint> input) {
+		}
+
+		[Ioctl(0xC0004808)]
+		protected void SubmitGpfifo(Buffer<byte> input, Buffer<byte> output) {
+		}
+
+		[Ioctl(0xC0104809)]
+		protected void AllocObjCtx(Buffer<byte> input, Buffer<byte> output) {
+		}
+
+		[Ioctl(0xC020481A)]
+		protected void AllocGpfifoEx32(Buffer<byte> input, Buffer<byte> output) {
+		}
+
+		[Ioctl(0xC010480B)]
+		protected void ZCullBind(Buffer<byte> input, Buffer<byte> output) {
+		}
+
+		[Ioctl(0xC018480C)]
+		protected void SetErrorNotifier(Buffer<byte> input, Buffer<byte> output) {
+		}
+
+		[Ioctl(0x4004480D)]
+		protected void SetPriority(Buffer<uint> input) {
+		}
+		
+		[Ioctl(0x40084714)]
+		protected void SetUserData(Buffer<ulong> input) => UserData = input.Value;
+		[Ioctl(0x80084715)]
+		protected void GetUserData(Buffer<ulong> output) => output.Value = UserData;
+
+		public override KEvent GetEvent(uint eventId) => new KEvent();
+	}
+
+	class NvhostGpu : NvChannel {
+	}
+
+	class Nvmap : NvDevice {
+		public class NvmapHandle {
+			public readonly uint Size;
+			public bool Allocated;
+			public uint Align;
+			public byte Kind;
+			public ulong Address;
+			public NvmapHandle(uint size) => Size = size;
+		}
+
+		uint NvmapIter;
+		public static readonly Dictionary<uint, NvmapHandle> Maps = new Dictionary<uint, NvmapHandle>();
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct CreateInfo {
+			public uint Size, Handle;
+		}
+		
+		[Ioctl(0xC0080101)]
+		void Create(Buffer<CreateInfo> input, Buffer<CreateInfo> output) {
+			var args = input.Value;
+			while(args.Size % GpuVmm.PageSize != 0)
+				args.Size++;
+			lock(Maps)
+				Maps[args.Handle = ++NvmapIter] = new NvmapHandle(args.Size);
+			output.Value = args;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct AllocInfo {
+			public uint  Handle;
+			public uint  HeapMask;
+			public uint  Flags;
+			public uint  Align;
+			public ulong Kind;
+			public ulong Address;
+		}
+
+		[Ioctl(0xC0200104)]
+		void Alloc(Buffer<AllocInfo> input, Buffer<AllocInfo> output) {
+			var args = input.Value;
+			var map = Maps[args.Handle];
+			if(args.Align < GpuVmm.PageSize)
+				args.Align = (uint) GpuVmm.PageSize;
+			if(!map.Allocated) {
+				map.Allocated = true;
+				map.Align = args.Align;
+				map.Kind = (byte) args.Kind;
+				
+				Debug.Assert(args.Address != 0);
+				map.Address = args.Address;
+			}
+			output.Value = args;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct IdInfo {
+			public uint Id, Handle;
+		}
+
+		[Ioctl(0xC008010E)]
+		void GetId(Buffer<IdInfo> input, Buffer<IdInfo> output) {
+			var args = input.Value;
+			args.Id = args.Handle;
+			output.Value = args;
+		}
 	}
 	
 	[IpcService("nvdrv")]
@@ -263,25 +489,33 @@ namespace Supercell.IpcServices.nns.nvdrv {
 	[IpcService("nvdrv:s")]
 	[IpcService("nvdrv:t")]
 	public class INvDrvServices : IpcInterface {
-		uint CurFd;
-		readonly Dictionary<uint, NvDevice> Fds = new Dictionary<uint, NvDevice>();
+		static uint CurFd;
+		static readonly Dictionary<uint, NvDevice> Fds = new Dictionary<uint, NvDevice>();
 
 		[IpcCommand(0)]
 		void Open([Buffer(0x5)] Buffer<byte> pathBuffer, out uint fd, out uint error_code) {
-			var cfd = fd = CurFd++;
-			void Add(NvDevice device) => Fds[cfd] = device;
-			var path = Encoding.ASCII.GetString(pathBuffer.GetSpan());
-			switch(path) {
-				case "/dev/nvhost-as-gpu":
-					Add(new NvhostAsGpu());
-					break;
-				case "/dev/nvhost-ctrl-gpu":
-					Add(new NvhostCtrlGpu());
-					break;
-				default:
-					throw new NotSupportedException($"Unknown NV device: {path}");
+			lock(Fds) {
+				var cfd = fd = CurFd++;
+				void Add(NvDevice device) => Fds[cfd] = device;
+				var path = Encoding.ASCII.GetString(pathBuffer.Span);
+				switch(path) {
+					case "/dev/nvhost-as-gpu":
+						Add(new NvhostAsGpu());
+						break;
+					case "/dev/nvhost-ctrl-gpu":
+						Add(new NvhostCtrlGpu());
+						break;
+					case "/dev/nvhost-gpu":
+						Add(new NvhostGpu());
+						break;
+					case "/dev/nvmap":
+						Add(new Nvmap());
+						break;
+					default:
+						throw new NotSupportedException($"Unknown NV device: {path}");
+				}
+				error_code = 0;
 			}
-			error_code = 0;
 		}
 
 		[IpcCommand(1)]

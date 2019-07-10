@@ -13,7 +13,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var r2 = (string) (((byte) ((((byte) ((ulong) (option) & (ulong) (0x3))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
+				var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 				var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 				return $"add {r1}{rd}, {r1}{rn}, {r2}{rm}, {extend} #{imm}";
 			}
@@ -122,6 +122,15 @@ namespace Cpu64 {
 				var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 				return $"ands {r}{rd}, {r}{rn}, #0x{imm:X}";
 			}
+			/* ASRV */
+			if((inst & 0x7FE0FC00U) == 0x1AC02800U) {
+				var size = (inst >> 31) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"asrv {r}{rd}, {r}{rn}, {r}{rm}";
+			}
 			/* B */
 			if((inst & 0xFC000000U) == 0x14000000U) {
 				var imm = (inst >> 0) & 0x3FFFFFFU;
@@ -176,6 +185,50 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				return $"br X{rn}";
 			}
+			/* CASP */
+			if((inst & 0xBFE0FC00U) == 0x08207C00U) {
+				var size = (inst >> 30) & 0x1U;
+				var rs = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
+				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				return $"casp {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
+			}
+			/* CASPA */
+			if((inst & 0xBFE0FC00U) == 0x08607C00U) {
+				var size = (inst >> 30) & 0x1U;
+				var rs = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
+				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				return $"caspa {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
+			}
+			/* CASPAL */
+			if((inst & 0xBFE0FC00U) == 0x0860FC00U) {
+				var size = (inst >> 30) & 0x1U;
+				var rs = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
+				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				return $"caspal {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
+			}
+			/* CASPL */
+			if((inst & 0xBFE0FC00U) == 0x0820FC00U) {
+				var size = (inst >> 30) & 0x1U;
+				var rs = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
+				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				return $"caspl {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
+			}
 			/* CBNZ */
 			if((inst & 0x7F000000U) == 0x35000000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -215,6 +268,11 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 				return $"ccmp {r}{rn}, {r}{rm}, #{nzcv}, {condstr}";
+			}
+			/* CLREX */
+			if((inst & 0xFFFFF0FFU) == 0xD503305FU) {
+				var crm = (inst >> 8) & 0xFU;
+				return $"clrex";
 			}
 			/* CLZ */
 			if((inst & 0x7FFFFC00U) == 0x5AC01000U) {
@@ -283,15 +341,21 @@ namespace Cpu64 {
 				var option = (string) ((m) switch { 0xF => "SY", 0xE => "ST", 0xD => "LD", 0xB => "ISH", 0xA => "ISHST", 0x9 => "ISHLD", 0x7 => "NSH", 0x6 => "NSHST", 0x5 => "NSHLD", 0x3 => "OSH", 0x2 => "OSHST", _ => "OSHLD" });
 				return $"DMB {option}";
 			}
+			/* DSB */
+			if((inst & 0xFFFFF0FFU) == 0xD503309FU) {
+				var crm = (inst >> 8) & 0xFU;
+				var option = (string) ((crm) switch { 0xF => "SY", 0xE => "ST", 0xD => "LD", 0xB => "ISH", 0xA => "ISHST", 0x9 => "ISHLD", 0x7 => "NSH", 0x6 => "NSHST", 0x5 => "NSHLD", 0x3 => "OSH", 0x2 => "OSHST", _ => "OSHLD" });
+				return $"DSB {option}";
+			}
 			/* DUP-general */
 			if((inst & 0xBFE0FC00U) == 0x0E000C00U) {
 				var Q = (inst >> 30) & 0x1U;
 				var imm = (inst >> 16) & 0x1FU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
-				var size = ((byte) ((((byte) ((ulong) (imm) & (ulong) (0xF))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((long) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0xF))) == (0x8)) ? 1U : 0U) != 0) ? (0x40) : (0x20)));
+				var size = ((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((long) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x8)) ? 1U : 0U) != 0) ? (0x40) : (0x20)));
 				var r = (string) (((byte) (((size) == (0x40)) ? 1U : 0U) != 0) ? ("X") : ("W"));
-				var T = ((byte) ((((byte) ((ulong) (imm) & (ulong) (0xF))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("16B") : ("8B"))) : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x3))) == (0x2)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("8H") : ("4H"))) : ((string) (((byte) ((((byte) ((ulong) (imm) & (ulong) (0x7))) == (0x4)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("4S") : ("2S"))) : ((string) ((Q != 0) ? ("2D") : throw new NotImplementedException()))))))));
+				var T = ((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("16B") : ("8B"))) : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("8H") : ("4H"))) : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("4S") : ("2S"))) : ((string) ((Q != 0) ? ("2D") : throw new NotImplementedException()))))))));
 				return $"dup V{rd}.{T}, {r}{rn}";
 			}
 			/* EOR-immediate */
@@ -380,35 +444,54 @@ namespace Cpu64 {
 				var r2 = "";
 				var tf = (byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (type)) << 2))));
 				switch(tf) {
-					case 0xC:
+					case 0xC: {
 						r1 = "S";
 						r2 = "H";
 						break;
-					case 0xD:
+					}
+					case 0xD: {
 						r1 = "D";
 						r2 = "H";
 						break;
-					case 0x3:
+					}
+					case 0x3: {
 						r1 = "H";
 						r2 = "S";
 						break;
-					case 0x1:
+					}
+					case 0x1: {
 						r1 = "D";
 						r2 = "S";
 						break;
-					case 0x7:
+					}
+					case 0x7: {
 						r1 = "H";
 						r2 = "D";
 						break;
-					case 0x4:
+					}
+					case 0x4: {
 						r1 = "S";
 						r2 = "D";
 						break;
-					default:
+					}
+					default: {
 						throw new NotImplementedException();
 						break;
+					}
 				}
 				return $"fcvt {r1}{rd}, {r2}{rn}";
+			}
+			/* FCVTZS-scalar-fixedpoint */
+			if((inst & 0x7F3F0000U) == 0x1E180000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var scale = (inst >> 10) & 0x3FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fcvtzs {r1}{rd}, {r2}{rn}, #0x{fbits:X}";
 			}
 			/* FCVTZS-scalar-integer */
 			if((inst & 0x7F3FFC00U) == 0x1E380000U) {
@@ -420,35 +503,101 @@ namespace Cpu64 {
 				var r1 = "";
 				var r2 = "";
 				switch(st) {
-					case 0x3:
+					case 0x3: {
 						r1 = "W";
 						r2 = "H";
 						break;
-					case 0x7:
+					}
+					case 0x7: {
 						r1 = "X";
 						r2 = "H";
 						break;
-					case 0x0:
+					}
+					case 0x0: {
 						r1 = "W";
 						r2 = "S";
 						break;
-					case 0x4:
+					}
+					case 0x4: {
 						r1 = "X";
 						r2 = "S";
 						break;
-					case 0x1:
+					}
+					case 0x1: {
 						r1 = "W";
 						r2 = "D";
 						break;
-					case 0x5:
+					}
+					case 0x5: {
 						r1 = "X";
 						r2 = "D";
 						break;
-					default:
+					}
+					default: {
 						throw new NotImplementedException();
 						break;
+					}
 				}
 				return $"fcvtzs {r1}{rd}, {r2}{rn}";
+			}
+			/* FCVTZU-scalar-fixedpoint */
+			if((inst & 0x7F3F0000U) == 0x1E190000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var scale = (inst >> 10) & 0x3FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fcvtzu {r1}{rd}, {r2}{rn}, #0x{fbits:X}";
+			}
+			/* FCVTZU-scalar-integer */
+			if((inst & 0x7F3FFC00U) == 0x1E390000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+				var r1 = "";
+				var r2 = "";
+				switch(st) {
+					case 0x3: {
+						r1 = "W";
+						r2 = "H";
+						break;
+					}
+					case 0x7: {
+						r1 = "X";
+						r2 = "H";
+						break;
+					}
+					case 0x0: {
+						r1 = "W";
+						r2 = "S";
+						break;
+					}
+					case 0x4: {
+						r1 = "X";
+						r2 = "S";
+						break;
+					}
+					case 0x1: {
+						r1 = "W";
+						r2 = "D";
+						break;
+					}
+					case 0x5: {
+						r1 = "X";
+						r2 = "D";
+						break;
+					}
+					default: {
+						throw new NotImplementedException();
+						break;
+					}
+				}
+				return $"fcvtzu {r1}{rd}, {r2}{rn}";
 			}
 			/* FDIV-scalar */
 			if((inst & 0xFF20FC00U) == 0x1E201800U) {
@@ -458,6 +607,24 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fdiv {r}{rd}, {r}{rn}, {r}{rm}";
+			}
+			/* FMAXNM-scalar */
+			if((inst & 0xFF20FC00U) == 0x1E206800U) {
+				var type = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fmaxnm {r}{rd}, {r}{rn}, {r}{rm}";
+			}
+			/* FMINNM-scalar */
+			if((inst & 0xFF20FC00U) == 0x1E207800U) {
+				var type = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fminnm {r}{rd}, {r}{rn}, {r}{rm}";
 			}
 			/* FMOV-general */
 			if((inst & 0x7F36FC00U) == 0x1E260000U) {
@@ -472,49 +639,60 @@ namespace Cpu64 {
 				var r1 = "";
 				var r2 = "";
 				switch(tf) {
-					case 0x66:
+					case 0x66: {
 						r1 = "W";
 						r2 = "H";
 						break;
-					case 0xE6:
+					}
+					case 0xE6: {
 						r1 = "X";
 						r2 = "H";
 						break;
-					case 0x67:
+					}
+					case 0x67: {
 						r1 = "H";
 						r2 = "W";
 						break;
-					case 0x7:
+					}
+					case 0x7: {
 						r1 = "S";
 						r2 = "W";
 						break;
-					case 0x6:
+					}
+					case 0x6: {
 						r1 = "W";
 						r2 = "S";
 						break;
-					case 0xE7:
+					}
+					case 0xE7: {
 						r1 = "H";
 						r2 = "X";
 						break;
-					case 0xA7:
+					}
+					case 0xA7: {
 						r1 = "D";
 						r2 = "X";
 						break;
-					case 0xCF:
+					}
+					case 0xCF: {
 						r1 = "V";
 						r2 = "X";
 						break;
-					case 0xCE:
+					}
+					case 0xCE: {
 						r1 = "X";
 						r2 = "V";
 						break;
-					case 0xA6:
+					}
+					case 0xA6: {
 						r1 = "X";
 						r2 = "D";
 						break;
-					default:
+					}
+					default: {
 						throw new NotImplementedException();
 						break;
+					}
 				}
 				var index1 = (string) (((byte) (((r1) == ("V")) ? 1U : 0U) != 0) ? (".D[1]") : (""));
 				var index2 = (string) (((byte) (((r2) == ("V")) ? 1U : 0U) != 0) ? (".D[1]") : (""));
@@ -526,7 +704,7 @@ namespace Cpu64 {
 				var imm = (inst >> 13) & 0xFFU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
-				var sv = (float) (Bitcast<uint, float>((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((byte) ((byte) (0x0)))) << 0)) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 1)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 2)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 3)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 4)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 5)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 6)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 7)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 8)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 9)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 10)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 11)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 12)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 13)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 14)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 15)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 16)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 17)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 18)))))) << 0)) | ((uint) (((uint) ((byte) ((byte) ((byte) ((ulong) (imm) & (ulong) (0xF)))))) << 19)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x4))) & (ulong) (0x3)))))) << 23)))) | ((uint) (((uint) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1)))))) << 4)))))) << 25)))) | ((uint) (((uint) ((byte) (((byte) ((ulong) ((byte) ((imm) >> (int) (0x6))) & (ulong) (0x1))) != 0 ? 0U : 1U))) << 30)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 31))))));
+				var sv = (float) (Bitcast<uint, float>((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((uint) ((uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (uint) (((uint) (((uint) ((byte) ((byte) (0x0)))) << 0)) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 1)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 2)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 3)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 4)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 5)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 6)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 7)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 8)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 9)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 10)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 11)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 12)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 13)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 14)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 15)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 16)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 17)))) | ((uint) (((uint) ((byte) ((byte) (0x0)))) << 18)))))) << 0)) | ((uint) (((uint) ((byte) ((byte) ((byte) ((((ulong) (imm)) & ((ulong) (0xF)))))))) << 19)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x4)))) & ((ulong) (0x3)))))))) << 23)))) | ((uint) (((uint) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 4)))))) << 25)))) | ((uint) (((uint) ((byte) (((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1))))) != 0 ? 0U : 1U))) << 30)))) | ((uint) (((uint) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 31))))));
 				return $"fmov {r}{rd}, #{sv}";
 			}
 			/* FMUL-scalar */
@@ -545,6 +723,15 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fneg {r}{rd}, {r}{rn}";
+			}
+			/* FNMUL-scalar */
+			if((inst & 0xFF20FC00U) == 0x1E208800U) {
+				var type = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fnmul {r}{rd}, {r}{rn}, {r}{rm}";
 			}
 			/* FSQRT-scalar */
 			if((inst & 0xFF3FFC00U) == 0x1E21C000U) {
@@ -571,15 +758,15 @@ namespace Cpu64 {
 				var ts = "";
 				var index = (uint) ((uint) (0x0));
 				var r = "W";
-				if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x1))) == (0x1)) ? 1U : 0U)) != 0) {
+				if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
 					ts = "B";
 					index = (byte) ((imm) >> (int) (0x1));
 				} else {
-					if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x2))) == (0x2)) ? 1U : 0U)) != 0) {
+					if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x2))))) == (0x2)) ? 1U : 0U)) != 0) {
 						ts = "H";
 						index = (byte) ((imm) >> (int) (0x2));
 					} else {
-						if(((byte) ((((byte) ((ulong) (imm) & (ulong) (0x4))) == (0x4)) ? 1U : 0U)) != 0) {
+						if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x4))))) == (0x4)) ? 1U : 0U)) != 0) {
 							ts = "S";
 							index = (byte) ((imm) >> (int) (0x3));
 						} else {
@@ -617,6 +804,12 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				return $"ldaxb W{rt}, [X{rn}]";
+			}
+			/* LDAXRB */
+			if((inst & 0xFFFFFC00U) == 0x085FFC00U) {
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				return $"ldaxrb W{rt}, [X{rn}]";
 			}
 			/* LDP-immediate-postindex */
 			if((inst & 0x7FC00000U) == 0x28C00000U) {
@@ -661,6 +854,15 @@ namespace Cpu64 {
 				var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", _ => "Q" });
 				var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, _ => 0x4 })));
 				return $"ldp {r}{rt1}, {r}{rt2}, [X{rn}, #{(simm < 0 ? $"-0x{-simm:X}" : $"0x{simm:X}")}]";
+			}
+			/* LDPSW-immediate-signed-offset */
+			if((inst & 0xFFC00000U) == 0x69400000U) {
+				var imm = (inst >> 15) & 0x7FU;
+				var rt2 = (inst >> 10) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt1 = (inst >> 0) & 0x1FU;
+				var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) (0x2));
+				return $"ldpsw X{rt1}, X{rt2}, [X{rn}, #{(simm < 0 ? $"-0x{-simm:X}" : $"0x{simm:X}")}]";
 			}
 			/* LDR-immediate-preindex */
 			if((inst & 0xBFE00C00U) == 0xB8400C00U) {
@@ -725,10 +927,10 @@ namespace Cpu64 {
 				var scale = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r1 = (string) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
-				var r2 = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r1 = (string) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
+				var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-				var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((byte) ((byte) (((size) == (0x0)) ? 1U : 0U)) & (byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
+				var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
 				return $"ldr {r1}{rt}, [X{rn}, {r2}{rm}, {extend} 0x{amount:X}]";
 			}
 			/* LDR-register */
@@ -740,7 +942,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var r2 = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
 				return $"ldr {r1}{rt}, [X{rn}, {r2}{rm}, {extend} {(amount < 0 ? $"-0x{-amount:X}" : $"0x{amount:X}")}]";
@@ -775,7 +977,7 @@ namespace Cpu64 {
 				var amount = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
 				return $"ldrb W{rt}, [X{rn}, {r}{rm}, {str} {amount}]";
 			}
@@ -802,9 +1004,29 @@ namespace Cpu64 {
 				var amount = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
 				return $"ldrh W{rt}, [X{rn}, {r}{rm}, {str} {amount}]";
+			}
+			/* LDRSB-immediate-postindex */
+			if((inst & 0xFFA00C00U) == 0x38800400U) {
+				var opc = (inst >> 22) & 0x1U;
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"ldrsb {r}{rt}, [X{rn}], #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}";
+			}
+			/* LDRSB-immediate-preindex */
+			if((inst & 0xFFA00C00U) == 0x38800C00U) {
+				var opc = (inst >> 22) & 0x1U;
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"ldrsb {r}{rt}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]!";
 			}
 			/* LDRSB-immediate-unsigned-offset */
 			if((inst & 0xFF800000U) == 0x39800000U) {
@@ -835,6 +1057,18 @@ namespace Cpu64 {
 				var imm = (ushort) ((rawimm) << (int) (0x1));
 				return $"ldrsh {r}{rt}, [X{rn}, #0x{imm:X}]";
 			}
+			/* LDRSH-register */
+			if((inst & 0xFFA00C00U) == 0x78A00800U) {
+				var opc = (inst >> 22) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var option = (inst >> 13) & 0x7U;
+				var amount = (inst >> 12) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((opc) == (0x0)) ? 1U : 0U) != 0) ? ("X") : ("W"));
+				var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
+				return $"ldrsh {r}{rt}, [X{rn}, {r}{rm}, {str} {amount}]";
+			}
 			/* LDRSW-immediate-preindex */
 			if((inst & 0xFFE00C00U) == 0xB8800C00U) {
 				var rawimm = (inst >> 12) & 0x1FFU;
@@ -858,7 +1092,7 @@ namespace Cpu64 {
 				var scale = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0x2));
 				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
 				return $"ldrsw X{rt}, [X{rn}, {r}{rm}, {extend} {(amount < 0 ? $"-0x{-amount:X}" : $"0x{amount:X}")}]";
@@ -888,6 +1122,25 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var imm = (long) (SignExt<long>(rawimm, 9));
 				return $"ldurh W{rd}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]";
+			}
+			/* LDURSW */
+			if((inst & 0xFFE00C00U) == 0xB8800000U) {
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				return $"ldursw X{rt}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]";
+			}
+			/* LDUR-simd */
+			if((inst & 0x3F600C00U) == 0x3C400000U) {
+				var size = (inst >> 30) & 0x3U;
+				var opc = (inst >> 23) & 0x1U;
+				var rawimm = (inst >> 12) & 0x1FFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "B", 0x2 => "H", 0x4 => "S", 0x6 => "D", 0x1 => "Q", _ => throw new NotImplementedException() });
+				var imm = (long) (SignExt<long>(rawimm, 9));
+				return $"ldur {r}{rt}, [X{rn}, #{(imm < 0 ? $"-0x{-imm:X}" : $"0x{imm:X}")}]";
 			}
 			/* LDXR */
 			if((inst & 0xBFFFFC00U) == 0x885F7C00U) {
@@ -924,6 +1177,24 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"madd {r}{rd}, {r}{rn}, {r}{rm}, {r}{ra}";
+			}
+			/* MOVI-32bit */
+			if((inst & 0xBFF89C00U) == 0x0F000400U) {
+				var Q = (inst >> 30) & 0x1U;
+				var a = (inst >> 18) & 0x1U;
+				var b = (inst >> 17) & 0x1U;
+				var c = (inst >> 16) & 0x1U;
+				var cmode = (inst >> 13) & 0x3U;
+				var d = (inst >> 9) & 0x1U;
+				var e = (inst >> 8) & 0x1U;
+				var f = (inst >> 7) & 0x1U;
+				var g = (inst >> 6) & 0x1U;
+				var h = (inst >> 5) & 0x1U;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) ((Q != 0) ? ("4S") : ("2S"));
+				var amount = (long) ((cmode) switch { 0x0 => 0x0, 0x1 => 0x8, 0x2 => 0x10, 0x3 => 0x18, _ => throw new NotImplementedException() });
+				var imm = (byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) (h)) << 0)) | ((byte) (((byte) (g)) << 1)))) | ((byte) (((byte) (f)) << 2)))) | ((byte) (((byte) (e)) << 3)))) | ((byte) (((byte) (d)) << 4)))) | ((byte) (((byte) (c)) << 5)))) | ((byte) (((byte) (b)) << 6)))) | ((byte) (((byte) (a)) << 7))));
+				return $"movi V{rd}.{t}, #{imm}, LSL #{(amount < 0 ? $"-0x{-amount:X}" : $"0x{amount:X}")}";
 			}
 			/* MOVI-Vx.2D */
 			if((inst & 0xFFF8FC00U) == 0x6F00E400U) {
@@ -1044,6 +1315,14 @@ namespace Cpu64 {
 				var t = (string) (((byte) (((q) == (0x0)) ? 1U : 0U) != 0) ? ("8B") : ("16B"));
 				return $"orr V{rd}.{t}, V{rn}.{t}, V{rm}.{t}";
 			}
+			/* PRFM-immediate */
+			if((inst & 0xFFC00000U) == 0xF9800000U) {
+				var imm = (inst >> 10) & 0xFFFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var imm5 = (inst >> 0) & 0x1FU;
+				var pimm = (ulong) ((ulong) (imm) * (ulong) (0x8));
+				return $"prfm #{imm5}, [X{rn}, #0x{pimm:X}]";
+			}
 			/* RBIT */
 			if((inst & 0x7FFFFC00U) == 0x5AC00000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -1057,6 +1336,23 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				return $"ret X{rn}";
 			}
+			/* REV */
+			if((inst & 0x7FFFF800U) == 0x5AC00800U) {
+				var size = (inst >> 31) & 0x1U;
+				var opc = (inst >> 10) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"rev {r}{rd}, {r}{rn}";
+			}
+			/* REV16 */
+			if((inst & 0x7FFFFC00U) == 0x5AC00400U) {
+				var size = (inst >> 31) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+				return $"rev16 {r}{rd}, {r}{rn}";
+			}
 			/* SBFM */
 			if((inst & 0x7F800000U) == 0x13000000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -1067,6 +1363,53 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"sbfm {r}{rd}, {r}{rn}, #{immr}, #{imms}";
+			}
+			/* SCVTF-scalar-integer */
+			if((inst & 0x7F3FFC00U) == 0x1E220000U) {
+				var size = (inst >> 31) & 0x1U;
+				var type = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var st = (byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))));
+				var r1 = "";
+				var r2 = "";
+				switch(st) {
+					case 0x3: {
+						r1 = "H";
+						r2 = "W";
+						break;
+					}
+					case 0x0: {
+						r1 = "S";
+						r2 = "W";
+						break;
+					}
+					case 0x1: {
+						r1 = "D";
+						r2 = "W";
+						break;
+					}
+					case 0x7: {
+						r1 = "H";
+						r2 = "X";
+						break;
+					}
+					case 0x4: {
+						r1 = "S";
+						r2 = "X";
+						break;
+					}
+					case 0x5: {
+						r1 = "D";
+						r2 = "X";
+						break;
+					}
+					default: {
+						throw new NotImplementedException();
+						break;
+					}
+				}
+				return $"scvtf {r1}{rd}, {r2}{rn}";
 			}
 			/* SDIV */
 			if((inst & 0x7FE0FC00U) == 0x1AC00C00U) {
@@ -1121,6 +1464,13 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"stlxr W{rs}, {r}{rt}, [X{rn}]";
 			}
+			/* STLXRB */
+			if((inst & 0xFFE0FC00U) == 0x0800FC00U) {
+				var rs = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				return $"stlxrr W{rs}, W{rt}, [X{rn}]";
+			}
 			/* STP-postindex */
 			if((inst & 0x7FC00000U) == 0x28800000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -1153,6 +1503,17 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 				return $"stp {r}{rt1}, {r}{rt2}, [X{rd}, #{(simm < 0 ? $"-0x{-simm:X}" : $"0x{simm:X}")}]";
+			}
+			/* STP-simd-postindex */
+			if((inst & 0x3FC00000U) == 0x2C800000U) {
+				var opc = (inst >> 30) & 0x3U;
+				var imm = (inst >> 15) & 0x7FU;
+				var rt2 = (inst >> 10) & 0x1FU;
+				var rd = (inst >> 5) & 0x1FU;
+				var rt1 = (inst >> 0) & 0x1FU;
+				var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
+				var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, 0x2 => 0x4, _ => throw new NotImplementedException() })));
+				return $"stp {r}{rt1}, {r}{rt2}, [X{rd}], #{(simm < 0 ? $"-0x{-simm:X}" : $"0x{simm:X}")}";
 			}
 			/* STP-simd-preindex */
 			if((inst & 0x3FC00000U) == 0x2D800000U) {
@@ -1215,7 +1576,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var r2 = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
 				return $"str {r1}{rt}, [X{rn}, {r2}{rm}, {extend} {(amount < 0 ? $"-0x{-amount:X}" : $"0x{amount:X}")}]";
@@ -1287,7 +1648,7 @@ namespace Cpu64 {
 				var amount = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
 				return $"strb W{rt}, [X{rn}, {r}{rm}, {str} {amount}]";
 			}
@@ -1322,7 +1683,7 @@ namespace Cpu64 {
 				var amount = (inst >> 12) & 0x1U;
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
-				var r = (string) (((byte) ((ulong) (option) & (ulong) (0x1)) != 0) ? ("X") : ("W"));
+				var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
 				return $"strh W{rt}, [X{rn}, {r}{rm}, {str} {amount}]";
 			}
@@ -1382,7 +1743,6 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var shift = (long) (((byte) (((sh) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0xC));
-				var simm = (ushort) ((imm) << (int) (shift));
 				return $"sub {r}{rd}, {r}{rn}, #0x{imm:X}, LSL #{(shift < 0 ? $"-0x{-shift:X}" : $"0x{shift:X}")}";
 			}
 			/* SUB-extended-register */
@@ -1394,7 +1754,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var r2 = (string) (((byte) ((((byte) ((ulong) (option) & (ulong) (0x3))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
+				var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 				var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 				return $"sub {r1}{rd}, {r1}{rn}, {r2}{rm}, {extend} #{imm}";
 			}
@@ -1419,7 +1779,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var r2 = (string) (((byte) ((((byte) ((ulong) (option) & (ulong) (0x3))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
+				var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 				var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 				return $"subs {r1}{rd}, {r1}{rn}, {r2}{rm}, {extend} #{imm}";
 			}
@@ -1453,6 +1813,15 @@ namespace Cpu64 {
 				var imm = (inst >> 5) & 0xFFFFU;
 				return $"svc #0x{imm:X}";
 			}
+			/* SYS */
+			if((inst & 0xFFF80000U) == 0xD5080000U) {
+				var op1 = (inst >> 16) & 0x7U;
+				var cn = (inst >> 12) & 0xFU;
+				var cm = (inst >> 8) & 0xFU;
+				var op2 = (inst >> 5) & 0x7U;
+				var rt = (inst >> 0) & 0x1FU;
+				return $"sys #{op1}, {cn}, {cm}, #{op2}, X{rt}";
+			}
 			/* TBZ */
 			if((inst & 0x7F000000U) == 0x36000000U) {
 				var upper = (inst >> 31) & 0x1U;
@@ -1460,7 +1829,7 @@ namespace Cpu64 {
 				var offset = (inst >> 5) & 0x3FFFU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var imm = (byte) ((byte) ((byte) ((upper) << (int) (0x5))) | (byte) (bottom));
+				var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
 				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
 				return $"tbz {r}{rt}, #{imm}, 0x{addr:X}";
 			}
@@ -1471,7 +1840,7 @@ namespace Cpu64 {
 				var offset = (inst >> 5) & 0x3FFFU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var imm = (byte) ((byte) ((byte) ((upper) << (int) (0x5))) | (byte) (bottom));
+				var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
 				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
 				return $"tbnz {r}{rt}, #{imm}, 0x{addr:X}";
 			}
@@ -1508,33 +1877,40 @@ namespace Cpu64 {
 				var r1 = "";
 				var r2 = "";
 				switch(st) {
-					case 0x3:
+					case 0x3: {
 						r1 = "H";
 						r2 = "W";
 						break;
-					case 0x0:
+					}
+					case 0x0: {
 						r1 = "S";
 						r2 = "W";
 						break;
-					case 0x1:
+					}
+					case 0x1: {
 						r1 = "D";
 						r2 = "W";
 						break;
-					case 0x7:
+					}
+					case 0x7: {
 						r1 = "H";
 						r2 = "X";
 						break;
-					case 0x4:
+					}
+					case 0x4: {
 						r1 = "S";
 						r2 = "X";
 						break;
-					case 0x5:
+					}
+					case 0x5: {
 						r1 = "D";
 						r2 = "X";
 						break;
-					default:
+					}
+					default: {
 						throw new NotImplementedException();
 						break;
+					}
 				}
 				return $"ucvtf {r1}{rd}, {r2}{rn}";
 			}

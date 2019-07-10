@@ -122,17 +122,19 @@ namespace Generator {
 					c++;
 					for(var i = 2; i < list.Count; i += 2)
 						if(i + 1 == list.Count) {
-							c += "default:";
+							c += "default: {";
 							c++;
 							GenerateStatement(c, (PList) list[i]);
 							c += "break;";
 							c--;
+							c += "}";
 						} else {
-							c += $"case {GenerateExpression(list[i])}:";
+							c += $"case {GenerateExpression(list[i])}: {{";
 							c++;
 							GenerateStatement(c, (PList) list[i + 1]);
 							c += "break;";
 							c--;
+							c += "}";
 						}
 					c--;
 					c += "}";
@@ -212,7 +214,10 @@ namespace Generator {
 					c += "Branch(pc + 4);";
 					break;
 				case PName("let"):
-					c += $"var {list[1]} = {GenerateExpression(list[2])};";
+					if(list[2].Type.Runtime)
+						c += $"var {list[1]} = ({GenerateExpression(list[2])}).Store();";
+					else
+						c += $"var {list[1]} = {GenerateExpression(list[2])};";
 					list.Skip(3).ForEach(x => {
 						if(x.Type.Runtime)
 							c += "// Runtime let!";
@@ -250,17 +255,19 @@ namespace Generator {
 					c++;
 					for(var i = 2; i < list.Count; i += 2)
 						if(i + 1 == list.Count) {
-							c += "default:";
+							c += "default: {";
 							c++;
 							GenerateStatement(c, (PList) list[i]);
 							c += "break;";
 							c--;
+							c += "}";
 						} else {
-							c += $"case {GenerateExpression(list[i])}:";
+							c += $"case {GenerateExpression(list[i])}: {{";
 							c++;
 							GenerateStatement(c, (PList) list[i + 1]);
 							c += "break;";
 							c--;
+							c += "}";
 						}
 					c--;
 					c += "}";
@@ -375,22 +382,41 @@ namespace Generator {
 							? $"_ => {GenerateExpression(list[i])}"
 							: $"{GenerateExpression(list[i])} => {GenerateExpression(list[i + 1])}");
 					return $"({GenerateExpression(list[1])}) switch {{ {string.Join(", ", opts)} }}";
-				case PName("=="): case PName("!="): return $"(({GenerateExpression(list[1])}) {list[0]} ({GenerateExpression(list[2])})) ? 1U : 0U";
+				case PName("=="): case PName("!="): case PName(">"): case PName("<"): return $"(({GenerateExpression(list[1])}) {list[0]} ({GenerateExpression(list[2])})) ? 1U : 0U";
 				case PName("<<"): case PName(">>"): return $"({GenerateExpression(list[1])}) {list[0]} (int) ({GenerateExpression(list[2])})";
 				case PName(">>>"):
 					if(!(list[1].Type is EInt(false, var bs))) throw new NotSupportedException();
 					return
 						$"(({GenerateExpression(list[1])}) << ({bs} - (int) ({GenerateExpression(list[2])}))) | (({GenerateExpression(list[1])}) >> (int) ({GenerateExpression(list[2])}))";
-				case PName("+"): case PName("-"): case PName("*"): case PName("/"): case PName("|"): case PName("&"): case PName("^"):
+				case PName("+"): case PName("-"): case PName("*"): case PName("/"): {
 					if(list[1].Type is EInt(var sa, var ba) && list[2].Type is EInt(var sb, var bb)) {
 						var stype = new EInt(sa && sb, Math.Max(ba, bb));
-						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
+						return
+							$"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
+
 					if(list[1].Type is EFloat(var wa) && list[2].Type is EFloat(var wb)) {
 						var stype = new EFloat(Math.Max(wa, wb));
-						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
+						return
+							$"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
+
 					throw new NotImplementedException();
+				}
+
+				case PName("|"): case PName("&"): case PName("^"): {
+					var signed = true;
+					var size = 0;
+					foreach(var elem in list.Skip(1)) {
+						if(!(elem.Type is EInt(var s, var ba)))
+							throw new NotImplementedException();
+						signed = signed && s;
+						size = Math.Max(size, ba);
+					}
+					var stype = GenerateType(new EInt(signed, size));
+					return list.Skip(1).Select(x => $"(({stype}) ({GenerateExpression(x)}))").Aggregate((x1, x2) => $"({x1} {list[0]} {x2})");
+				}
+
 				case PName("sqrt"):
 					return $"({GenerateType(list.Type)}) Math.Sqrt((double) ({GenerateExpression(list[1])}))";
 				case PName(":"):
@@ -465,6 +491,8 @@ namespace Generator {
 				case PName("vector-count-bits"): return $"VectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"VectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				
+				case PName("float-to-fixed-point"): return $"FloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, (int) ({GenerateExpression(list[3])}))";
+				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");
 				default: throw new NotSupportedException($"Non-name for first element of list {list.ToPrettyString()}");
@@ -497,25 +525,45 @@ namespace Generator {
 							? $"_ => {Expr(list[i])}"
 							: $"{GenerateExpression(list[i])} => {Expr(list[i + 1])}");
 					return $"({GenerateExpression(list[1])}) switch {{ {string.Join(", ", opts)} }}";
-				case PName("=="): case PName("!="): return $"({GenerateExpression(list[1])}) {list[0]} ({GenerateExpression(list[2])})";
+				case PName("=="): case PName("!="): case PName(">"): case PName("<"): return $"({GenerateExpression(list[1])}) {list[0]} ({GenerateExpression(list[2])})";
 				case PName("<<"): return $"({GenerateExpression(list[1])}).ShiftLeft({GenerateExpression(list[2])})";
 				case PName(">>"): return $"({GenerateExpression(list[1])}).ShiftRight({GenerateExpression(list[2])})";
 				case PName(">>>"):
 					if(!(list[1].Type is EInt(false, var bs))) throw new NotSupportedException();
 					return
 						$"(({GenerateExpression(list[1])}).ShiftLeft((RuntimeValue<uint>) ({bs} - ({GenerateExpression(list[2])})))) | (({GenerateExpression(list[1])}).ShiftRight((RuntimeValue<uint>) ({GenerateExpression(list[2])})))";
-				case PName("+"): case PName("-"): case PName("*"): case PName("/"): case PName("|"): case PName("&"): case PName("^"):
+				case PName("+"): case PName("-"): case PName("*"): case PName("/"): {
 					if(list[1].Type is EInt(var sa, var ba) && list[2].Type is EInt(var sb, var bb)) {
-						var stype = new EInt(sa && sb, Math.Max(ba, bb)) { Runtime = list[1].Type.Runtime || list[2].Type.Runtime };
+						var stype = new EInt(sa && sb, Math.Max(ba, bb))
+							{ Runtime = list[1].Type.Runtime || list[2].Type.Runtime };
 						if(stype.Runtime)
-							return $"({GenerateType(stype)}) ({GenerateType(list[1].Type.AsRuntime())}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateType(list[2].Type.AsRuntime())}) ({GenerateExpression(list[2])})";
-						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
+							return
+								$"({GenerateType(stype)}) ({GenerateType(list[1].Type.AsRuntime())}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateType(list[2].Type.AsRuntime())}) ({GenerateExpression(list[2])})";
+						return
+							$"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
+
 					if(list[1].Type is EFloat(var wa) && list[2].Type is EFloat(var wb)) {
-						var stype = new EFloat(Math.Max(wa, wb)) { Runtime = list[1].Type.Runtime || list[2].Type.Runtime };
-						return $"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
+						var stype = new EFloat(Math.Max(wa, wb))
+							{ Runtime = list[1].Type.Runtime || list[2].Type.Runtime };
+						return
+							$"({GenerateType(stype)}) ({GenerateExpression(list[1])}) {list[0]} ({GenerateType(stype)}) ({GenerateExpression(list[2])})";
 					}
+
 					throw new NotImplementedException();
+				}
+				case PName("|"): case PName("&"): case PName("^"): {
+					var signed = true;
+					var size = 0;
+					foreach(var elem in list.Skip(1)) {
+						if(!(elem.Type is EInt(var s, var ba)))
+							throw new NotImplementedException();
+						signed = signed && s;
+						size = Math.Max(size, ba);
+					}
+					var stype = GenerateType(new EInt(signed, size).AsRuntime(list.Skip(1).Any(x => x.Type.Runtime)));
+					return list.Skip(1).Select(x => $"(({stype}) ({GenerateExpression(x)}))").Aggregate((x1, x2) => $"({x1} {list[0]} {x2})");
+				}
 				case PName("sqrt"):
 					return $"({GenerateType(list.Type)}) (({GenerateType(new EFloat(64).AsRuntime(list[1].Type.Runtime))}) ({GenerateExpression(list[1])})).Sqrt()";
 				case PName("add-with-carry-set-nzcv"):
@@ -575,6 +623,8 @@ namespace Generator {
 				
 				case PName("vector-count-bits"): return $"CallVectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"CallVectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				
+				case PName("float-to-fixed-point"): return $"CallFloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
 				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");

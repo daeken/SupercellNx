@@ -231,9 +231,45 @@ namespace Supercell.IpcServices.nn.am.Service {
 			throw new NotImplementedException();
 	}
 
+	public class IStorage : IpcInterface {
+		public readonly byte[] Data;
+		public IStorage(byte[] data) => Data = data;
+
+		[IpcCommand(0)]
+		void Open([Move] out IStorageAccessor accessor) => accessor = new IStorageAccessor(Data);
+	}
+
+	public class IStorageAccessor : IpcInterface {
+		public readonly byte[] Data;
+		public IStorageAccessor(byte[] data) => Data = data;
+
+		[IpcCommand(0)]
+		void GetSize(out ulong size) => size = (ulong) Data.Length;
+		
+		[IpcCommand(10)]
+		void Write(ulong offset, [Buffer(0x21)] Buffer<byte> buffer) => throw new NotImplementedException();
+
+		[IpcCommand(11)]
+		void Read(ulong offset, [Buffer(0x22)] Buffer<byte> buffer) {
+			var span = buffer.Span;
+			var len = Math.Min(span.Length, Data.Length);
+			for(var i = 0; i < len; ++i)
+				span[i] = Data[i];
+		}
+	}
+
 	public class IApplicationFunctions : IpcInterface {
 		[IpcCommand(1)]
-		void PopLaunchParameter(uint unknown0, out object unknown1) => throw new NotImplementedException();
+		void PopLaunchParameter(uint unknown0, [Move] out IStorage storage) {
+			var data = new byte[0x88];
+			data[0] = 0xCA;
+			data[1] = 0x97;
+			data[2] = 0x94;
+			data[3] = 0xC7;
+			data[4] = 1;
+			data[8] = 1;
+			storage = new IStorage(data);
+		}
 
 		[IpcCommand(10)]
 		void CreateApplicationAndPushAndRequestToStart(ulong /* nn::ncm::ApplicationId */ unknown0, object unknown1) {}
@@ -250,12 +286,11 @@ namespace Supercell.IpcServices.nn.am.Service {
 			ulong /* nn::ncm::ApplicationId */ unknown2) {}
 
 		[IpcCommand(20)]
-		void EnsureSaveData([Bytes(0x80 /* 16 x 8 */)] byte[] /* nn::account::Uid */ unknown0, out ulong unknown1) =>
-			throw new NotImplementedException();
+		void EnsureSaveData([Bytes(0x80 /* 16 x 8 */)] byte[] uid, out ulong unknown1) =>
+			unknown1 = 0;
 
 		[IpcCommand(21)]
-		void GetDesiredLanguage([Bytes(0x8 /* 8 x 1 */)] out byte[] /* nn::settings::LanguageCode */ unknown0) => 
-			throw new NotImplementedException();
+		void GetDesiredLanguage(out ulong languageCode) => languageCode = LanguageCode.GetLanguageCode(1);
 
 		[IpcCommand(22)]
 		void SetTerminateResult(uint unknown0) {}

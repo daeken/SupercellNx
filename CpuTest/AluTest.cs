@@ -71,12 +71,33 @@ namespace CpuTest {
 		}
 
 		[Fact]
+		public void SubsPosNeg() {
+			// SUBS WZR, W2, W8
+			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
+			InsnTester.Test(0x6B08005F, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[2] = 0x40284109;
+				cpu.X[8] = 0xC018481A;
+			});
+		}
+
+		[Fact]
 		public void SubExtendedRegister() {
-			// sub W0, W8, W9, UXTB
+			// SUB W0, W8, W9, UXTB
 			InsnTester.Test(0x4B290100, (cpu, _) => {
 				if(cpu == null) return;
 				cpu.X[8] = 0x5F;
 				cpu.X[9] = 0x646E61374B4E5A;
+			});
+		}
+
+		[Fact]
+		public void Sub() {
+			// SUB W10, W22, #0x10,LSL#12
+			InsnTester.Disassembly("sub W10, W22, #0x10, LSL #0xC", 0x514042CA);
+			InsnTester.Test(0x514042CA, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[22] = 0xA0010045;
 			});
 		}
 

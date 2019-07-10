@@ -6,5 +6,7 @@ namespace Common {
 		string MapAddress(ulong addr);
 		IEnumerable<(ulong Start, ulong Size)> MemoryRegions { get; }
 		void Svc(int svc);
+		void Log(string message);
+		void LogExclusive(Action cb);
 	}
 }

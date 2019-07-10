@@ -349,30 +349,6 @@ namespace Supercell {
 	[AttributeUsage(AttributeTargets.Parameter)]
 	public class PidAttribute : Attribute {}
 
-	public class Buffer<T> where T : struct {
-		public readonly ulong Address;
-		public readonly int Size;
-
-		public T Value {
-			get => GetSpan()[0];
-			set => GetSpan()[0] = value;
-		}
-
-		public Buffer(ulong address, ulong size) {
-			Address = address;
-			Size = (int) size;
-		}
-		
-		public Buffer<OtherT> As<OtherT>() where OtherT : struct => new Buffer<OtherT>(Address, (ulong) Size);
-		public unsafe Span<T> GetSpan() => new Span<T>((void *) Address, Size);
-		public static implicit operator Span<T>(Buffer<T> buffer) => buffer.GetSpan();
-
-		public static unsafe void ScopedSpan(Span<byte> span, Action<Buffer<T>> func) {
-			fixed(byte* ptr = span)
-				func(new Buffer<T>((ulong) ptr, (ulong) span.Length));
-		}
-	}
-	
 	public class IpcManager {
 		readonly Dictionary<string, Type> Services;
 
@@ -411,6 +387,8 @@ namespace Supercell {
 							pre[i] = im => im.GetBuffer<sbyte>(bufferAttribute.Type, cbo);
 						else if(t == typeof(uint))
 							pre[i] = im => im.GetBuffer<uint>(bufferAttribute.Type, cbo);
+						else if(t == typeof(ulong))
+							pre[i] = im => im.GetBuffer<ulong>(bufferAttribute.Type, cbo);
 						else
 							throw new NotImplementedException($"Unknown buffer type {t.Name}");
 					} else if(p.ParameterType == typeof(object))
@@ -447,6 +425,7 @@ namespace Supercell {
 			var argCount = mi.GetParameters().Length;
 			if(mi.ReturnType == typeof(void))
 				return (s, im, om) => {
+					$"IPC Call to {s.GetType().Name}::{mi.Name}".Debug();
 					var args = new object[argCount];
 					for(var i = 0; i < argCount; ++i)
 						args[i] = pre[i]?.Invoke(im);
@@ -456,6 +435,7 @@ namespace Supercell {
 					} catch(TargetInvocationException e) {
 						if(!(e.InnerException is NotImplementedException)) throw;
 						$"{s.GetType().FullName} {mi.Name} [{cmdId}] not implemented".Debug();
+						Backtrace.Print();
 						Environment.Exit(1);
 					}
 					
@@ -466,6 +446,7 @@ namespace Supercell {
 				};
 			if(mi.ReturnType == typeof(uint))
 				return (s, im, om) => {
+					$"IPC Call to {s.GetType().Name}::{mi.Name}".Debug();
 					var args = new object[argCount];
 					for(var i = 0; i < argCount; ++i)
 						args[i] = pre[i]?.Invoke(im);
@@ -475,6 +456,7 @@ namespace Supercell {
 					} catch(TargetInvocationException e) {
 						if(!(e.InnerException is NotImplementedException)) throw;
 						$"{s.GetType().FullName} {mi.Name} [{cmdId}] not implemented".Debug();
+						Backtrace.Print();
 						Environment.Exit(1);
 					}
 					
@@ -517,13 +499,16 @@ namespace Supercell {
 
 		[Svc(0x21)]
 		public uint SendSyncRequest(uint handle) {
-			var service = Kernel.Get<IpcInterface>(handle);
-			$"SendSyncRequest({handle:X}, {service?.ToString() ?? "null"}, domain: {service?.IsDomainObject})".Debug();
-			if(service == null)
-				throw new Exception();
-			var ret = service.SyncMessage(Thread.CurrentThread.TlsBase, 0x100, out var closeHandle);
-			if(closeHandle)
-				Kernel.Close(service);
+			var ret = 0U;
+			Logger.Exclusive(() => {
+				var service = Kernel.Get<IpcInterface>(handle);
+				$"SendSyncRequest(thread id {Thread.CurrentThread.Id}, {handle:X}, {service?.ToString() ?? "null"}, domain: {service?.IsDomainObject})".Debug();
+				if(service == null)
+					throw new Exception();
+				ret = service.SyncMessage(Thread.CurrentThread.TlsBase, 0x100, out var closeHandle);
+				if(closeHandle)
+					Kernel.Close(service);
+			});
 			return ret;
 		}
 	}

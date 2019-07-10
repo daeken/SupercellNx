@@ -18,7 +18,7 @@ namespace Cpu64 {
 		
 		public override unsafe void Run(ulong _pc, ulong sp, bool one = false) {
 			foreach(var (start, size) in Kernel.MemoryRegions) {
-				$"Mapped 0x{start:X} - 0x{start+size:X}".Debug();
+				Log($"Mapped 0x{start:X} - 0x{start+size:X}");
 				Uc.Map(start, size, MemoryPermission.All, (IntPtr) start);
 			}
 			
@@ -58,15 +58,15 @@ namespace Cpu64 {
 			};*/
 
 			var resetTicks = false;
-			//var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
-			//var skip = 131_000_000L;
+			var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
+			var skip = 131_000_000L;
 			Uc.OnCode += (_, addr, __) => {
 				if(resetTicks) {
 					resetTicks = false;
 					Uc[Arm64Register.X0] = 0;
 				} else if(*(uint*) addr == 0xD53BE020) resetTicks = true;
 
-				/*if(skip > 0) {
+				if(skip > 0) {
 					skip--;
 					return;
 				}
@@ -76,19 +76,18 @@ namespace Cpu64 {
 					BW.Write(this[i]);
 				for(var i = 0; i < 32; ++i)
 					BW.Write(Uc[Arm64Register.D0 + i]);
-				BW.Write(Uc[Arm64Register.SP]);*/
+				BW.Write(Uc[Arm64Register.SP]);
 			};
 			
 			//Uc.AddCodeHook((_, __, ___) => throw new NotImplementedException(), 0x7200000024, 0x7200000030);
 			
 			Uc.OnBadRead += (_, addr, size, __) => {
-				$"[{Kernel.MapAddress(Uc[Arm64Register.PC])}] Bad read ({size} bytes) from {Kernel.MapAddress(addr)}".Debug();
-				Environment.Exit(1);
+				LogError($"[{Kernel.MapAddress(Uc[Arm64Register.PC])}] Bad read ({size} bytes) from {Kernel.MapAddress(addr)}");
 				return false;
 			};
 
 			Uc.OnBadWrite += (_, addr, size, value, __) => {
-				$"[{Kernel.MapAddress(Uc[Arm64Register.PC])}] Bad write (0x{value:X} -- {size} bytes) to {Kernel.MapAddress(addr)}".Debug();
+				LogError($"[{Kernel.MapAddress(Uc[Arm64Register.PC])}] Bad write (0x{value:X} -- {size} bytes) to {Kernel.MapAddress(addr)}");
 				Environment.Exit(1);
 				return false;
 			};
@@ -101,10 +100,10 @@ namespace Cpu64 {
 			try {
 				Uc.Start(_pc);
 			} catch (Exception) {
-				$"{Uc[Arm64Register.PC]:X}".Debug();
+				Log($"{Uc[Arm64Register.PC]:X}");
 			}
-			/*BW.BaseStream.Close();
-			BW.Close();*/
+			BW.BaseStream.Close();
+			BW.Close();
 		}
 	}
 }

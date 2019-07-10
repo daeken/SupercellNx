@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -9,20 +10,48 @@ namespace Supercell {
 		static extern ulong mmap(ulong addr, ulong len, int prot, int flags, int fd, ulong offset);
 		[DllImport("libc")]
 		static extern void munmap(ulong addr, ulong len);
+		[DllImport("libc")]
+		static extern void mprotect(ulong addr, ulong len, int prot);
 		
 		public readonly SortedList<ulong, (ulong Addr, ulong Size)> Regions = new SortedList<ulong, (ulong Addr, ulong Size)>();
 
 		public ulong HeapAddress;
 		public uint HeapSize;
+
+		public ulong StackBase;
+		public ulong StackSize;
+		public const ulong EachStackSize = 8UL * 1024 * 1024;
 		
-		public ulong AllocateAligned(ulong size, ulong preferred = 0UL) {
+		readonly Queue<ulong> AvailableStacks = new Queue<ulong>();
+
+		public MemoryManager() {
+			// 1GB of stack space total should be enough, right?
+			// This certainly won't bite us in the ass later
+			StackSize = 1UL * 1024 * 1024 * 1024;
+			StackBase = AllocateAligned(StackSize, 0x10UL << 32, reserve: true);
+
+			var top = StackBase + StackSize;
+			for(var addr = StackBase; addr < top; addr += EachStackSize) {
+				Debug.Assert(addr + EachStackSize <= top);
+				AvailableStacks.Enqueue(addr);
+			}
+		}
+
+		public (ulong Addr, ulong Size) AllocateStack() {
+			var addr = AvailableStacks.Dequeue();
+			Regions.Add(addr, (addr, EachStackSize));
+			return (addr, EachStackSize);
+		}
+
+		public ulong AllocateAligned(ulong size, ulong preferred = 0UL, bool reserve = false) {
 			if((size & 0xFFF) != 0)
 				size = (size & ~0xFFFUL) + 0x1000UL;
 
 			const bool required = true;
 			var addr = mmap(preferred, size, 1 | 2, 0x1000 | 0x0001 | (required ? 0x0010 : 0), 0, 0);
 			Debug.Assert(!required || addr != unchecked((ulong) -1L));
-			Regions.Add(addr, (addr, size));
+			if(!reserve)
+				Regions.Add(addr, (addr, size));
 			return addr;
 		}
 
@@ -58,6 +87,23 @@ namespace Supercell {
 			return (0, HeapAddress);
 		}
 
+		[Svc(0x3)]
+		public uint SetMemoryAttribute(ulong addr, ulong size, uint state0, uint state1) {
+			return 0;
+		}
+
+		[Svc(0x4)]
+		public unsafe uint MapMemory(ulong dst, ulong src, ulong size) {
+			$"Mapping memory region 0x{src:X} -> 0x{dst:X} of size 0x{size:X}".Debug();
+			AllocateAligned(size, dst);
+			var srcptr = (byte*) src;
+			var dstptr = (byte*) dst;
+			for(var i = 0UL; i < size; i++)
+				*dstptr++ = *srcptr++;
+			mprotect(src, size, 0);
+			return 0;
+		}
+
 		[Svc(0x6)]
 		public uint QueryMemory(ulong _memoryInfo, ulong _pageInfo, ulong addr) {
 			$"QueryMemory(0x{addr:X})".Debug();
@@ -70,6 +116,9 @@ namespace Supercell {
 				memoryInfo->MemoryAttribute = 0;
 				memoryInfo->Permission = 0;
 				memoryInfo->__padding = 0;
+
+				if(addr >= HeapAddress && addr < HeapAddress + HeapSize)
+					memoryInfo->MemoryType = 5;
 
 				if(resident) {
 					var offset = (ulong) *(uint*) (start + 4);

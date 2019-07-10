@@ -1,8 +1,13 @@
 using System;
+using Common;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CpuTest {
 	public class LdrStrTest {
+		readonly ITestOutputHelper Output;
+		public LdrStrTest(ITestOutputHelper output) => Output = output;
+		
 		[Fact]
 		public unsafe void LdrSxtw() {
 			void MTest(int offset) {
@@ -37,6 +42,20 @@ namespace CpuTest {
 			MTest(0);
 			MTest(0x80);
 			MTest(0x56);
+		}
+
+		[Fact]
+		public unsafe void Ldp() {
+			var size = 4096;
+			// LDP W11, W13, [X11,#4]
+			InsnTester.Disassembly("ldp W11, W13, [X11, #0x4]", 0x2940B56B);
+			InsnTester.Map((uint) size, maddr => InsnTester.Test(0x2940B56B, (cpu, addr) => {
+				var bytes = new Span<byte>((void*) maddr, size);
+				for(var i = 0; i < bytes.Length; ++i)
+					bytes[i] = (byte) (i % 255 + 1);
+				if(cpu == null) return;
+				cpu.X[11] = maddr;
+			}));
 		}
 
 		[Fact]

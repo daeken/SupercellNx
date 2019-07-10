@@ -20,6 +20,13 @@ namespace CpuTest {
 		}
 
 		[Fact]
+		public void Movi() {
+			// MOVI V0.4S, #1
+			InsnTester.Disassembly("movi V0.4S, #1, LSL #0x0", 0x4F000420);
+			InsnTester.Test(0x4F000420);
+		}
+
+		[Fact]
 		public void Movk() {
 			// MOVK X12, #0x3E00
 			InsnTester.Test(0xF287C00C, (cpu, _) => {

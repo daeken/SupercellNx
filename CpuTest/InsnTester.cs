@@ -14,6 +14,8 @@ namespace CpuTest {
 
 			public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => throw new NotImplementedException();
 			public void Svc(int svc) {}
+			public void Log(string message) {}
+			public void LogExclusive(Action cb) => cb();
 		}
 		
 		static readonly List<(ulong, uint)> Mapped = new List<(ulong, uint)>();
