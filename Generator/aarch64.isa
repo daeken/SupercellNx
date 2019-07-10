@@ -1991,6 +1991,15 @@
         0b1_01 (= (vec-d rd) (cast (cast (gpr64 rn) i64) f64))
         (unimplemented)))
 
+(def SCVTF-vector-integer
+    "01 0 11110 0 s 10000 11101 10 nnnnn ddddd"
+    "scvtf $r$rd, $r$rn"
+    (names (size s) (rn n) (rd d))
+    (let r (if (== size 0) "S" "D"))
+    (if (== size 0)
+        (= (vec-s rd) (cast (bitcast (vec-s rn) i32) f32))
+        (= (vec-d rd) (cast (bitcast (vec-d rn) i64) f64))))
+
 (def SDIV
     "f 0 0 11010110 mmmmm 00001 1 nnnnn ddddd"
     "sdiv $r$rd, $r$rn, $r$rm"

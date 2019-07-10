@@ -2585,6 +2585,19 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* SCVTF-vector-integer */
+				if((inst & 0xFFBFFC00U) == 0x5E21D800U) {
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((int) (Bitcast<float, int>((float) (V[rn].GetElement(0)))))));
+					} else {
+						V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((long) (Bitcast<double, long>((double) (V[rn].As<float, double>().GetElement(0))))))).As<double, float>();
+					}
+					return true;
+				}
 				/* SDIV */
 				if((inst & 0x7FE0FC00U) == 0x1AC00C00U) {
 					var size = (inst >> 31) & 0x1U;

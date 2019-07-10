@@ -9,7 +9,7 @@ namespace Supercell {
 		public readonly Queue<Func<bool, int>> Waiters = new Queue<Func<bool, int>>();
 		public bool Presignaled, Canceled;
 		
-		protected bool Presignalable => true;
+		protected virtual bool Presignalable => true;
 
 		public bool Wait() {
 			var wait = new AutoResetEvent(false);
@@ -72,6 +72,7 @@ namespace Supercell {
 		}
 
 		public Semaphore(ulong addr) => Addr = (uint*) addr;
+		protected override bool Presignalable => false;
 
 		public void Increment() {
 			lock(this)

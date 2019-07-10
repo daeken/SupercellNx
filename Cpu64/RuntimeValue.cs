@@ -310,6 +310,14 @@ namespace Cpu64 {
 							Ilg.Convert<UIntPtr>();
 							Ilg.LoadIndirect<uint>();
 						});
+						case int _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<float>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<int>();
+						});
 						default: throw new NotImplementedException();
 					}
 				case double _:
@@ -321,6 +329,14 @@ namespace Cpu64 {
 							Ilg.LoadLocalAddress(local);
 							Ilg.Convert<UIntPtr>();
 							Ilg.LoadIndirect<ulong>();
+						});
+						case long _: return new RuntimeValue<OutT>(() => {
+							var local = Ilg.DeclareLocal<double>();
+							Emit();
+							Ilg.StoreLocal(local);
+							Ilg.LoadLocalAddress(local);
+							Ilg.Convert<UIntPtr>();
+							Ilg.LoadIndirect<long>();
 						});
 						default: throw new NotImplementedException();
 					}

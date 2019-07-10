@@ -2913,6 +2913,21 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* SCVTF-vector-integer */
+				if((inst & 0xFFBFFC00U) == 0x5E21D800U) {
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						// Runtime if!
+						VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) (((RuntimeValue<float>) (VSR[(int) (rn)])).Bitcast<int>())));
+					} else {
+						// Runtime else!
+						VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) (((RuntimeValue<double>) (VDR[(int) (rn)])).Bitcast<long>())));
+					}
+					return true;
+				}
 				/* SDIV */
 				if((inst & 0x7FE0FC00U) == 0x1AC00C00U) {
 					var size = (inst >> 31) & 0x1U;
