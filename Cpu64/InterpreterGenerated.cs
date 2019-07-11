@@ -73,7 +73,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						var b = (uint) ((rm) == 31 ? (uint) (SP & 0xFFFFFFFFUL) : W[(int) rm]);
 						if(rd == 31)
@@ -1458,7 +1458,7 @@ namespace Cpu64 {
 					}
 					return true;
 				}
-				/* INS */
+				/* INS-general */
 				if((inst & 0xFFE0FC00U) == 0x4E001C00U) {
 					var imm = (inst >> 16) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
@@ -1497,6 +1497,19 @@ namespace Cpu64 {
 							}
 						}
 					}
+					return true;
+				}
+				/* INS-vector */
+				if((inst & 0xFFE08400U) == 0x6E000400U) {
+					var imm5 = (inst >> 16) & 0x1FU;
+					var imm4 = (inst >> 11) & 0xFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = "";
+					var index1 = (uint) ((uint) (0x0));
+					var index2 = (uint) ((uint) (0x0));
+					throw new NotImplementedException();
+					throw new NotImplementedException();
 					return true;
 				}
 				/* LDAR */
@@ -1912,7 +1925,7 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
-					W[(int) rt] = (uint) ((uint) ((uint) ((ushort) (*(ushort*) (address)))));
+					X[(int) rt] = (ulong) ((ulong) ((ushort) (*(ushort*) (address))));
 					if(rn == 31)
 						SP = (ulong) ((ulong) (address) + (ulong) (imm));
 					else
@@ -1926,7 +1939,7 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
-					W[(int) rt] = (uint) ((uint) ((uint) ((ushort) (*(ushort*) (address)))));
+					X[(int) rt] = (ulong) ((ulong) ((ushort) (*(ushort*) (address))));
 					if(rn == 31)
 						SP = address;
 					else
@@ -3304,7 +3317,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						var b = (uint) ((rm) == 31 ? 0U : W[(int) rm]);
 						W[(int) rd] = (uint) ((uint) ((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn])) - (uint) ((uint) ((shift) switch { 0x0 => (uint) ((b) << (int) (imm)), 0x1 => (uint) ((b) >> (int) (imm)), 0x2 => (uint) ((uint) ((int) (((int) ((int) (b))) >> (int) (imm)))), _ => throw new NotImplementedException() }))));
@@ -3348,7 +3361,7 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var mode32 = (byte) (((size) == (0x0)) ? 1U : 0U);
 					var r = (string) ((mode32 != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if((mode32) != 0) {
 						var operand1 = (uint) ((rn) == 31 ? 0U : W[(int) rn]);
 						var operand2 = (uint) (~((uint) (Shift((uint) ((rm) == 31 ? 0U : W[(int) rm]), shift, imm))));

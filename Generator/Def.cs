@@ -8,7 +8,7 @@ using MoreLinq;
 
 namespace Generator {
 	public class Def {
-		public static List<Def> ParseAll(PList top) => top.Select(x => new Def((PList) x)).ToList();
+		public static List<Def> ParseAll(PList top) => top.Where(x => ((PList) x)[0] is PName("def")).Select(x => new Def((PList) x)).ToList();
 		
 		public readonly string Name;
 		public readonly uint Mask, Match;

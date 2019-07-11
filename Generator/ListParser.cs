@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MoreLinq.Extensions;
 using PrettyPrinter;
 
 namespace Generator {
@@ -75,6 +76,9 @@ namespace Generator {
 		public readonly List<PTree> Children = new List<PTree>();
 		public PTree Head => Children.First();
 		public int Count => Children.Count;
+		
+		public PList() {}
+		public PList(IEnumerable<PTree> elems) => elems.ForEach(Add);
 
 		public void Add(PTree child) => Children.Add(child);
 

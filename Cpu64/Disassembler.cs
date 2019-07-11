@@ -38,7 +38,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"add {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
 			/* ADDS-immediate */
@@ -750,7 +750,7 @@ namespace Cpu64 {
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fsub {r}{rd}, {r}{rn}, {r}{rm}";
 			}
-			/* INS */
+			/* INS-general */
 			if((inst & 0xFFE0FC00U) == 0x4E001C00U) {
 				var imm = (inst >> 16) & 0x1FU;
 				var rn = (inst >> 5) & 0x1FU;
@@ -777,6 +777,18 @@ namespace Cpu64 {
 					}
 				}
 				return $"ins V{rd}.{ts}[0x{index:X}], {r}{rn}";
+			}
+			/* INS-vector */
+			if((inst & 0xFFE08400U) == 0x6E000400U) {
+				var imm5 = (inst >> 16) & 0x1FU;
+				var imm4 = (inst >> 11) & 0xFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var ts = "";
+				var index1 = (uint) ((uint) (0x0));
+				var index2 = (uint) ((uint) (0x0));
+				throw new NotImplementedException();
+				return $"ins V{rd}.{ts}[0x{index1:X}], V{rn}.{ts}[0x{index2:X}]";
 			}
 			/* LDAR */
 			if((inst & 0xBFFFFC00U) == 0x88DFFC00U) {
@@ -1783,7 +1795,7 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"sub {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
 			/* SUBS-extended-register */
@@ -1809,7 +1821,7 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var mode32 = (byte) (((size) == (0x0)) ? 1U : 0U);
 				var r = (string) ((mode32 != 0) ? ("W") : ("X"));
-				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"subs {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
 			/* SUBS-immediate */

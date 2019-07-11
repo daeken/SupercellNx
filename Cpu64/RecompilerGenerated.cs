@@ -91,7 +91,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						// Runtime if!
 						var b = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rm]))).Store();
@@ -1644,7 +1644,7 @@ namespace Cpu64 {
 					}
 					return true;
 				}
-				/* INS */
+				/* INS-general */
 				if((inst & 0xFFE0FC00U) == 0x4E001C00U) {
 					var imm = (inst >> 16) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
@@ -1683,6 +1683,19 @@ namespace Cpu64 {
 							}
 						}
 					}
+					return true;
+				}
+				/* INS-vector */
+				if((inst & 0xFFE08400U) == 0x6E000400U) {
+					var imm5 = (inst >> 16) & 0x1FU;
+					var imm4 = (inst >> 11) & 0xFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = "";
+					var index1 = (uint) ((uint) (0x0));
+					var index2 = (uint) ((uint) (0x0));
+					throw new NotImplementedException();
+					throw new NotImplementedException();
 					return true;
 				}
 				/* LDAR */
@@ -2163,7 +2176,7 @@ namespace Cpu64 {
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
 					// Runtime let!
-					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value))));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value)));
 					// Runtime let!
 					if(rn == 31)
 						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
@@ -2179,7 +2192,7 @@ namespace Cpu64 {
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
 					// Runtime let!
-					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value))));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value)));
 					// Runtime let!
 					if(rn == 31)
 						SPR = address;
@@ -3733,7 +3746,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						// Runtime if!
 						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
@@ -3787,7 +3800,7 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var mode32 = (byte) (((size) == (0x0)) ? 1U : 0U);
 					var r = (string) ((mode32 != 0) ? ("W") : ("X"));
-					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => throw new NotImplementedException() });
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if((mode32) != 0) {
 						// Runtime if!
 						// Runtime block!

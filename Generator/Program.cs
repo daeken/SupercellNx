@@ -18,6 +18,7 @@ namespace Generator {
 	class Program {
 		static void Main(string[] args) {
 			var ptree = ListParser.Parse(File.ReadAllText("aarch64.isa"));
+			ptree = MacroProcessor.Rewrite(ptree);
 			var defs = Def.ParseAll(ptree).Select(InferRuntime).ToList();
 			BuildDisassembler(defs);
 			BuildInterpreter(defs);
@@ -647,6 +648,7 @@ namespace Generator {
 			c += 3;
 			
 			foreach(var def in defs) {
+				Console.WriteLine(def.Name + "...");
 				string RewriteFormat(string fmt) =>
 					Regex.Replace(fmt, @"\$(\$|[a-zA-Z\-][a-zA-Z\-0-9]*)", 
 						match => {
