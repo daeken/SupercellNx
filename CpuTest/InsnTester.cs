@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics;
+using System.Threading;
 using Common;
 using Cpu64;
 using UnicornSharp;
 using Xunit;
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+//[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, MaxParallelThreads = 8)]
 
 namespace CpuTest {
 	public static class InsnTester {
@@ -18,13 +20,15 @@ namespace CpuTest {
 			public void LogExclusive(Action cb) => cb();
 		}
 		
-		static readonly List<(ulong, uint)> Mapped = new List<(ulong, uint)>();
-		
+		static readonly ThreadLocal<List<(ulong, uint)>> _Mapped = new ThreadLocal<List<(ulong, uint)>>();
+		static List<(ulong, uint)> Mapped => _Mapped.Value ?? (_Mapped.Value = new List<(ulong, uint)>());
+
 		public static unsafe void Map(uint size, Action<ulong> func) {
 			fixed(byte* ptr = new byte[size]) {
 				var addr = (ulong) ptr;
 				Mapped.Add((addr, size));
 				func(addr);
+				Mapped.Remove((addr, size));
 			}
 		}
 
