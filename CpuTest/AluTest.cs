@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Intrinsics;
 using Xunit;
 
 namespace CpuTest {
@@ -191,6 +192,17 @@ namespace CpuTest {
 				if(cpu == null) return;
 				cpu.X[22] = 0xFFFF_FFFF_FFFF_FFFFUL;
 				cpu.X[9] = 0x18UL;
+			});
+		}
+
+		[Fact]
+		public void Fadd() {
+			// FADD V3.2S, V5.2S, V3.2S
+			InsnTester.Disassembly("fadd V3.2S, V5.2S, V3.2S", 0x0E23D4A3);
+			InsnTester.Test(0x0E23D4A3, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.V[5] = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f);
+				cpu.V[3] = new Vector128<float>().WithElement(0, 345f).WithElement(1, 456f);
 			});
 		}
 	}

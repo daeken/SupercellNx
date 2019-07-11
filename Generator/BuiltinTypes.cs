@@ -95,8 +95,12 @@ namespace Generator {
 			["vector-all"] = _ => EType.Vector.AsRuntime(), 
 			["vector-zero-top"] = _ => EType.Vector.AsRuntime(), 
 			["vector-insert"] = _ => EType.Unit, 
+			["vector-element"] = x => TypeFromName(x[3]).AsRuntime(), 
+			["vector-extract"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["vector-count-bits"] = _ => EType.Vector, 
 			["vector-sum-unsigned"] = _ => new EInt(false, 32), 
+			["vec+"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
+			["vec*"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["float-to-fixed-point"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime || x[3].Type.Runtime), 
 		};
 	}

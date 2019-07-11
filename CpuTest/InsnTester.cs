@@ -43,6 +43,33 @@ namespace CpuTest {
 			var interpreter = new Interpreter(kernel);
 			Assert.Equal(BaseCpu.Disassemble(inst, pc), dasm);
 		}
+
+		public static unsafe void AutoTest(uint insn, Action<BaseCpu, ulong> setup) {
+			var data64 = new[] { 0UL, 1UL, 0x1234UL, 0x80000000UL, 1UL << 63, ulong.MaxValue };
+			var floats = new[] { 0f, 234f, 0f, 456f, 123f, -123f };
+
+			var size = 0x40000U;
+			Map(size, maddr => {
+				var bytes = new Span<byte>((void*) maddr, (int) size);
+				for(var j = 0; j < bytes.Length; ++j)
+					bytes[j] = (byte) (j % 255 + 1);
+				for(var i = 0; i < 6; ++i) {
+					Test(insn, (cpu, _) => {
+						if(cpu == null) return;
+						for(var j = 0; j < 31; ++j)
+							cpu.X[j] = data64[(j + i) % data64.Length];
+						var k = i;
+						for(var j = 0; j < 32; ++j)
+							cpu.V[j] = new Vector128<float>()
+								.WithElement(0, floats[k++ % floats.Length])
+								.WithElement(1, floats[k++ % floats.Length])
+								.WithElement(2, floats[k++ % floats.Length])
+								.WithElement(3, floats[k++ % floats.Length]);
+						setup(cpu, maddr + (size >> 1));
+					});
+				}
+			});
+		}
 		
 		public static unsafe void Test(uint insn, Action<BaseCpu, ulong> pre = null, Action<BaseCpu, bool, ulong> post = null, Action<string> checkAsm = null) {
 			var mem = new Span<uint>(new[] { 0U, 0U, insn, 0x14000001U }); // B +4 terminates
@@ -50,6 +77,8 @@ namespace CpuTest {
 			var kernel = new TestKernel();
 			fixed(uint* ptr = mem) {
 				var addr = (ulong) ptr + 8;
+				var asm = BaseCpu.Disassemble(insn, addr);
+				Assert.NotNull(asm);
 				var interpreter = new Interpreter(kernel);
 				var recompiler = new Dynarec(kernel);
 				var uc = new UnicornArm64 { [Arm64Register.CPACR_EL1] = 3 << 20 };
@@ -57,7 +86,7 @@ namespace CpuTest {
 				foreach(var (maddr, msize) in Mapped)
 					MapAll(uc, maddr, msize);
 
-				checkAsm?.Invoke(BaseCpu.Disassemble(insn, addr));
+				checkAsm?.Invoke(asm);
 
 				interpreter.PC = addr;
 				pre?.Invoke(interpreter, addr);

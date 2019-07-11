@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using MoreLinq;
 
 namespace Common {
@@ -53,5 +54,8 @@ namespace Common {
 
 		public static void WriteStruct<T>(this BinaryWriter bw, T obj) where T : struct =>
 			bw.Write(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref obj, 1)));
+
+		public static T Element<T>(this Vector128<float> vec, uint index) where T : struct =>
+			vec.As<float, T>().GetElement((int) index);
 	}
 }

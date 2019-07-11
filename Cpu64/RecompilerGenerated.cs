@@ -862,6 +862,17 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* EXT */
+				if((inst & 0xBFE08400U) == 0x2E000000U) {
+					var Q = (inst >> 30) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var index = (inst >> 11) & 0xFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = (string) ((Q != 0) ? ("16B") : ("8B"));
+					VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (CallVectorExtract((RuntimeValue<Vector128<float>>) (VR[(int) (rn)]), (RuntimeValue<Vector128<float>>) (VR[(int) (rm)]), Q, index));
+					return true;
+				}
 				/* EXTR */
 				if((inst & 0x7FA00000U) == 0x13800000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -898,6 +909,34 @@ namespace Cpu64 {
 						}
 						case 0x1: {
 							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) + (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FADD-vector */
+				if((inst & 0xBFA0FC00U) == 0x0E20D400U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) + ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)]))));
+							break;
+						}
+						case 0x1: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) + ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])));
+							break;
+						}
+						case 0x3: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) + (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)]))));
 							break;
 						}
 						default: {
@@ -1546,6 +1585,34 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FMUL-vector */
+				if((inst & 0xBFA0FC00U) == 0x2E20DC00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)]))));
+							break;
+						}
+						case 0x1: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])));
+							break;
+						}
+						case 0x3: {
+							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)]))));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* FNEG */
 				if((inst & 0xFF3FFC00U) == 0x1E214000U) {
 					var type = (inst >> 22) & 0x3U;
@@ -1694,8 +1761,40 @@ namespace Cpu64 {
 					var ts = "";
 					var index1 = (uint) ((uint) (0x0));
 					var index2 = (uint) ((uint) (0x0));
-					throw new NotImplementedException();
-					throw new NotImplementedException();
+					if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
+						ts = "B";
+						index1 = (byte) ((imm5) >> (int) (0x1));
+						index2 = imm4;
+					} else {
+						if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x2))))) == (0x2)) ? 1U : 0U)) != 0) {
+							ts = "H";
+							index1 = (byte) ((imm5) >> (int) (0x2));
+							index2 = (byte) ((imm4) >> (int) (0x1));
+						} else {
+							if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x4))))) == (0x4)) ? 1U : 0U)) != 0) {
+								ts = "S";
+								index1 = (byte) ((imm5) >> (int) (0x3));
+								index2 = (byte) ((imm4) >> (int) (0x2));
+							} else {
+								ts = "D";
+								index1 = (byte) ((imm5) >> (int) (0x4));
+								index2 = (byte) ((imm4) >> (int) (0x3));
+							}
+						}
+					}
+					if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
+						VR[(int) (rd)] = VR[(int) (rd)].Insert(index1, (RuntimeValue<byte>) (VR[(int) (rn)].Element<byte>(index2)));
+					} else {
+						if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x2))))) == (0x2)) ? 1U : 0U)) != 0) {
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(index1, (RuntimeValue<ushort>) (VR[(int) (rn)].Element<ushort>(index2)));
+						} else {
+							if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x4))))) == (0x4)) ? 1U : 0U)) != 0) {
+								VR[(int) (rd)] = VR[(int) (rd)].Insert(index1, (RuntimeValue<float>) (VR[(int) (rn)].Element<float>(index2)));
+							} else {
+								VR[(int) (rd)] = VR[(int) (rd)].Insert(index1, (RuntimeValue<double>) (VR[(int) (rn)].Element<double>(index2)));
+							}
+						}
+					}
 					return true;
 				}
 				/* LDAR */

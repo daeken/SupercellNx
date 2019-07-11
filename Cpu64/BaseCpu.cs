@@ -269,6 +269,31 @@ namespace Cpu64 {
 			}
 		}
 
+		public Vector128<float> VectorExtract(Vector128<float> _a, Vector128<float> _b, uint Q, uint _index) {
+			var index = (int) _index;
+			var a = _a.As<float, byte>();
+			var b = _b.As<float, byte>();
+			
+			var r = new Vector128<byte>();
+			var count = Q == 0 ? 8 : 16;
+
+			if(count == 8) {
+				for(var i = index; i < 8; ++i)
+					r = r.WithElement(i - index, a.GetElement(i));
+				var offset = 8 - index;
+				for(var i = offset; i < 8; ++i)
+					r = r.WithElement(i, a.GetElement(i - offset));
+			} else {
+				for(var i = index; i < 16; ++i)
+					r = r.WithElement(i - index, a.GetElement(i));
+				var offset = 16 - index;
+				for(var i = offset; i < 16; ++i)
+					r = r.WithElement(i, a.GetElement(i - offset));
+			}
+			
+			return r.As<byte, float>();
+		}
+
 		public uint FloatToFixed32(float fvalue, int fbits) {
 			return unchecked((uint) (int) MathF.Round(fvalue * (1 << fbits)));
 		}

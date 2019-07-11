@@ -382,6 +382,16 @@ namespace Cpu64 {
 				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"eor {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
+			/* EXT */
+			if((inst & 0xBFE08400U) == 0x2E000000U) {
+				var Q = (inst >> 30) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var index = (inst >> 11) & 0xFU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var ts = (string) ((Q != 0) ? ("16B") : ("8B"));
+				return $"ext V{rd}.{ts}, V{rn}.{ts}, V{rm}.{ts}, #{index}";
+			}
 			/* EXTR */
 			if((inst & 0x7FA00000U) == 0x13800000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -401,6 +411,16 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fadd {r}{rd}, {r}{rn}, {r}{rm}";
+			}
+			/* FADD-vector */
+			if((inst & 0xBFA0FC00U) == 0x0E20D400U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"fadd V{rd}.{ts}, V{rn}.{ts}, V{rm}.{ts}";
 			}
 			/* FCCMP */
 			if((inst & 0xFF200C10U) == 0x1E200400U) {
@@ -716,6 +736,16 @@ namespace Cpu64 {
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fmul {r}{rd}, {r}{rn}, {r}{rm}";
 			}
+			/* FMUL-vector */
+			if((inst & 0xBFA0FC00U) == 0x2E20DC00U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"fmul V{rd}.{ts}, V{rn}.{ts}, V{rm}.{ts}";
+			}
 			/* FNEG */
 			if((inst & 0xFF3FFC00U) == 0x1E214000U) {
 				var type = (inst >> 22) & 0x3U;
@@ -787,7 +817,27 @@ namespace Cpu64 {
 				var ts = "";
 				var index1 = (uint) ((uint) (0x0));
 				var index2 = (uint) ((uint) (0x0));
-				throw new NotImplementedException();
+				if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
+					ts = "B";
+					index1 = (byte) ((imm5) >> (int) (0x1));
+					index2 = imm4;
+				} else {
+					if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x2))))) == (0x2)) ? 1U : 0U)) != 0) {
+						ts = "H";
+						index1 = (byte) ((imm5) >> (int) (0x2));
+						index2 = (byte) ((imm4) >> (int) (0x1));
+					} else {
+						if(((byte) ((((byte) ((((ulong) (imm5)) & ((ulong) (0x4))))) == (0x4)) ? 1U : 0U)) != 0) {
+							ts = "S";
+							index1 = (byte) ((imm5) >> (int) (0x3));
+							index2 = (byte) ((imm4) >> (int) (0x2));
+						} else {
+							ts = "D";
+							index1 = (byte) ((imm5) >> (int) (0x4));
+							index2 = (byte) ((imm4) >> (int) (0x3));
+						}
+					}
+				}
 				return $"ins V{rd}.{ts}[0x{index1:X}], V{rn}.{ts}[0x{index2:X}]";
 			}
 			/* LDAR */

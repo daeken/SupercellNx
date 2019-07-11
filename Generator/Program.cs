@@ -493,8 +493,28 @@ namespace Generator {
 				case PName("vector-all"): return $"Vector128.Create({GenerateExpression(list[1])}).As<{GenerateType(list[1].Type)}, float>()";
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
 				case PName("vector-insert"): return $"V[(int) ({GenerateExpression(list[1])})] = Insert(V[(int) ({GenerateExpression(list[1])})], {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("vector-element"):
+					return $"V[(int) ({GenerateExpression(list[1])})].Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
 				case PName("vector-count-bits"): return $"VectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"VectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("vector-extract"): return $"VectorExtract({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])})";
+				
+				case PName("vec+"):
+					switch(list[3]) {
+						case PInt(32):
+							return $"Sse.Add({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
+						case PInt(64):
+							return $"Sse2.Add(({GenerateExpression(list[1])}).As<float, double>(), ({GenerateExpression(list[2])}).As<float, double>()).As<double, float>()";
+						default: throw new NotSupportedException();
+					}
+				case PName("vec*"):
+					switch(list[3]) {
+						case PInt(32):
+							return $"Sse.Multiply({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
+						case PInt(64):
+							return $"Sse2.Multiply(({GenerateExpression(list[1])}).As<float, double>(), ({GenerateExpression(list[2])}).As<float, double>()).As<double, float>()";
+						default: throw new NotSupportedException();
+					}
 				
 				case PName("float-to-fixed-point"): return $"FloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, (int) ({GenerateExpression(list[3])}))";
 				
@@ -629,14 +649,34 @@ namespace Generator {
 				
 				case PName("vector-insert"):
 					return $"VR[(int) ({GenerateExpression(list[1])})] = VR[(int) ({GenerateExpression(list[1])})].Insert({GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("vector-element"):
+					return $"VR[(int) ({GenerateExpression(list[1])})].Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
 				
 				case PName("vector-count-bits"): return $"CallVectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"CallVectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
+				case PName("vector-extract"): return $"CallVectorExtract({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])})";
+				
+				case PName("vec+"):
+					switch(list[3]) {
+						case PInt(32):
+							return $"({GenerateExpression(list[1])}) + ({GenerateExpression(list[2])})";
+						case PInt(64):
+							return $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ({GenerateExpression(list[1])}) + (RuntimeValue<Vector128<double>>) ({GenerateExpression(list[2])}))";
+						default: throw new NotSupportedException();
+					}
+				case PName("vec*"):
+					switch(list[3]) {
+						case PInt(32):
+							return $"({GenerateExpression(list[1])}) * ({GenerateExpression(list[2])})";
+						case PInt(64):
+							return $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ({GenerateExpression(list[1])}) * (RuntimeValue<Vector128<double>>) ({GenerateExpression(list[2])}))";
+						default: throw new NotSupportedException();
+					}
 				
 				case PName("float-to-fixed-point"): return $"CallFloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, {GenerateExpression(list[3])})";
 				
 				case PName("unimplemented"): return "throw new NotImplementedException()";
-				case PName name: throw new NotImplementedException($"Unknown name for GenerateListExpression: {name}");
+				case PName name: throw new NotImplementedException($"Unknown name for GenerateRuntimeListExpression: {name}");
 				default: throw new NotSupportedException($"Non-name for first element of list {list.ToPrettyString()}");
 			}
 		}
