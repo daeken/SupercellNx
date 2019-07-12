@@ -88,6 +88,8 @@ namespace Generator {
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public override string ToString() => $"({(Type.Runtime ? "~runtime~ " : "")}{string.Join(' ', Children.Select(x => x.ToString()))})";
+
+		public bool AnyRuntime => Type.Runtime || Children.Any(x => x.Type.Runtime);
 	}
 
 	public class PName : PTree {

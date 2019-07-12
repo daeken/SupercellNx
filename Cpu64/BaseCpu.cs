@@ -134,36 +134,6 @@ namespace Cpu64 {
 			return 64;
 		}
 
-		public uint AddWithCarrySetNzcv(uint operand1, uint operand2, uint carryIn) {
-			unchecked {
-				var usum = operand1 + operand2 + carryIn;
-				var ssum = (int) operand1 + (int) operand2 + (int) carryIn;
-				var result = usum;
-				var n = result >> 31;
-				var z = result == 0 ? 1U : 0;
-				var c = (uint) ((((ulong) operand1 + operand2 + carryIn) >> 32) & 1);
-				var v = operand1 >> 31 == operand2 >> 31 && usum >> 31 != operand1 >> 31 ? 1U : 0;
-				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
-				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
-				return usum;
-			}
-		}
-
-		public ulong AddWithCarrySetNzcv(ulong operand1, ulong operand2, ulong carryIn) {
-			unchecked {
-				var usum = operand1 + operand2 + carryIn;
-				var ssum = (long) operand1 + (long) operand2 + (long) carryIn;
-				var result = usum;
-				var n = result >> 63;
-				var z = result == 0 ? 1U : 0;
-				var c = (uint) ((((UInt128) operand1 + operand2 + carryIn) >> 64) & 1);
-				var v = operand1 >> 63 == operand2 >> 63 && usum >> 63 != operand1 >> 63 ? 1U : 0;
-				NZCV = (n << 31) | (z << 30) | (c << 29) | (v << 28);
-				//$"{operand1:X} + {operand2:X} + {carryIn} -> {usum:X} {n}{z}{c}{v}".Debug();
-				return usum;
-			}
-		}
-
 		public void FloatCompare(float operand1, float operand2) {
 			if(float.IsNaN(operand1) || float.IsNaN(operand2))
 				NZCV = 0b0011UL << 28;

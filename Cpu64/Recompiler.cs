@@ -575,11 +575,6 @@ namespace Cpu64 {
 			}
 		}
 
-		RuntimeValue<uint> CallAddWithCarrySetNzcv(RuntimeValue<uint> operand1, RuntimeValue<uint> operand2, RuntimeValue<uint> carryIn) =>
-			Call<uint>(nameof(Dynarec.AddWithCarrySetNzcv), operand1, operand2, carryIn);
-		RuntimeValue<ulong> CallAddWithCarrySetNzcv(RuntimeValue<ulong> operand1, RuntimeValue<ulong> operand2, RuntimeValue<ulong> carryIn) =>
-			Call<ulong>(nameof(Dynarec.AddWithCarrySetNzcv), operand1, operand2, carryIn);
-
 		void CallFloatCompare(RuntimeValue<float> operand1, RuntimeValue<float> operand2) =>
 			CallVoid(nameof(Dynarec.FloatCompare), operand1, operand2);
 		void CallFloatCompare(RuntimeValue<double> operand1, RuntimeValue<double> operand2) =>
@@ -642,7 +637,16 @@ namespace Cpu64 {
 				else if(typeof(T) == typeof(ulong))
 					Ilg.Convert<long>();
 				Ilg.Call(typeof(Interlocked).GetMethod("CompareExchange", new[] { btype.MakeByRefType(), btype, btype }));
-				Ilg.Convert<T>();
+				if(typeof(T) == typeof(uint))
+					Ilg.Convert<uint>();
+				else if(typeof(T) == typeof(int))
+					Ilg.Convert<int>();
+				else if(typeof(T) == typeof(ulong))
+					Ilg.Convert<ulong>();
+				else if(typeof(T) == typeof(long))
+					Ilg.Convert<long>();
+				else
+					throw new NotSupportedException();
 				Ilg.LoadLocal(local);
 				var if_ = Ilg.DefineLabel();
 				var end = Ilg.DefineLabel();

@@ -9,6 +9,7 @@ using SigilLite;
 using Label = SigilLite.Label;
 #endif
 using UltimateOrb;
+using Common;
 // ReSharper disable ArrangeRedundantParentheses
 // ReSharper disable RedundantCast
 // ReSharper disable UnusedVariable
@@ -26,11 +27,35 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), (RuntimeValue<byte>) (NZCV_CR))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<byte>) (NZCV_CR)))).Store();
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]), (RuntimeValue<byte>) (NZCV_CR)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (NZCV_CR)))).Store();
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -46,29 +71,23 @@ namespace Cpu64 {
 					var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var m = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm)))));
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm))))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm)))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm))))));
 					} else {
-						// Runtime else!
 						if(((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U)) != 0) {
-							// Runtime if!
 							if(rd == 31)
-								SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftLeft(imm))));
+								SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft(imm)))));
 							else
-								XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftLeft(imm))));
+								XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft(imm)))));
 						} else {
-							// Runtime else!
 							var m = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).Store();
-							// Runtime let!
 							if(rd == 31)
-								SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((RuntimeValue<uint>) (m)), 32))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm))));
+								SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((RuntimeValue<uint>) (m)), 32))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm)))));
 							else
-								XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((RuntimeValue<uint>) (m)), 32))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm))));
+								XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((RuntimeValue<uint>) (m)), 32))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm)))));
 						}
 					}
 					return true;
@@ -84,17 +103,15 @@ namespace Cpu64 {
 					var shift = (long) (((byte) (((sh) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0xC));
 					var simm = (uint) (((uint) ((uint) (imm))) << (int) (shift));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) (simm)));
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (simm))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) (simm)));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (simm))));
 					} else {
-						// Runtime else!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (simm));
+							SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (simm)));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (simm));
+							XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (simm)));
 					}
 					return true;
 				}
@@ -109,21 +126,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rm]))).Store();
-						// Runtime let!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) (b))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() }))));
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) (b))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() }))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).Store();
-						// Runtime let!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (b))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() })));
+							SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (b))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() })));
+							XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? SPR : XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))));
 					}
 					return true;
 				}
@@ -138,11 +149,35 @@ namespace Cpu64 {
 					var shift = (long) (((byte) (((sh) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0xC));
 					var simm = (uint) (((uint) ((uint) (imm))) << (int) (shift));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn])), simm, 0x0)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (uint) ((uint) (simm));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x0));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((uint) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]), simm, 0x0));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (ulong) ((ulong) (simm));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x0));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((ulong) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -157,15 +192,35 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }), 0x0)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x0));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }), 0x0));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x0));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -175,7 +230,7 @@ namespace Cpu64 {
 					var immhi = (inst >> 5) & 0x7FFFFU;
 					var rd = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>((ulong) ((ulong) (((ulong) (ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) (immlo)) << 12)))) | ((ulong) (((ulong) (immhi)) << 14)))), 33));
-					var addr = (ulong) ((ulong) ((ulong) ((ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) ((ulong) ((ulong) ((ulong) (((ulong) (pc)) >> (int) (0xC)))))) << 12))))) + (ulong) (imm));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) ((ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) ((ulong) ((ulong) ((ulong) (((ulong) (pc)) >> (int) (0xC)))))) << 12)))))) + ((ulong) (long) (imm)));
 					XR[(int) rd] = addr;
 					return true;
 				}
@@ -190,17 +245,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						if(rd == 31)
 							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 						else
 							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 					} else {
-						// Runtime else!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))));
+							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))));
+							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))));
 					}
 					return true;
 				}
@@ -215,15 +268,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 					}
 					return true;
 				}
@@ -238,34 +285,18 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						var result = ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
-						// Runtime let!
+						var result = ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (result);
-						// Runtime let!
 						NZCV_NR = (RuntimeValue<uint>) ((result).ShiftRight(0x1F));
-						// Runtime let!
 						NZCV_ZR = (RuntimeValue<byte>) ((result) == (0x0));
-						// Runtime let!
 						NZCV_CR = 0x0;
-						// Runtime let!
 						NZCV_VR = 0x0;
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						var result = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
-						// Runtime let!
+						var result = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
 						XR[(int) rd] = result;
-						// Runtime let!
 						NZCV_NR = (RuntimeValue<ulong>) ((result).ShiftRight(0x3F));
-						// Runtime let!
 						NZCV_ZR = (RuntimeValue<byte>) ((result) == (0x0));
-						// Runtime let!
 						NZCV_CR = 0x0;
-						// Runtime let!
 						NZCV_VR = 0x0;
 					}
 					return true;
@@ -281,30 +312,18 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var result = ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))))).Store();
-						// Runtime let!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (result);
-						// Runtime let!
 						NZCV_NR = (RuntimeValue<uint>) ((result).ShiftRight(0x1F));
-						// Runtime let!
 						NZCV_ZR = (RuntimeValue<byte>) ((result) == (0x0));
-						// Runtime let!
 						NZCV_CR = 0x0;
-						// Runtime let!
 						NZCV_VR = 0x0;
 					} else {
-						// Runtime else!
-						var result = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))))).Store();
-						// Runtime let!
+						var result = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) (imm))))).Store();
 						XR[(int) rd] = result;
-						// Runtime let!
 						NZCV_NR = (RuntimeValue<ulong>) ((result).ShiftRight(0x3F));
-						// Runtime let!
 						NZCV_ZR = (RuntimeValue<byte>) ((result) == (0x0));
-						// Runtime let!
 						NZCV_CR = 0x0;
-						// Runtime let!
 						NZCV_VR = 0x0;
 					}
 					return true;
@@ -317,18 +336,16 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).ShiftRight((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))).ShiftRight((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).ShiftRight((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))));
 					}
 					return true;
 				}
 				/* B */
 				if((inst & 0xFC000000U) == 0x14000000U) {
 					var imm = (inst >> 0) & 0x3FFFFFFU;
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28)))));
 					Branch(addr);
 					return true;
 				}
@@ -336,11 +353,9 @@ namespace Cpu64 {
 				if((inst & 0xFF000010U) == 0x54000000U) {
 					var imm = (inst >> 5) & 0x7FFFFU;
 					var cond = (inst >> 0) & 0xFU;
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 21))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 21)))));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
-					// Runtime block!
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime block!
 					Label temp_0 = Ilg.DefineLabel(), temp_1 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_1);
 					Branch(addr);
@@ -360,28 +375,18 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						var dst = ((RuntimeValue<uint>) ((rd) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rd])).Store();
-						// Runtime block!
 						var src = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
 						var wmask = (uint) ((uint) ((ulong) (MakeWMask(N, imms, immr, 0x20, 0x0))));
 						var tmask = (uint) ((uint) ((ulong) (MakeTMask(N, imms, immr, 0x20, 0x0))));
-						// Runtime block!
 						var bot = ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (dst)) & ((RuntimeValue<uint>) ((uint) (~(wmask)))))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((src).ShiftLeft((RuntimeValue<uint>) (32 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<uint>) (wmask))))))))).Store();
-						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (dst)) & ((RuntimeValue<uint>) ((uint) (~(tmask)))))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (bot)) & ((RuntimeValue<uint>) (tmask)))))))));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var dst = ((RuntimeValue<ulong>) ((rd) == 31 ? 0UL : XR[(int) rd])).Store();
-						// Runtime block!
-						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
+						var dst = ((RuntimeValue<ulong>) ((rd) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rd])).Store();
+						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 						var wmask = (ulong) (MakeWMask(N, imms, immr, 0x40, 0x0));
 						var tmask = (ulong) (MakeTMask(N, imms, immr, 0x40, 0x0));
-						// Runtime block!
 						var bot = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (dst)) & ((RuntimeValue<ulong>) ((ulong) (~(wmask)))))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((src).ShiftLeft((RuntimeValue<uint>) (64 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<ulong>) (wmask))))))))).Store();
-						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (dst)) & ((RuntimeValue<ulong>) ((ulong) (~(tmask)))))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (bot)) & ((RuntimeValue<ulong>) (tmask))))))));
 					}
 					return true;
@@ -397,15 +402,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) & ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) & ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
 					}
 					return true;
 				}
@@ -413,26 +412,22 @@ namespace Cpu64 {
 				if((inst & 0xFC000000U) == 0x94000000U) {
 					var imm = (inst >> 0) & 0x3FFFFFFU;
 					var offset = (long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28));
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (offset));
-					// Runtime block!
-					XR[(int) 0x1E] = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (0x4));
-					// Runtime block!
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (offset)));
+					XR[(int) 0x1E] = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (0x4)));
 					Branch(addr);
 					return true;
 				}
 				/* BLR */
 				if((inst & 0xFFFFFC1FU) == 0xD63F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					// Runtime block!
-					XR[(int) 0x1E] = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (0x4));
-					// Runtime block!
-					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]));
+					XR[(int) 0x1E] = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (0x4)));
+					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]));
 					return true;
 				}
 				/* BR */
 				if((inst & 0xFFFFFC1FU) == 0xD61F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]));
+					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]));
 					return true;
 				}
 				/* CASP */
@@ -442,8 +437,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-					var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+					var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+					var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 					throw new NotImplementedException();
 					return true;
 				}
@@ -454,8 +449,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-					var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+					var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+					var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 					throw new NotImplementedException();
 					return true;
 				}
@@ -466,63 +461,40 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-					var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+					var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+					var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						var cl = ((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])).Store();
-						// Runtime block!
-						var ch = ((RuntimeValue<uint>) (((ulong) ((ulong) (rs) + (ulong) (0x1))) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) (ulong) ((ulong) (rs) + (ulong) (0x1))])).Store();
-						// Runtime block!
+						var ch = ((RuntimeValue<uint>) (((ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))])).Store();
 						var nl = ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])).Store();
-						// Runtime block!
-						var nh = ((RuntimeValue<uint>) (((ulong) ((ulong) (rt) + (ulong) (0x1))) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) (ulong) ((ulong) (rt) + (ulong) (0x1))])).Store();
-						// Runtime block!
+						var nh = ((RuntimeValue<uint>) (((ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))])).Store();
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-						// Runtime block!
 						var data = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value)).Store();
-						// Runtime block!
 						Label temp_2 = Ilg.DefineLabel(), temp_3 = Ilg.DefineLabel();
 						BranchIf(((RuntimeValue<byte>) ((data) == ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (ch))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (cl))))))))) == 0, temp_3);
 						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nh))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nl))))));
 						Branch(temp_2);
 						Label(temp_3);
 						Label(temp_2);
-						// Runtime block!
 						XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (data)));
-						// Runtime block!
-						XR[(int) (ulong) ((ulong) (rs) + (ulong) (0x1))] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) ((data).ShiftRight(0x20)))));
+						XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) ((data).ShiftRight(0x20)))));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var cl = ((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs])).Store();
-						// Runtime block!
-						var ch = ((RuntimeValue<ulong>) (((ulong) ((ulong) (rs) + (ulong) (0x1))) == 31 ? 0UL : XR[(int) (ulong) ((ulong) (rs) + (ulong) (0x1))])).Store();
-						// Runtime block!
-						var nl = ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])).Store();
-						// Runtime block!
-						var nh = ((RuntimeValue<ulong>) (((ulong) ((ulong) (rt) + (ulong) (0x1))) == 31 ? 0UL : XR[(int) (ulong) ((ulong) (rt) + (ulong) (0x1))])).Store();
-						// Runtime block!
+						var cl = ((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])).Store();
+						var ch = ((RuntimeValue<ulong>) (((ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))])).Store();
+						var nl = ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).Store();
+						var nh = ((RuntimeValue<ulong>) (((ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))])).Store();
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-						// Runtime block!
 						var dl = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value)).Store();
-						// Runtime block!
-						var dh = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value)).Store();
-						// Runtime block!
+						var dh = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value)).Store();
 						Label temp_4 = Ilg.DefineLabel(), temp_5 = Ilg.DefineLabel();
 						BranchIf(((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dl) == (cl)))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dh) == (ch))))))) == 0, temp_5);
-						// Runtime block!
 						((RuntimePointer<ulong>) (address)).Value = nl;
-						// Runtime block!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = nh;
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = nh;
 						Branch(temp_4);
 						Label(temp_5);
 						Label(temp_4);
-						// Runtime block!
 						XR[(int) rs] = dl;
-						// Runtime block!
-						XR[(int) (ulong) ((ulong) (rs) + (ulong) (0x1))] = dh;
+						XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))] = dh;
 					}
 					return true;
 				}
@@ -533,8 +505,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-					var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+					var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+					var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 					throw new NotImplementedException();
 					return true;
 				}
@@ -544,9 +516,8 @@ namespace Cpu64 {
 					var imm = (inst >> 5) & 0x7FFFFU;
 					var rs = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						Label temp_6 = Ilg.DefineLabel(), temp_7 = Ilg.DefineLabel();
 						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) != ((uint) ((uint) (0x0))))) == 0, temp_7);
 						Branch(addr);
@@ -555,9 +526,8 @@ namespace Cpu64 {
 						Branch(pc + 4);
 						Label(temp_6);
 					} else {
-						// Runtime else!
 						Label temp_8 = Ilg.DefineLabel(), temp_9 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs])) != ((ulong) ((ulong) (0x0))))) == 0, temp_9);
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) != ((ulong) ((ulong) (0x0))))) == 0, temp_9);
 						Branch(addr);
 						Branch(temp_8);
 						Label(temp_9);
@@ -572,9 +542,8 @@ namespace Cpu64 {
 					var imm = (inst >> 5) & 0x7FFFFU;
 					var rs = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						Label temp_10 = Ilg.DefineLabel(), temp_11 = Ilg.DefineLabel();
 						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) == ((uint) ((uint) (0x0))))) == 0, temp_11);
 						Branch(addr);
@@ -583,9 +552,8 @@ namespace Cpu64 {
 						Branch(pc + 4);
 						Label(temp_10);
 					} else {
-						// Runtime else!
 						Label temp_12 = Ilg.DefineLabel(), temp_13 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs])) == ((ulong) ((ulong) (0x0))))) == 0, temp_13);
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) == ((ulong) ((ulong) (0x0))))) == 0, temp_13);
 						Branch(addr);
 						Branch(temp_12);
 						Label(temp_13);
@@ -604,15 +572,38 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_14 = Ilg.DefineLabel(), temp_15 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_15);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (uint) ((uint) (imm)), 0x0)));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (uint) ((uint) ((uint) ((uint) (imm))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x0));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((uint) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (ulong) ((ulong) (imm)), 0x0));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (ulong) ((ulong) ((ulong) ((ulong) (imm))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x0));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((ulong) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					Branch(temp_14);
 					Label(temp_15);
@@ -630,15 +621,38 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_16 = Ilg.DefineLabel(), temp_17 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_17);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (uint) (~((uint) ((uint) (imm)))), 0x1)));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (uint) ((uint) ((uint) (~((uint) ((uint) (imm))))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x1));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((uint) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (ulong) (~((ulong) ((ulong) (imm)))), 0x1));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (ulong) ((ulong) ((ulong) (~((ulong) ((ulong) (imm))))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((ulong) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					Branch(temp_16);
 					Label(temp_17);
@@ -656,15 +670,38 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_18 = Ilg.DefineLabel(), temp_19 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_19);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))), 0x1)));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x1));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) 0x1F] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]))), 0x1));
+						XR[(int) 0x1F] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					Branch(temp_18);
 					Label(temp_19);
@@ -684,11 +721,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallCountLeadingZeros((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallCountLeadingZeros((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (CallCountLeadingZeros((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])));
 					}
 					return true;
 				}
@@ -712,24 +747,19 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_20 = Ilg.DefineLabel(), temp_21 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_21);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]);
+						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
 					Branch(temp_20);
 					Label(temp_21);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]);
+						XR[(int) rd] = (RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]);
 					}
 					Label(temp_20);
 					return true;
@@ -744,24 +774,19 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_22 = Ilg.DefineLabel(), temp_23 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_23);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]);
+						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
 					Branch(temp_22);
 					Label(temp_23);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (0x1)))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (0x1))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x1));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x1)));
 					}
 					Label(temp_22);
 					return true;
@@ -776,24 +801,19 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_24 = Ilg.DefineLabel(), temp_25 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_25);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]);
+						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
 					Branch(temp_24);
 					Label(temp_25);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])));
 					}
 					Label(temp_24);
 					return true;
@@ -808,24 +828,19 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_26 = Ilg.DefineLabel(), temp_27 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_27);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]);
+						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
 					Branch(temp_26);
 					Label(temp_27);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (-((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (-((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (-((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))));
 					}
 					Label(temp_26);
 					return true;
@@ -851,8 +866,7 @@ namespace Cpu64 {
 					var size = ((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((long) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x8)) ? 1U : 0U) != 0) ? (0x40) : (0x20)));
 					var r = (string) (((byte) (((size) == (0x40)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var T = ((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x0)) ? 1U : 0U) != 0) ? throw new NotImplementedException() : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("16B") : ("8B"))) : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("8H") : ("4H"))) : ((string) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U) != 0) ? ((string) ((Q != 0) ? ("4S") : ("2S"))) : ((string) ((Q != 0) ? ("2D") : throw new NotImplementedException()))))))));
-					var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
-					// Runtime let!
+					var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 					VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<byte>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<byte>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ulong>) (src)).CreateVector())) : throw new NotImplementedException())))))));
 					return true;
 				}
@@ -867,15 +881,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) ^ ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) ^ ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
 					}
 					return true;
 				}
@@ -890,17 +898,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						if(rd == 31)
 							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 						else
 							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 					} else {
-						// Runtime else!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) ^ ((RuntimeValue<ulong>) (imm))));
+							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) ^ ((RuntimeValue<ulong>) (imm))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) ^ ((RuntimeValue<ulong>) (imm))));
+							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) ^ ((RuntimeValue<ulong>) (imm))));
 					}
 					return true;
 				}
@@ -915,15 +921,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) ^ ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) ^ ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) ^ ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 					}
 					return true;
 				}
@@ -948,11 +948,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftLeft((ulong) ((ulong) (0x20) - (ulong) (lsb)))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(lsb)))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftLeft((ulong) (((ulong) (long) (0x20)) - ((ulong) (byte) (lsb))))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(lsb)))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).ShiftLeft((ulong) ((ulong) (0x40) - (ulong) (lsb)))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftRight(lsb))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).ShiftLeft((ulong) (((ulong) (long) (0x40)) - ((ulong) (byte) (lsb))))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(lsb))))));
 					}
 					return true;
 				}
@@ -965,15 +963,15 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
 						case 0x3: {
-							VHR[(int) (rd)] = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VHR[(int) (rn)])) + (RuntimeValue<float>) ((RuntimeValue<float>) (VHR[(int) (rm)])))));
+							VHR[(int) (rd)] = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (((RuntimeValue<ushort>) (RuntimeValue<ushort>) ((RuntimeValue<ushort>) (VHR[(int) (rn)]))) + ((RuntimeValue<ushort>) (RuntimeValue<ushort>) ((RuntimeValue<ushort>) (VHR[(int) (rm)]))))));
 							break;
 						}
 						case 0x0: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)])) + (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) + ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
 						}
 						case 0x1: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) + (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)]))) + ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)]))));
 							break;
 						}
 						default: {
@@ -1018,11 +1016,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))) + (RuntimeValue<float>) ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))));
+						VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0)))) + ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1)))));
 					} else {
-						// Runtime else!
-						VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0))) + (RuntimeValue<double>) ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1))));
+						VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0)))) + ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1)))));
 					}
 					return true;
 				}
@@ -1037,62 +1033,38 @@ namespace Cpu64 {
 					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0: {
 							var a = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
-							// Runtime let!
 							var c = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x0))).Store();
-							// Runtime let!
 							var d = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x1))).Store();
-							// Runtime let!
 							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((float) ((float) (0x0)))).CreateVector());
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<float>) ((RuntimeValue<float>) (a) + (RuntimeValue<float>) (b)));
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<float>) ((RuntimeValue<float>) (c) + (RuntimeValue<float>) (d)));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (a)) + ((RuntimeValue<float>) (RuntimeValue<float>) (b))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (c)) + ((RuntimeValue<float>) (RuntimeValue<float>) (d))));
 							break;
 						}
 						case 0x1: {
 							var a = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
-							// Runtime let!
 							var c = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x2))).Store();
-							// Runtime let!
 							var d = ((RuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x3))).Store();
-							// Runtime let!
 							var e = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x0))).Store();
-							// Runtime let!
 							var f = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x1))).Store();
-							// Runtime let!
 							var g = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x2))).Store();
-							// Runtime let!
 							var h = ((RuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x3))).Store();
-							// Runtime let!
 							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((float) ((float) (0x0)))).CreateVector());
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<float>) ((RuntimeValue<float>) (a) + (RuntimeValue<float>) (b)));
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<float>) ((RuntimeValue<float>) (c) + (RuntimeValue<float>) (d)));
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (RuntimeValue<float>) ((RuntimeValue<float>) (e) + (RuntimeValue<float>) (f)));
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (RuntimeValue<float>) ((RuntimeValue<float>) (g) + (RuntimeValue<float>) (h)));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (a)) + ((RuntimeValue<float>) (RuntimeValue<float>) (b))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (c)) + ((RuntimeValue<float>) (RuntimeValue<float>) (d))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (e)) + ((RuntimeValue<float>) (RuntimeValue<float>) (f))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) (g)) + ((RuntimeValue<float>) (RuntimeValue<float>) (h))));
 							break;
 						}
 						case 0x3: {
 							var a = ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0))).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1))).Store();
-							// Runtime let!
 							var c = ((RuntimeValue<double>) (VR[(int) (rm)].Element<double>(0x0))).Store();
-							// Runtime let!
 							var d = ((RuntimeValue<double>) (VR[(int) (rm)].Element<double>(0x1))).Store();
-							// Runtime let!
 							VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((float) ((float) (0x0)))).CreateVector());
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<double>) ((RuntimeValue<double>) (a) + (RuntimeValue<double>) (b)));
-							// Runtime let!
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<double>) ((RuntimeValue<double>) (c) + (RuntimeValue<double>) (d)));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) (a)) + ((RuntimeValue<double>) (RuntimeValue<double>) (b))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) (c)) + ((RuntimeValue<double>) (RuntimeValue<double>) (d))));
 							break;
 						}
 						default: {
@@ -1112,7 +1084,6 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_28 = Ilg.DefineLabel(), temp_29 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_29);
 					switch(type) {
@@ -1169,7 +1140,6 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					// Runtime let!
 					Label temp_30 = Ilg.DefineLabel(), temp_31 = Ilg.DefineLabel();
 					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_31);
 					switch(type) {
@@ -1252,11 +1222,11 @@ namespace Cpu64 {
 					}
 					switch(tf) {
 						case 0xC: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VHR[(int) (rn)])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<ushort>) (VHR[(int) (rn)])));
 							break;
 						}
 						case 0xD: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<float>) (VHR[(int) (rn)])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<ushort>) (VHR[(int) (rn)])));
 							break;
 						}
 						case 0x3: {
@@ -1289,7 +1259,7 @@ namespace Cpu64 {
 					var scale = (inst >> 10) & 0x3FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+					var fbits = (ulong) (((ulong) (long) (0x40)) - ((ulong) (byte) (scale)));
 					var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch((byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))))) {
@@ -1392,7 +1362,7 @@ namespace Cpu64 {
 					var scale = (inst >> 10) & 0x3FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+					var fbits = (ulong) (((ulong) (long) (0x40)) - ((ulong) (byte) (scale)));
 					var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch((byte) ((byte) (((byte) (((byte) (type)) << 0)) | ((byte) (((byte) (size)) << 2))))) {
@@ -1501,11 +1471,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0x0: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)])) / (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) / ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
 						}
 						case 0x1: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) / (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)]))) / ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)]))));
 							break;
 						}
 						default: {
@@ -1525,17 +1495,13 @@ namespace Cpu64 {
 					switch(type) {
 						case 0x0: {
 							var a = ((RuntimeValue<float>) (VSR[(int) (rn)])).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<float>) (VSR[(int) (rm)])).Store();
-							// Runtime let!
 							VSR[(int) (rd)] = (RuntimeValue<float>) (Ternary<byte, float>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((a) > (b))), a, b));
 							break;
 						}
 						case 0x1: {
 							var a = ((RuntimeValue<double>) (VDR[(int) (rn)])).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<double>) (VDR[(int) (rm)])).Store();
-							// Runtime let!
 							VDR[(int) (rd)] = (RuntimeValue<double>) (Ternary<byte, double>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((a) > (b))), a, b));
 							break;
 						}
@@ -1556,17 +1522,13 @@ namespace Cpu64 {
 					switch(type) {
 						case 0x0: {
 							var a = ((RuntimeValue<float>) (VSR[(int) (rn)])).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<float>) (VSR[(int) (rm)])).Store();
-							// Runtime let!
 							VSR[(int) (rd)] = (RuntimeValue<float>) (Ternary<byte, float>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((a) < (b))), a, b));
 							break;
 						}
 						case 0x1: {
 							var a = ((RuntimeValue<double>) (VDR[(int) (rn)])).Store();
-							// Runtime let!
 							var b = ((RuntimeValue<double>) (VDR[(int) (rm)])).Store();
-							// Runtime let!
 							VDR[(int) (rd)] = (RuntimeValue<double>) (Ternary<byte, double>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((a) < (b))), a, b));
 							break;
 						}
@@ -1649,11 +1611,11 @@ namespace Cpu64 {
 					var index2 = (string) (((byte) (((r2) == ("V")) ? 1U : 0U) != 0) ? (".D[1]") : (""));
 					switch(tf) {
 						case 0x66: {
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<float>) (VHR[(int) (rn)]))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ushort>) (VHR[(int) (rn)]))));
 							break;
 						}
 						case 0xE6: {
-							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<float>) (VHR[(int) (rn)])));
+							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (VHR[(int) (rn)])));
 							break;
 						}
 						case 0x67: {
@@ -1669,11 +1631,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0xE7: {
-							VHR[(int) (rd)] = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])));
+							VHR[(int) (rd)] = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])));
 							break;
 						}
 						case 0xA7: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Bitcast<double>());
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Bitcast<double>());
 							break;
 						}
 						case 0xA6: {
@@ -1685,7 +1647,7 @@ namespace Cpu64 {
 							break;
 						}
 						case 0xCF: {
-							VDR[(int) ((byte) ((((ulong) ((byte) ((rd) << (int) (0x1)))) | ((ulong) (0x1)))))] = (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Bitcast<double>());
+							VDR[(int) ((byte) ((((ulong) ((byte) ((rd) << (int) (0x1)))) | ((ulong) (0x1)))))] = (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Bitcast<double>());
 							break;
 						}
 						default: {
@@ -1727,11 +1689,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0x0: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)])) * (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) * ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
 						}
 						case 0x1: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) * (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)]))) * ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)]))));
 							break;
 						}
 						default: {
@@ -1800,11 +1762,11 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
 						case 0x0: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) (-((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)])) * (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)])))));
+							VSR[(int) (rd)] = (RuntimeValue<float>) (-((RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) * ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))))));
 							break;
 						}
 						case 0x1: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) (-((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) * (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])))));
+							VDR[(int) (rd)] = (RuntimeValue<double>) (-((RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)]))) * ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)]))))));
 							break;
 						}
 						default: {
@@ -1853,11 +1815,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0x0: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)])) - (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) - ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
 						}
 						case 0x1: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)])) - (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rn)]))) - ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) (VDR[(int) (rm)]))));
 							break;
 						}
 						default: {
@@ -1894,15 +1856,15 @@ namespace Cpu64 {
 						}
 					}
 					if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
-						VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))));
+						VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))));
 					} else {
 						if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x2))))) == (0x2)) ? 1U : 0U)) != 0) {
-							VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))));
 						} else {
 							if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x4))))) == (0x4)) ? 1U : 0U)) != 0) {
 								VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<float>) (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Bitcast<float>()));
 							} else {
-								VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Bitcast<double>()));
+								VR[(int) (rd)] = VR[(int) (rd)].Insert(index, (RuntimeValue<double>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Bitcast<double>()));
 							}
 						}
 					}
@@ -1960,14 +1922,10 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-						// Runtime let!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value));
 					} else {
-						// Runtime else!
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-						// Runtime let!
 						XR[(int) rt] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value);
 					}
 					return true;
@@ -1977,7 +1935,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value)));
 					return true;
 				}
@@ -1986,7 +1943,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value)));
 					return true;
 				}
@@ -1996,12 +1952,9 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Exclusive32R = ((RuntimePointer<uint>) (address)).Value));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) (Exclusive64R = ((RuntimePointer<ulong>) (address)).Value);
 					}
 					return true;
@@ -2011,7 +1964,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (Exclusive8R = ((RuntimePointer<byte>) (address)).Value)));
 					return true;
 				}
@@ -2020,7 +1972,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (Exclusive16R = ((RuntimePointer<ushort>) (address)).Value)));
 					return true;
 				}
@@ -2034,25 +1985,17 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						XR[(int) rt1] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value));
-						// Runtime block!
-						XR[(int) rt2] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value));
+						XR[(int) rt2] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value));
 					} else {
-						// Runtime else!
-						// Runtime block!
 						XR[(int) rt1] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value);
-						// Runtime block!
-						XR[(int) rt2] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value);
+						XR[(int) rt2] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value);
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* LDP-immediate-signed-offset */
@@ -2064,20 +2007,13 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						XR[(int) rt1] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value));
-						// Runtime block!
-						XR[(int) rt2] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value));
+						XR[(int) rt2] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value));
 					} else {
-						// Runtime else!
-						// Runtime block!
 						XR[(int) rt1] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value);
-						// Runtime block!
-						XR[(int) rt2] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value);
+						XR[(int) rt2] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value);
 					}
 					return true;
 				}
@@ -2091,35 +2027,27 @@ namespace Cpu64 {
 					var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", _ => "Q" });
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, _ => 0x4 })));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					switch(opc) {
 						case 0x0: {
-							// Runtime block!
 							VSR[(int) (rt1)] = (RuntimeValue<float>) (((RuntimePointer<float>) (address)).Value);
-							// Runtime block!
-							VSR[(int) (rt2)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value);
+							VSR[(int) (rt2)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value);
 							break;
 						}
 						case 0x1: {
-							// Runtime block!
 							VDR[(int) (rt1)] = (RuntimeValue<double>) (((RuntimePointer<double>) (address)).Value);
-							// Runtime block!
-							VDR[(int) (rt2)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value);
+							VDR[(int) (rt2)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value);
 							break;
 						}
 						default: {
-							// Runtime block!
 							VR[(int) (rt1)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) (address)).Value);
-							// Runtime block!
-							VR[(int) (rt2)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x10)))).Value);
+							VR[(int) (rt2)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x10))))).Value);
 							break;
 						}
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* LDP-simd-signed-offset */
@@ -2131,28 +2059,21 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", _ => "Q" });
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, _ => 0x4 })));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					switch(opc) {
 						case 0x0: {
-							// Runtime block!
 							VSR[(int) (rt1)] = (RuntimeValue<float>) (((RuntimePointer<float>) (address)).Value);
-							// Runtime block!
-							VSR[(int) (rt2)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value);
+							VSR[(int) (rt2)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value);
 							break;
 						}
 						case 0x1: {
-							// Runtime block!
 							VDR[(int) (rt1)] = (RuntimeValue<double>) (((RuntimePointer<double>) (address)).Value);
-							// Runtime block!
-							VDR[(int) (rt2)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value);
+							VDR[(int) (rt2)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value);
 							break;
 						}
 						default: {
-							// Runtime block!
 							VR[(int) (rt1)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) (address)).Value);
-							// Runtime block!
-							VR[(int) (rt2)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x10)))).Value);
+							VR[(int) (rt2)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x10))))).Value);
 							break;
 						}
 					}
@@ -2165,11 +2086,9 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt1 = (inst >> 0) & 0x1FU;
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) (0x2));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					XR[(int) rt1] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value), 32))));
-					// Runtime let!
-					XR[(int) rt2] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value), 32))));
+					XR[(int) rt2] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value), 32))));
 					return true;
 				}
 				/* LDR-immediate-preindex */
@@ -2180,16 +2099,12 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value));
 					} else {
-						// Runtime else!
 						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value);
 					}
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2204,19 +2119,15 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					// Runtime block!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value));
 					} else {
-						// Runtime else!
 						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value);
 					}
-					// Runtime block!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDR-immediate-unsigned-offset */
@@ -2228,11 +2139,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ushort) ((rawimm) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value);
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value);
 					}
 					return true;
 				}
@@ -2246,7 +2155,6 @@ namespace Cpu64 {
 					var simm = (long) (SignExt<long>(imm, 9));
 					var r = (string) (((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "B", 0x2 => "H", 0x4 => "S", 0x6 => "D", 0x1 => "Q", _ => throw new NotImplementedException() });
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0: {
 							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value);
@@ -2273,11 +2181,10 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* LDR-simd-immediate-unsigned-offset */
@@ -2293,23 +2200,23 @@ namespace Cpu64 {
 					var imm = (uint) (((uint) ((uint) (rawimm))) << (int) ((long) ((m) switch { 0x1 => 0x0, 0x5 => 0x1, 0x9 => 0x2, 0xD => 0x3, _ => 0x4 })));
 					switch(m) {
 						case 0x1: {
-							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (imm)))).Value);
+							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (imm))))).Value);
 							break;
 						}
 						case 0x5: {
-							VHR[(int) (rt)] = (RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (imm)))).Value);
+							VHR[(int) (rt)] = (RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (imm))))).Value);
 							break;
 						}
 						case 0x9: {
-							VSR[(int) (rt)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (imm)))).Value);
+							VSR[(int) (rt)] = (RuntimeValue<float>) (((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (imm))))).Value);
 							break;
 						}
 						case 0xD: {
-							VDR[(int) (rt)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (imm)))).Value);
+							VDR[(int) (rt)] = (RuntimeValue<double>) (((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (imm))))).Value);
 							break;
 						}
 						default: {
-							VR[(int) (rt)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<uint>) (imm)))).Value);
+							VR[(int) (rt)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<uint>) (imm))))).Value);
 							break;
 						}
 					}
@@ -2327,11 +2234,9 @@ namespace Cpu64 {
 					var r1 = (string) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
 					var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))), 0x3 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))), 0x7 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])), _ => throw new NotImplementedException() })).ShiftLeft(amount))).Store();
-					// Runtime let!
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))).Store();
-					// Runtime let!
+					var amount = (ulong) (((ulong) (byte) (scale)) * ((ulong) (long) ((long) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() }))))));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))), 0x3 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))), 0x7 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])), _ => throw new NotImplementedException() })).ShiftLeft(amount))).Store();
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Store();
 					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0: {
 							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value);
@@ -2368,14 +2273,11 @@ namespace Cpu64 {
 					var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value));
 					} else {
-						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value);
+						XR[(int) rt] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value);
 					}
 					return true;
 				}
@@ -2385,13 +2287,11 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					// Runtime block!
 					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value))));
-					// Runtime block!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDRB-immediate-preindex */
@@ -2400,10 +2300,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value))));
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2415,7 +2313,7 @@ namespace Cpu64 {
 					var imm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
-					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value)));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value)));
 					return true;
 				}
 				/* LDRB-register */
@@ -2427,9 +2325,8 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
-					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value));
 					return true;
 				}
 				/* LDRH-immediate-postindex */
@@ -2439,13 +2336,11 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value)));
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDRH-immediate-preindex */
@@ -2454,10 +2349,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value)));
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2470,7 +2363,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (ushort) ((rawimm) << (int) (0x1));
-					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value)));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value)));
 					return true;
 				}
 				/* LDRH-register */
@@ -2482,9 +2375,8 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
-					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value));
 					return true;
 				}
 				/* LDRSB-immediate-postindex */
@@ -2496,19 +2388,15 @@ namespace Cpu64 {
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value), 8)))));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value), 8))));
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDRSB-immediate-preindex */
@@ -2519,16 +2407,12 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value), 8)))));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value), 8))));
 					}
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2543,11 +2427,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 8)))));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value), 8)))));
 					} else {
-						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 8))));
+						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value), 8))));
 					}
 					return true;
 				}
@@ -2561,14 +2443,11 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((opc) == (0x0)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value), 8)))));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value), 8)))));
 					} else {
-						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value), 8))));
+						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value), 8))));
 					}
 					return true;
 				}
@@ -2581,19 +2460,15 @@ namespace Cpu64 {
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value), 16)))));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value), 16))));
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDRSH-immediate-preindex */
@@ -2604,16 +2479,12 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value), 16)))));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value), 16))));
 					}
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2629,11 +2500,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ushort) ((rawimm) << (int) (0x1));
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 16)))));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value), 16)))));
 					} else {
-						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 16))));
+						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value), 16))));
 					}
 					return true;
 				}
@@ -2647,14 +2516,11 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((opc) == (0x0)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value), 16)))));
+						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value), 16)))));
 					} else {
-						// Runtime else!
-						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value), 16))));
+						XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value), 16))));
 					}
 					return true;
 				}
@@ -2665,13 +2531,11 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value), 32))));
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)));
 					return true;
 				}
 				/* LDRSW-immediate-preindex */
@@ -2680,10 +2544,8 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) (address)).Value), 32))));
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -2696,7 +2558,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (ushort) ((rawimm) << (int) (0x2));
-					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value), 32))));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value), 32))));
 					return true;
 				}
 				/* LDRSW-register */
@@ -2709,9 +2571,8 @@ namespace Cpu64 {
 					var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0x2));
 					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
-					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value), 32))));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value), 32))));
 					return true;
 				}
 				/* LDUR */
@@ -2723,11 +2584,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value);
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value);
 					}
 					return true;
 				}
@@ -2737,7 +2596,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value)));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value)));
 					return true;
 				}
 				/* LDURH */
@@ -2746,7 +2605,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value)));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value)));
 					return true;
 				}
 				/* LDURSB */
@@ -2758,11 +2617,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value), 8)))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value), 8)))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value), 8))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) (((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value), 8))));
 					}
 					return true;
 				}
@@ -2775,11 +2632,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (long) (SignExt<long>(rawimm, 9));
 					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value), 16)))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value), 16)))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value), 16))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) (((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value), 16))));
 					}
 					return true;
 				}
@@ -2789,7 +2644,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Value), 32))));
+					XR[(int) rt] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) (((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm))))).Value), 32))));
 					return true;
 				}
 				/* LDUR-simd */
@@ -2801,8 +2656,7 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "B", 0x2 => "H", 0x4 => "S", 0x6 => "D", 0x1 => "Q", _ => throw new NotImplementedException() });
 					var imm = (long) (SignExt<long>(rawimm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (imm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (imm)))).Store();
 					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0: {
 							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value);
@@ -2830,10 +2684,8 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rt] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Exclusive32R = ((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value));
 					} else {
-						// Runtime else!
 						XR[(int) rt] = (RuntimeValue<ulong>) (Exclusive64R = ((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value);
 					}
 					return true;
@@ -2860,11 +2712,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftLeft((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).ShiftLeft((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).ShiftLeft((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])));
 					}
 					return true;
 				}
@@ -2876,11 +2726,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftRight((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).ShiftRight((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).ShiftRight((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])));
 					}
 					return true;
 				}
@@ -2893,11 +2741,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) * (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))) + (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((ra) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) ra]))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) * ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((ra) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) ra])))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) * (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : XR[(int) ra])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) * ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) ra]))));
 					}
 					return true;
 				}
@@ -2918,12 +2764,9 @@ namespace Cpu64 {
 					var amount = (long) ((cmode) switch { 0x0 => 0x0, 0x1 => 0x8, 0x2 => 0x10, 0x3 => 0x18, _ => throw new NotImplementedException() });
 					var imm = (byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) (h)) << 0)) | ((byte) (((byte) (g)) << 1)))) | ((byte) (((byte) (f)) << 2)))) | ((byte) (((byte) (e)) << 3)))) | ((byte) (((byte) (d)) << 4)))) | ((byte) (((byte) (c)) << 5)))) | ((byte) (((byte) (b)) << 6)))) | ((byte) (((byte) (a)) << 7))));
 					var avec = ((RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((float) (Bitcast<uint, float>((uint) (((uint) ((uint) (imm))) << (int) (amount)))))).CreateVector())).Store();
-					// Runtime let!
 					if((Q) != 0) {
-						// Runtime if!
 						VR[(int) (rd)] = avec;
 					} else {
-						// Runtime else!
 						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (avec);
 					}
 					return true;
@@ -2952,11 +2795,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shift = (byte) ((hw) << (int) (0x4));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rd) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rd]))) & ((RuntimeValue<uint>) ((uint) ((((uint) ((uint) ((uint) (-0x1)))) ^ ((uint) ((uint) (((uint) ((uint) (0xFFFF))) << (int) (shift)))))))))))) | ((RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift)))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? 0UL : XR[(int) rd]))) & ((RuntimeValue<ulong>) ((ulong) ((((ulong) ((ulong) ((ulong) (-0x1)))) ^ ((ulong) ((ulong) (((ulong) ((ulong) (0xFFFF))) << (int) (shift)))))))))))) | ((RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rd]))) & ((RuntimeValue<ulong>) ((ulong) ((((ulong) ((ulong) ((ulong) (-0x1)))) ^ ((ulong) ((ulong) (((ulong) ((ulong) (0xFFFF))) << (int) (shift)))))))))))) | ((RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift))))));
 					}
 					return true;
 				}
@@ -2969,10 +2810,8 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shift = (byte) ((hw) << (int) (0x4));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((uint) (~((uint) (((uint) ((uint) (imm))) << (int) (shift)))));
 					} else {
-						// Runtime else!
 						XR[(int) rd] = (ulong) (~((ulong) (((ulong) ((ulong) (imm))) << (int) (shift))));
 					}
 					return true;
@@ -2986,10 +2825,8 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shift = (byte) ((hw) << (int) (0x4));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift)));
 					} else {
-						// Runtime else!
 						XR[(int) rd] = (ulong) (((ulong) ((ulong) (imm))) << (int) (shift));
 					}
 					return true;
@@ -3013,7 +2850,7 @@ namespace Cpu64 {
 					var cm = (inst >> 8) & 0xFU;
 					var op2 = (inst >> 5) & 0x7U;
 					var rt = (inst >> 0) & 0x1FU;
-					CallSR(op0, op1, cn, cm, op2, (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]));
+					CallSR(op0, op1, cn, cm, op2, (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]));
 					return true;
 				}
 				/* MSUB */
@@ -3025,11 +2862,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((ra) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) ra])) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) * (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((ra) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) ra]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) * ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : XR[(int) ra])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) * (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) ra]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) * ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))));
 					}
 					return true;
 				}
@@ -3044,15 +2879,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))));
 					}
 					return true;
 				}
@@ -3067,17 +2896,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (ulong) (MakeWMask(up, imms, immr, (long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x20) : (0x40)), 0x1));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						if(rd == 31)
 							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 						else
 							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((uint) ((uint) (imm)))))));
 					} else {
-						// Runtime else!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) | ((RuntimeValue<ulong>) (imm))));
+							SPR = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) | ((RuntimeValue<ulong>) (imm))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) | ((RuntimeValue<ulong>) (imm))));
+							XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) | ((RuntimeValue<ulong>) (imm))));
 					}
 					return true;
 				}
@@ -3092,15 +2919,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((b).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((b).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | ((b).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 					}
 					return true;
 				}
@@ -3112,7 +2933,6 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var t = (string) (((byte) (((q) == (0x0)) ? 1U : 0U) != 0) ? ("8B") : ("16B"));
 					if(((byte) (((rm) == (rn)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (VR[(int) (rn)]);
 					} else {
 						throw new NotImplementedException();
@@ -3124,7 +2944,7 @@ namespace Cpu64 {
 					var imm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var imm5 = (inst >> 0) & 0x1FU;
-					var pimm = (ulong) ((ulong) (imm) * (ulong) (0x8));
+					var pimm = (ulong) (((ulong) (ushort) (imm)) * ((ulong) (long) (0x8)));
 					return true;
 				}
 				/* RBIT */
@@ -3134,18 +2954,16 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallReverseBits((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallReverseBits((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])));
+						XR[(int) rd] = (RuntimeValue<ulong>) (CallReverseBits((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])));
 					}
 					return true;
 				}
 				/* RET */
 				if((inst & 0xFFFFFC1FU) == 0xD65F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]));
+					Branch((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]));
 					return true;
 				}
 				/* REV */
@@ -3158,13 +2976,11 @@ namespace Cpu64 {
 					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
 						case 0x0: {
 							var x = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
-							// Runtime let!
 							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (x)) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x18)))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x8)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x10))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x10)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x8))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x18)))) & ((RuntimeValue<ulong>) (0xFF)))))))));
 							break;
 						}
 						case 0x3: {
-							var x = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
-							// Runtime let!
+							var x = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 							XR[(int) rd] = (RuntimeValue<ulong>) ((((((((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (x)) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x38)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x8)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x30))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x10)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x28))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x18)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x20))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x20)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x18))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x28)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x10))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x30)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x8))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x38)))) & ((RuntimeValue<ulong>) (0xFF))))))));
 							break;
 						}
@@ -3182,14 +2998,10 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var x = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
-						// Runtime let!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (x)) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x8)))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x8)))) & ((RuntimeValue<ulong>) (0xFF))))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x10)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x18))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((x).ShiftRight(0x18)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x10)))))));
 					} else {
-						// Runtime else!
-						var x = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
-						// Runtime let!
+						var x = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 						XR[(int) rd] = (RuntimeValue<ulong>) ((((((((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (x)) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x8)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x8)))) & ((RuntimeValue<ulong>) (0xFF))))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x10)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x18))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x18)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x10))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x20)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x28))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x28)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x20))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x30)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x38))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((x).ShiftRight(0x38)))) & ((RuntimeValue<ulong>) (0xFF))))).ShiftLeft(0x30))))));
 					}
 					return true;
@@ -3202,11 +3014,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftLeft((RuntimeValue<uint>) (32 - ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))) | (((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).ShiftRight((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).ShiftLeft((RuntimeValue<uint>) (64 - ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]))))) | (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).ShiftRight((RuntimeValue<uint>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))));
+						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).ShiftLeft((RuntimeValue<uint>) (64 - ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]))))) | (((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).ShiftRight((RuntimeValue<uint>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))));
 					}
 					return true;
 				}
@@ -3218,11 +3028,35 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), (RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))), (RuntimeValue<byte>) (NZCV_CR))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<byte>) (NZCV_CR)))).Store();
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn]), (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]))), (RuntimeValue<byte>) (NZCV_CR)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<byte>) (NZCV_CR)))).Store();
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -3236,28 +3070,18 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						var src = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
 						var wmask = (uint) ((uint) ((ulong) (MakeWMask(N, imms, immr, 0x20, 0x0))));
 						var tmask = (uint) ((uint) ((ulong) (MakeTMask(N, imms, immr, 0x20, 0x0))));
-						// Runtime block!
 						var bot = ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((src).ShiftLeft((RuntimeValue<uint>) (32 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<uint>) (wmask))))).Store();
-						// Runtime block!
-						var top = ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (0x0))) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((src).ShiftRight(imms)))) & ((RuntimeValue<ulong>) (0x1))))))).Store();
-						// Runtime block!
+						var top = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (0x0)))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((src).ShiftRight(imms)))) & ((RuntimeValue<ulong>) (0x1)))))))).Store();
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (top)) & ((RuntimeValue<uint>) ((uint) (~(tmask)))))))) | ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (bot)) & ((RuntimeValue<uint>) (tmask)))))))));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
+						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 						var wmask = (ulong) (MakeWMask(N, imms, immr, 0x40, 0x0));
 						var tmask = (ulong) (MakeTMask(N, imms, immr, 0x40, 0x0));
-						// Runtime block!
 						var bot = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((src).ShiftLeft((RuntimeValue<uint>) (64 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<ulong>) (wmask))))).Store();
-						// Runtime block!
-						var top = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (0x0))) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((src).ShiftRight(imms)))) & ((RuntimeValue<ulong>) (0x1))))))).Store();
-						// Runtime block!
+						var top = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (0x0)))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((src).ShiftRight(imms)))) & ((RuntimeValue<ulong>) (0x1)))))))).Store();
 						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (top)) & ((RuntimeValue<ulong>) ((ulong) (~(tmask)))))))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (bot)) & ((RuntimeValue<ulong>) (tmask))))))));
 					}
 					return true;
@@ -3317,11 +3141,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0x4: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))));
+							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))));
 							break;
 						}
 						case 0x5: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))));
+							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))));
 							break;
 						}
 						default: {
@@ -3338,10 +3162,8 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) (((RuntimeValue<float>) (VSR[(int) (rn)])).Bitcast<int>())));
 					} else {
-						// Runtime else!
 						VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) (((RuntimeValue<double>) (VDR[(int) (rn)])).Bitcast<long>())));
 					}
 					return true;
@@ -3354,15 +3176,11 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var operand2 = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Ternary<byte, uint>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (uint) ((uint) (0x0)), (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))))) / (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) ((RuntimeValue<int>) (operand2)))))))))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Ternary<byte, uint>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (uint) ((uint) (0x0)), (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))))))) / ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<int>) ((RuntimeValue<int>) (operand2))))))))))));
 					} else {
-						// Runtime else!
-						var operand2 = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (Ternary<byte, ulong>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (ulong) ((ulong) (0x0)), (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))))) / (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) (operand2))))))))));
+						var operand2 = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).Store();
+						XR[(int) rd] = (RuntimeValue<ulong>) (Ternary<byte, ulong>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (ulong) ((ulong) (0x0)), (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<double>) (((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))))))) / ((RuntimeValue<double>) (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<long>) ((RuntimeValue<long>) (operand2)))))))))));
 					}
 					return true;
 				}
@@ -3372,7 +3190,7 @@ namespace Cpu64 {
 					var ra = (inst >> 10) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : XR[(int) ra])))) + (RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), 32))) * (RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))))));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) ra]))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]), 32)))) * ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))))))));
 					return true;
 				}
 				/* SMULH */
@@ -3380,7 +3198,7 @@ namespace Cpu64 {
 					var rm = (inst >> 16) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<Int128>) (((RuntimeValue<Int128>) ((RuntimeValue<Int128>) (RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))))) * (RuntimeValue<Int128>) (RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))))))).ShiftRight(0x40))))));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<Int128>) (((RuntimeValue<Int128>) (((RuntimeValue<Int128>) (RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))))))) * ((RuntimeValue<Int128>) (RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<Int128>) ((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]))))))))).ShiftRight(0x40))))));
 					return true;
 				}
 				/* STLR */
@@ -3390,11 +3208,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]);
 					}
 					return true;
 				}
@@ -3403,7 +3219,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					((RuntimePointer<byte>) (address)).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
 					return true;
 				}
@@ -3412,7 +3227,6 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
 					return true;
 				}
@@ -3424,15 +3238,11 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]);
 					}
-					// Runtime let!
 					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (0x0);
 					return true;
 				}
@@ -3442,9 +3252,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					((RuntimePointer<byte>) (address)).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
-					// Runtime let!
 					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) (0x0);
 					return true;
 				}
@@ -3458,25 +3266,17 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					var address = ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])).Store();
-					// Runtime let!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rt1) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
 					} else {
-						// Runtime else!
-						// Runtime block!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : XR[(int) rt2]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt1]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt2]);
 					}
-					// Runtime let!
 					if(rd == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STP-preindex */
@@ -3488,22 +3288,14 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rt1) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
 					} else {
-						// Runtime else!
-						// Runtime block!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : XR[(int) rt2]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt1]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt2]);
 					}
-					// Runtime let!
 					if(rd == 31)
 						SPR = address;
 					else
@@ -3519,20 +3311,13 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rt1) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<uint>) ((rt2) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt2]);
 					} else {
-						// Runtime else!
-						// Runtime block!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : XR[(int) rt1]);
-						// Runtime block!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : XR[(int) rt2]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rt1) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt1]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<ulong>) ((rt2) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt2]);
 					}
 					return true;
 				}
@@ -3546,27 +3331,20 @@ namespace Cpu64 {
 					var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, 0x2 => 0x4, _ => throw new NotImplementedException() })));
 					var address = ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])).Store();
-					// Runtime let!
 					switch(opc) {
 						case 0x0: {
-							// Runtime block!
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VSR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
+							((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
 							break;
 						}
 						case 0x1: {
-							// Runtime block!
 							((RuntimePointer<double>) (address)).Value = (RuntimeValue<double>) (VDR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
+							((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
 							break;
 						}
 						case 0x2: {
-							// Runtime block!
 							((RuntimePointer<Vector128<float>>) (address)).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x10)))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
+							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x10))))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
 							break;
 						}
 						default: {
@@ -3574,11 +3352,10 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					// Runtime let!
 					if(rd == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STP-simd-preindex */
@@ -3590,28 +3367,21 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, 0x2 => 0x4, _ => throw new NotImplementedException() })));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					switch(opc) {
 						case 0x0: {
-							// Runtime block!
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VSR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
+							((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
 							break;
 						}
 						case 0x1: {
-							// Runtime block!
 							((RuntimePointer<double>) (address)).Value = (RuntimeValue<double>) (VDR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
+							((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
 							break;
 						}
 						case 0x2: {
-							// Runtime block!
 							((RuntimePointer<Vector128<float>>) (address)).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x10)))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
+							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x10))))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
 							break;
 						}
 						default: {
@@ -3619,7 +3389,6 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					// Runtime let!
 					if(rd == 31)
 						SPR = address;
 					else
@@ -3635,28 +3404,21 @@ namespace Cpu64 {
 					var rt1 = (inst >> 0) & 0x1FU;
 					var r = (string) ((opc) switch { 0x0 => "S", 0x1 => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var simm = (long) (((long) (SignExt<long>(imm, 7))) << (int) ((long) ((opc) switch { 0x0 => 0x2, 0x1 => 0x3, 0x2 => 0x4, _ => throw new NotImplementedException() })));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					switch(opc) {
 						case 0x0: {
-							// Runtime block!
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VSR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<float>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x4)))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
+							((RuntimePointer<float>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x4))))).Value = (RuntimeValue<float>) (VSR[(int) (rt2)]);
 							break;
 						}
 						case 0x1: {
-							// Runtime block!
 							((RuntimePointer<double>) (address)).Value = (RuntimeValue<double>) (VDR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<double>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x8)))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
+							((RuntimePointer<double>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = (RuntimeValue<double>) (VDR[(int) (rt2)]);
 							break;
 						}
 						case 0x2: {
-							// Runtime block!
 							((RuntimePointer<Vector128<float>>) (address)).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt1)]);
-							// Runtime block!
-							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (0x10)))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
+							((RuntimePointer<Vector128<float>>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x10))))).Value = (RuntimeValue<Vector128<float>>) (VR[(int) (rt2)]);
 							break;
 						}
 						default: {
@@ -3675,19 +3437,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (SignExt<long>(imm, 9));
 					var address = ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])).Store();
-					// Runtime let!
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs]);
 					}
-					// Runtime let!
 					if(rd == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STR-immediate-preindex */
@@ -3698,16 +3456,12 @@ namespace Cpu64 {
 					var rs = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var simm = (long) (SignExt<long>(imm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						((RuntimePointer<uint>) (address)).Value = (RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs]);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs]);
 					}
-					// Runtime let!
 					if(rd == 31)
 						SPR = address;
 					else
@@ -3723,11 +3477,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var pimm = (ulong) (((ulong) ((ulong) (imm))) << (int) ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (pimm)))).Value = (RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (pimm))))).Value = (RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (pimm)))).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : XR[(int) rs]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (pimm))))).Value = (RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs]);
 					}
 					return true;
 				}
@@ -3743,14 +3495,11 @@ namespace Cpu64 {
 					var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? (0x2) : (0x3))));
 					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]);
 					}
 					return true;
 				}
@@ -3765,14 +3514,13 @@ namespace Cpu64 {
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var simm = (long) (SignExt<long>(imm, 9));
 					var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
-					// Runtime let!
 					switch(rop) {
 						case 0x0: {
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VBR[(int) (rt)]);
 							break;
 						}
 						case 0x4: {
-							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VHR[(int) (rt)]);
+							((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) (VHR[(int) (rt)]);
 							break;
 						}
 						case 0x8: {
@@ -3792,11 +3540,10 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					// Runtime let!
 					if(rn == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rn] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STR-simd-preindex */
@@ -3810,15 +3557,14 @@ namespace Cpu64 {
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var scale = (byte) ((byte) (((byte) (((byte) (size)) << 0)) | ((byte) (((byte) (opc)) << 2))));
 					var simm = (long) (SignExt<long>(imm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					switch(rop) {
 						case 0x0: {
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VBR[(int) (rt)]);
 							break;
 						}
 						case 0x4: {
-							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VHR[(int) (rt)]);
+							((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) (VHR[(int) (rt)]);
 							break;
 						}
 						case 0x8: {
@@ -3838,7 +3584,6 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					// Runtime let!
 					if(rn == 31)
 						SPR = address;
 					else
@@ -3855,15 +3600,14 @@ namespace Cpu64 {
 					var rop = (byte) ((byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) (0x0)))) << 0)) | ((byte) (((byte) (opc)) << 1)))) | ((byte) (((byte) (size)) << 2))));
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var scale = (byte) ((byte) (((byte) (((byte) (size)) << 0)) | ((byte) (((byte) (opc)) << 2))));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) ((ushort) ((imm) << (int) (scale))))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) ((ushort) ((imm) << (int) (scale)))))).Store();
 					switch(rop) {
 						case 0x0: {
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VBR[(int) (rt)]);
 							break;
 						}
 						case 0x4: {
-							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VHR[(int) (rt)]);
+							((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) (VHR[(int) (rt)]);
 							break;
 						}
 						case 0x8: {
@@ -3892,13 +3636,11 @@ namespace Cpu64 {
 					var rs = (inst >> 0) & 0x1FU;
 					var simm = (long) (SignExt<long>(imm, 9));
 					var address = ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])).Store();
-					// Runtime let!
 					((RuntimePointer<byte>) (address)).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])));
-					// Runtime let!
 					if(rd == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STRB-immediate-preindex */
@@ -3907,10 +3649,8 @@ namespace Cpu64 {
 					var rd = (inst >> 5) & 0x1FU;
 					var rs = (inst >> 0) & 0x1FU;
 					var simm = (long) (SignExt<long>(imm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					((RuntimePointer<byte>) (address)).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])));
-					// Runtime let!
 					if(rd == 31)
 						SPR = address;
 					else
@@ -3922,7 +3662,7 @@ namespace Cpu64 {
 					var imm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
-					((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])));
 					return true;
 				}
 				/* STRB-register */
@@ -3934,9 +3674,8 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
-					((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
 					return true;
 				}
 				/* STRH-immediate-postindex */
@@ -3946,13 +3685,11 @@ namespace Cpu64 {
 					var rs = (inst >> 0) & 0x1FU;
 					var simm = (long) (SignExt<long>(imm, 9));
 					var address = ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])).Store();
-					// Runtime let!
 					((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])));
-					// Runtime let!
 					if(rd == 31)
-						SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					return true;
 				}
 				/* STRH-immediate-preindex */
@@ -3961,10 +3698,8 @@ namespace Cpu64 {
 					var rd = (inst >> 5) & 0x1FU;
 					var rs = (inst >> 0) & 0x1FU;
 					var simm = (long) (SignExt<long>(imm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rd) == 31 ? SPR : XR[(int) rd]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])));
-					// Runtime let!
 					if(rd == 31)
 						SPR = address;
 					else
@@ -3977,7 +3712,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var imm = (ushort) ((rawimm) << (int) (0x1));
-					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm)))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ushort>) (imm))))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])));
 					return true;
 				}
 				/* STRH-register */
@@ -3989,9 +3724,8 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
-					// Runtime let!
-					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset)))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
+					var offset = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), 32))))) : ((RuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])) : ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (offset))))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt])));
 					return true;
 				}
 				/* STUR */
@@ -4003,11 +3737,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var offset = (long) (SignExt<long>(imm, 9));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
+						((RuntimePointer<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (offset))))).Value = (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]);
 					} else {
-						// Runtime else!
-						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]);
+						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (offset))))).Value = (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]);
 					}
 					return true;
 				}
@@ -4021,15 +3753,14 @@ namespace Cpu64 {
 					var rop = (byte) ((byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) (0x0)))) << 0)) | ((byte) (((byte) (opc)) << 1)))) | ((byte) (((byte) (size)) << 2))));
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var simm = (long) (SignExt<long>(imm, 9));
-					var address = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (simm))).Store();
-					// Runtime let!
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
 					switch(rop) {
 						case 0x0: {
 							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VBR[(int) (rt)]);
 							break;
 						}
 						case 0x4: {
-							((RuntimePointer<float>) (address)).Value = (RuntimeValue<float>) (VHR[(int) (rt)]);
+							((RuntimePointer<ushort>) (address)).Value = (RuntimeValue<ushort>) (VHR[(int) (rt)]);
 							break;
 						}
 						case 0x8: {
@@ -4057,7 +3788,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var offset = (long) (SignExt<long>(imm, 9));
-					((RuntimePointer<byte>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					((RuntimePointer<byte>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (offset))))).Value = (RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])));
 					return true;
 				}
 				/* STURH */
@@ -4066,7 +3797,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var offset = (long) (SignExt<long>(imm, 9));
-					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) + (RuntimeValue<ulong>) (RuntimeValue<long>) (offset)))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])));
+					((RuntimePointer<ushort>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (offset))))).Value = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])));
 					return true;
 				}
 				/* STXR */
@@ -4076,7 +3807,7 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<byte>) (((byte) (((size) == (0x0)) ? 1U : 0U)) != 0 ? ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]), Exclusive32R))) : ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt]), Exclusive64R)))));
+					XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<byte>) (((byte) (((size) == (0x0)) ? 1U : 0U)) != 0 ? ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<uint>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<uint>) ((rt) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rt]), Exclusive32R))) : ((RuntimeValue<byte>) (CallCompareAndSwap((RuntimePointer<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])), (RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt]), Exclusive64R)))));
 					return true;
 				}
 				/* SUB-immediate */
@@ -4089,17 +3820,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shift = (long) (((byte) (((sh) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0xC));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift)))));
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift))))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift)))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) (((uint) ((uint) (imm))) << (int) (shift))))));
 					} else {
-						// Runtime else!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift))));
+							SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift)))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) (((ulong) ((ulong) (imm))) << (int) (shift)))));
 					}
 					return true;
 				}
@@ -4115,29 +3844,23 @@ namespace Cpu64 {
 					var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var m = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
 						if(rd == 31)
-							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm)))));
+							SPR = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm))))));
 						else
-							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn]))) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm)))));
+							XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm))))));
 					} else {
-						// Runtime else!
 						if(((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U)) != 0) {
-							// Runtime if!
 							if(rd == 31)
-								SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftLeft(imm))));
+								SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft(imm)))));
 							else
-								XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftLeft(imm))));
+								XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft(imm)))));
 						} else {
-							// Runtime else!
 							var m = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).Store();
-							// Runtime let!
 							if(rd == 31)
-								SPR = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm))));
+								SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm)))));
 							else
-								XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm))));
+								XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm)))));
 						}
 					}
 					return true;
@@ -4153,15 +3876,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						var b = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) - (RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() }))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) - ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))));
 					} else {
-						// Runtime else!
-						var b = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) - (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((b).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) (b))).ShiftRight(imm))))), _ => throw new NotImplementedException() })));
+						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) - ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) }))));
 					}
 					return true;
 				}
@@ -4177,20 +3894,53 @@ namespace Cpu64 {
 					var r2 = (string) (((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U) != 0) ? ("X") : ("W"));
 					var extend = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "LSL", 0x3 => "UXTX", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })) : ((string) ((option) switch { 0x0 => "UXTB", 0x1 => "UXTH", 0x2 => "UXTW", 0x3 => "LSL", 0x4 => "SXTB", 0x5 => "SXTH", 0x6 => "SXTW", _ => "SXTX" })));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var m = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? (SPR & 0xFFFFFFFFUL) : XR[(int) rn])), (RuntimeValue<uint>) (~((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm)))), 0x1)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? SPR : XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) (((RuntimeValue<uint>) ((option) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x4 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (SignExtRuntime<int>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), _ => (RuntimeValue<uint>) (m) })).ShiftLeft(imm))))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x1));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
 						if(((byte) ((((byte) ((((ulong) (option)) & ((ulong) (0x3))))) == (0x3)) ? 1U : 0U)) != 0) {
-							// Runtime if!
-							XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]), (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).ShiftLeft(imm)))), 0x1));
+							XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+									var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])))).Store();
+									var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft(imm))))))).Store();
+									var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+									var bits = (int) (64);
+									var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+									var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+									var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+									NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+									NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+									NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+									NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+									return (usum).Store();
+								}));
 						} else {
-							// Runtime else!
 							var m = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).Store();
-							// Runtime let!
-							XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]), (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm)))), 0x1));
+							XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+									var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])))).Store();
+									var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((option) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFF))))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFF))))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (m)) & ((RuntimeValue<ulong>) (0xFFFFFFFF))))), 0x4 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<byte>) ((RuntimeValue<byte>) (m)), 8))))), 0x5 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (m)), 16))))), 0x6 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (SignExtRuntime<long>(m, 64))))), _ => (RuntimeValue<ulong>) (m) })).ShiftLeft(imm))))))).Store();
+									var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+									var bits = (int) (64);
+									var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+									var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+									var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+									NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+									NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+									NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+									NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+									return (usum).Store();
+								}));
 						}
 					}
 					return true;
@@ -4207,21 +3957,35 @@ namespace Cpu64 {
 					var r = (string) ((mode32 != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 					if((mode32) != 0) {
-						// Runtime if!
-						// Runtime block!
-						var operand1 = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
-						// Runtime block!
-						var operand2 = ((RuntimeValue<uint>) (~((RuntimeValue<uint>) (Shift((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]), shift, imm))))).Store();
-						// Runtime block!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv(operand1, operand2, 0x1)));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((shift) switch { 0x0 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (32 - (imm)))) | (((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x1));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var operand1 = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
-						// Runtime block!
-						var operand2 = ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) (Shift((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm]), shift, imm))))).Store();
-						// Runtime block!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv(operand1, operand2, 0x1));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((shift) switch { 0x0 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftLeft(imm))), 0x1 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight(imm))), 0x2 => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))).ShiftRight(imm))))), _ => (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftLeft((RuntimeValue<uint>) (64 - (imm)))) | (((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).ShiftRight((RuntimeValue<uint>) (imm))))) })))))).Store();
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand2).ShiftRight(bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -4232,25 +3996,39 @@ namespace Cpu64 {
 					var imm = (inst >> 10) & 0xFFFU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					var mode32 = (byte) (((size) == (0x0)) ? 1U : 0U);
-					var r = (string) ((mode32 != 0) ? ("W") : ("X"));
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shiftstr = (string) ((shift) switch { 0x0 => "LSL #0", 0x1 => "LSL #12", _ => throw new NotImplementedException() });
 					var rimm = (uint) ((shift != 0) ? ((uint) (((uint) ((uint) (imm))) << (int) (0xC))) : (imm));
-					// Runtime let!
-					if((mode32) != 0) {
-						// Runtime if!
-						// Runtime block!
-						var operand1 = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
-						var operand2 = (uint) (~((uint) ((uint) (rimm))));
-						// Runtime block!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (CallAddWithCarrySetNzcv(operand1, operand2, 0x1)));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (uint) ((uint) ((uint) (~((uint) ((uint) (rimm))))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (uint) ((uint) (0x1));
+								var bits = (int) (32);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) (((RuntimeValue<int>) (RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<int>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<int>) (RuntimeValue<int>) ((int) ((int) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<uint>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((ulong) ((ulong) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((uint) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<uint>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<uint>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							})));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var operand1 = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
-						var operand2 = (ulong) (~((ulong) ((ulong) (rimm))));
-						// Runtime block!
-						XR[(int) rd] = (RuntimeValue<ulong>) (CallAddWithCarrySetNzcv(operand1, operand2, 0x1));
+						XR[(int) rd] = (RuntimeValue<ulong>) (Extensions.StmtBlock<RuntimeValue<ulong>>(() => {
+								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])))).Store();
+								var __macro_add_with_carry_set_nzcv_common_operand2 = (ulong) ((ulong) ((ulong) (~((ulong) ((ulong) (rimm))))));
+								var __macro_add_with_carry_set_nzcv_common_carryIn = (ulong) ((ulong) (0x1));
+								var bits = (int) (64);
+								var bits1 = (long) (((long) (int) (bits)) - ((long) (long) (0x1)));
+								var usum = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand1)) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_operand2))))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (__macro_add_with_carry_set_nzcv_common_carryIn)))).Store();
+								var ssum = ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) (((RuntimeValue<long>) (RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<long>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<long>) (RuntimeValue<long>) ((long) ((long) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).Store();
+								NZCV_NR = (RuntimeValue<ulong>) ((usum).ShiftRight(bits1));
+								NZCV_ZR = (RuntimeValue<byte>) ((usum) == (0x0));
+								NZCV_CR = (RuntimeValue<uint>) ((((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (__macro_add_with_carry_set_nzcv_common_operand1)))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_operand2))))))) + ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((UInt128) ((UInt128) (__macro_add_with_carry_set_nzcv_common_carryIn)))))).ShiftRight(bits)))))) & ((RuntimeValue<ulong>) (0x1))));
+								NZCV_VR = (RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))) == ((ulong) ((__macro_add_with_carry_set_nzcv_common_operand2) >> (int) (bits1)))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((usum).ShiftRight(bits1))) != ((RuntimeValue<ulong>) ((__macro_add_with_carry_set_nzcv_common_operand1).ShiftRight(bits1))))))));
+								return (usum).Store();
+							}));
 					}
 					return true;
 				}
@@ -4277,9 +4055,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
 					Label temp_32 = Ilg.DefineLabel(), temp_33 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) == (0x0))) == 0, temp_33);
+					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) == (0x0))) == 0, temp_33);
 					Branch(addr);
 					Branch(temp_32);
 					Label(temp_33);
@@ -4295,9 +4073,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
-					var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
+					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
 					Label temp_34 = Ilg.DefineLabel(), temp_35 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) != (0x0))) == 0, temp_35);
+					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) != (0x0))) == 0, temp_35);
 					Branch(addr);
 					Branch(temp_34);
 					Label(temp_35);
@@ -4314,7 +4092,7 @@ namespace Cpu64 {
 					var r = (string) ((size) switch { 0x0 => "H", 0x1 => "S", 0x2 => "D", _ => throw new NotImplementedException() });
 					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x5 => "4S", _ => throw new NotImplementedException() });
 					var esize = (long) ((0x8) << (int) (size));
-					var count = (long) ((long) ((long) ((Q != 0) ? (0x80) : (0x40))) / (long) (esize));
+					var count = (long) (((long) (long) ((long) ((Q != 0) ? (0x80) : (0x40)))) / ((long) (long) (esize)));
 					switch(size) {
 						case 0x0: {
 							VHR[(int) (rd)] = (RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<uint>) (CallVectorSumUnsigned((RuntimeValue<Vector128<float>>) (VR[(int) (rn)]), esize, count))));
@@ -4345,24 +4123,16 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
-						// Runtime block!
 						var src = ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])).Store();
 						var wmask = (uint) ((uint) ((ulong) (MakeWMask(N, imms, immr, 0x20, 0x0))));
 						var tmask = (uint) ((uint) ((ulong) (MakeTMask(N, imms, immr, 0x20, 0x0))));
-						// Runtime block!
 						var bot = ((RuntimeValue<uint>) ((((RuntimeValue<uint>) ((RuntimeValue<uint>) (((src).ShiftLeft((RuntimeValue<uint>) (32 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<uint>) (wmask))))).Store();
-						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((((RuntimeValue<uint>) (bot)) & ((RuntimeValue<uint>) (tmask)))));
 					} else {
-						// Runtime else!
-						// Runtime block!
-						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])).Store();
+						var src = ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])).Store();
 						var wmask = (ulong) (MakeWMask(N, imms, immr, 0x40, 0x0));
 						var tmask = (ulong) (MakeTMask(N, imms, immr, 0x40, 0x0));
-						// Runtime block!
 						var bot = ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((src).ShiftLeft((RuntimeValue<uint>) (64 - (immr)))) | ((src).ShiftRight((RuntimeValue<uint>) (immr)))))) & ((RuntimeValue<ulong>) (wmask))))).Store();
-						// Runtime block!
 						XR[(int) rd] = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) (bot)) & ((RuntimeValue<ulong>) (tmask))));
 					}
 					return true;
@@ -4422,11 +4192,11 @@ namespace Cpu64 {
 							break;
 						}
 						case 0x4: {
-							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])));
+							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])));
 							break;
 						}
 						case 0x5: {
-							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])));
+							VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn])));
 							break;
 						}
 						default: {
@@ -4443,10 +4213,8 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<uint>) (((RuntimeValue<float>) (VSR[(int) (rn)])).Bitcast<uint>())));
 					} else {
-						// Runtime else!
 						VDR[(int) (rd)] = (RuntimeValue<double>) ((RuntimeValue<double>) ((RuntimeValue<ulong>) (((RuntimeValue<double>) (VDR[(int) (rn)])).Bitcast<ulong>())));
 					}
 					return true;
@@ -4459,15 +4227,11 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						// Runtime if!
 						var operand2 = ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Ternary<byte, uint>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (uint) ((uint) (0x0)), (RuntimeValue<uint>) ((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])) / (RuntimeValue<uint>) (RuntimeValue<uint>) (operand2)))));
+						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Ternary<byte, uint>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (uint) ((uint) (0x0)), (RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))) / ((RuntimeValue<uint>) (RuntimeValue<uint>) (operand2))))));
 					} else {
-						// Runtime else!
-						var operand2 = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])).Store();
-						// Runtime let!
-						XR[(int) rd] = (RuntimeValue<ulong>) (Ternary<byte, ulong>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (ulong) ((ulong) (0x0)), (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])) / (RuntimeValue<ulong>) (RuntimeValue<ulong>) (operand2))));
+						var operand2 = ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])).Store();
+						XR[(int) rd] = (RuntimeValue<ulong>) (Ternary<byte, ulong>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((operand2) == (0x0))), (ulong) ((ulong) (0x0)), (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))) / ((RuntimeValue<ulong>) (RuntimeValue<ulong>) (operand2)))));
 					}
 					return true;
 				}
@@ -4477,7 +4241,7 @@ namespace Cpu64 {
 					var ra = (inst >> 10) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : XR[(int) ra])) + (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))) * (RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))));
+					XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((ra) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) ra]))) + ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]))))) * ((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm])))))))));
 					return true;
 				}
 				/* UMULH */
@@ -4485,7 +4249,7 @@ namespace Cpu64 {
 					var rm = (inst >> 16) & 0x1FU;
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
-					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : XR[(int) rn])))) * (RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : XR[(int) rm])))))).ShiftRight(0x40))));
+					XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]))))) * ((RuntimeValue<UInt128>) (RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<UInt128>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]))))))).ShiftRight(0x40))));
 					return true;
 				}
 

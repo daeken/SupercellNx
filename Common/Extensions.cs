@@ -57,5 +57,7 @@ namespace Common {
 
 		public static T Element<T>(this Vector128<float> vec, uint index) where T : struct =>
 			vec.As<float, T>().GetElement((int) index);
+
+		public static T StmtBlock<T>(Func<T> func) => func();
 	}
 }

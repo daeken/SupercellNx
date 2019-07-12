@@ -3,20 +3,49 @@
 (defm u16 (v) (cast v u16))
 (defm u32 (v) (cast v u32))
 (defm u64 (v) (cast v u64))
+(defm u128 (v) (cast v u128))
 
 (defm i8  (v) (cast v i8))
 (defm i16 (v) (cast v i16))
 (defm i32 (v) (cast v i32))
 (defm i64 (v) (cast v i64))
+(defm i128 (v) (cast v i128))
 
 (defm f32 (v) (cast v f32))
 (defm f64 (v) (cast v f64))
 
 (defm shift-string (shift) (match shift
-   0b00 "LSL"
-   0b01 "LSR"
-   0b10 "ASR"
-   "ROR"))
+    0b00 "LSL"
+    0b01 "LSR"
+    0b10 "ASR"
+    "ROR"))
+
+(defm do-shift32 (value shift-type amount) (do-shift-common value shift-type amount u32 i32))
+(defm do-shift64 (value shift-type amount) (do-shift-common value shift-type amount u64 i64))
+(defm do-shift-common (value shift-type amount utype itype)
+    (match shift-type
+        0b00 (<< (utype value) amount)
+        0b01 (>> value amount)
+        0b10 (utype (>> (itype value) amount))
+        (>>> value amount)))
+
+(defm add-with-carry-set-nzcv32 (operand1 operand2 carryIn)
+    (add-with-carry-set-nzcv-common operand1 operand2 carryIn i32 u32 u64))
+(defm add-with-carry-set-nzcv64 (operand1 operand2 carryIn)
+    (add-with-carry-set-nzcv-common operand1 operand2 carryIn i64 u64 u128))
+(defm add-with-carry-set-nzcv-common (operand1 operand2 carryIn stype utype butype)
+    (block
+        (let $operand1 (utype operand1)) (let $operand2 (utype operand2)) (let $carryIn (utype carryIn))
+        (let bits (bitwidth utype)) (let bits1 (- bits 1))
+        
+        (let usum (+ (+ $operand1 $operand2) $carryIn))
+        (let ssum (+ (+ (stype $operand1) (stype $operand2)) (stype $carryIn)))
+        (= (nzcv n) (>> usum bits1))
+        (= (nzcv z) (== usum 0))
+        (= (nzcv c) (& (u32 (>> (+ (+ (butype $operand1) (butype $operand2)) (butype $carryIn)) bits)) 1))
+        (= (nzcv v) (& (== (>> $operand1 bits1) (>> $operand2 bits1)) (!= (>> usum bits1) (>> $operand1 bits1))))
+        usum))
+
 
 (def ADCS
     "s 0 1 11010000 mmmmm 000000 nnnnn ddddd"
@@ -24,8 +53,8 @@
     (names (size s) (rm m) (rn n) (rd d))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (add-with-carry-set-nzcv (gpr32 rn) (gpr32 rm) (nzcv c)))
-        (= (gpr64 rd) (add-with-carry-set-nzcv (gpr64 rn) (gpr64 rm) (nzcv c)))))
+        (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr32 rn) (gpr32 rm) (nzcv c)))
+        (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr64 rn) (gpr64 rm) (nzcv c)))))
 
 (def ADD-extended-register
     "s 0 0 01011 00 1 mmmmm ooo iii nnnnn ddddd"
@@ -93,18 +122,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr-or-sp32 rm)
-            (= (gpr-or-sp32 rd) (+ (gpr-or-sp32 rn) (match shift
-                0b00 (<< (u32 b) imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (unimplemented)))))
-        (let b (gpr-or-sp64 rm)
-            (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (match shift
-                0b00 (<< (u64 b) imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (unimplemented)))))))
+        (= (gpr-or-sp32 rd) (+ (gpr-or-sp32 rn) (do-shift32 (gpr-or-sp32 rm) shift imm)))
+        (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (do-shift64 (gpr-or-sp64 rm) shift imm)))))
 
 (def ADDS-immediate
     "f 0 1 10001 0s iiiiiiiiiiii nnnnn ddddd"
@@ -115,8 +134,8 @@
         (let shift (if (== sh 0) 0 12))
         (let simm (<< (u32 imm) shift)))
     (if (== size 0)
-        (= (gpr32 rd) (add-with-carry-set-nzcv (gpr-or-sp32 rn) simm 0))
-        (= (gpr64 rd) (add-with-carry-set-nzcv (gpr-or-sp64 rn) simm 0))))
+        (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr-or-sp32 rn) simm 0))
+        (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr-or-sp64 rn) simm 0))))
 
 (def ADDS-shifted-register
     "f 0 1 01011 ss 0 mmmmm iiiiii nnnnn ddddd"
@@ -126,18 +145,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (add-with-carry-set-nzcv (gpr32 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (>>> b imm)) 0)))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (add-with-carry-set-nzcv (gpr64 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (>>> b imm)) 0)))))
+        (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr32 rn) (do-shift32 (gpr32 rm) shift imm) 0))
+        (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr64 rn) (do-shift64 (gpr64 rm) shift imm) 0))))
 
 (def ADRP
     "1 ll 10000 iiiiiiiiiiiiiiiiiii ddddd"
@@ -167,18 +176,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (& (gpr32 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (>>> b imm)))))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (& (gpr64 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (>>> b imm)))))))
+        (= (gpr32 rd) (& (gpr32 rn) (do-shift32 (gpr32 rm) shift imm)))
+        (= (gpr64 rd) (& (gpr64 rn) (do-shift64 (gpr64 rm) shift imm)))))
 
 (def ANDS-shifted-register
     "f 11 01010 ss 0 mmmmm iiiiii nnnnn ddddd"
@@ -188,28 +187,18 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (let result (& (gpr32 rn) (match shift
-                      0b00 (<< b imm)
-                      0b01 (>> b imm)
-                      0b10 (u32 (>> (i32 b) imm))
-                      (>>> b imm)))
-                (= (gpr32 rd) result)
-                (= (nzcv n) (>> result 31))
-                (= (nzcv z) (== result 0))
-                (= (nzcv c) 0)
-                (= (nzcv v) 0)))
-        (let b (gpr64 rm)
-            (let result (& (gpr64 rn) (match shift
-                    0b00 (<< b imm)
-                    0b01 (>> b imm)
-                    0b10 (u64 (>> (i64 b) imm))
-                    (>>> b imm)))
-                (= (gpr64 rd) result)
-                (= (nzcv n) (>> result 63))
-                (= (nzcv z) (== result 0))
-                (= (nzcv c) 0)
-                (= (nzcv v) 0)))))
+        (let result (& (gpr32 rn) (do-shift32 (gpr32 rm) shift imm))
+            (= (gpr32 rd) result)
+            (= (nzcv n) (>> result 31))
+            (= (nzcv z) (== result 0))
+            (= (nzcv c) 0)
+            (= (nzcv v) 0))
+        (let result (& (gpr64 rn) (do-shift64 (gpr64 rm) shift imm))
+            (= (gpr64 rd) result)
+            (= (nzcv n) (>> result 63))
+            (= (nzcv z) (== result 0))
+            (= (nzcv c) 0)
+            (= (nzcv v) 0))))
 
 (def ANDS-immediate
     "f 11 100100 u rrrrrr ssssss nnnnn ddddd"
@@ -306,18 +295,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (& (gpr32 rn) (~ (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (>>> b imm))))))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (& (gpr64 rn) (~ (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (>>> b imm))))))))
+        (= (gpr32 rd) (& (gpr32 rn) (~ (do-shift32 (gpr32 rm) shift imm))))
+        (= (gpr64 rd) (& (gpr64 rn) (~ (do-shift64 (gpr64 rm) shift imm))))))
 
 (def BL
     "1 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
@@ -469,8 +448,8 @@
             1)
         (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
             (if (== size 0)
-                (= (gpr32 31) (add-with-carry-set-nzcv (gpr32 rn) (u32 imm) 0))
-                (= (gpr64 31) (add-with-carry-set-nzcv (gpr64 rn) (u64 imm) 0)))
+                (= (gpr32 31) (add-with-carry-set-nzcv32 (gpr32 rn) (u32 imm) 0))
+                (= (gpr64 31) (add-with-carry-set-nzcv64 (gpr64 rn) (u64 imm) 0)))
             (= (nzcv) (<< (u64 nzcv) 28)))))
 
 (def CCMP-immediate
@@ -499,8 +478,8 @@
             1)
         (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
             (if (== size 0)
-                (= (gpr32 31) (add-with-carry-set-nzcv (gpr32 rn) (~ (u32 imm)) 1))
-                (= (gpr64 31) (add-with-carry-set-nzcv (gpr64 rn) (~ (u64 imm)) 1)))
+                (= (gpr32 31) (add-with-carry-set-nzcv32 (gpr32 rn) (~ (u32 imm)) 1))
+                (= (gpr64 31) (add-with-carry-set-nzcv64 (gpr64 rn) (~ (u64 imm)) 1)))
             (= (nzcv) (<< (u64 nzcv) 28)))))
 
 (def CCMP-register
@@ -529,8 +508,8 @@
             1)
         (if (if (& (& cond 1) (!= cond 0b1111)) (! result) result)
             (if (== size 0)
-                (= (gpr32 31) (add-with-carry-set-nzcv (gpr32 rn) (~ (gpr32 rm)) 1))
-                (= (gpr64 31) (add-with-carry-set-nzcv (gpr64 rn) (~ (gpr64 rm)) 1)))
+                (= (gpr32 31) (add-with-carry-set-nzcv32 (gpr32 rn) (~ (gpr32 rm)) 1))
+                (= (gpr64 31) (add-with-carry-set-nzcv64 (gpr64 rn) (~ (gpr64 rm)) 1)))
             (= (nzcv) (<< (u64 nzcv) 28)))))
 
 (def CLREX
@@ -759,18 +738,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (^ (gpr32 rn) (~ (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (>>> b imm))))))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (^ (gpr64 rn) (~ (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (>>> b imm))))))))
+        (= (gpr32 rd) (^ (gpr32 rn) (~ (do-shift32 (gpr32 rm) shift imm))))
+        (= (gpr64 rd) (^ (gpr64 rn) (~ (do-shift64 (gpr64 rm) shift imm))))))
 
 (def EOR-immediate
     "f 10 100100 u iiiiii ssssss nnnnn ddddd"
@@ -791,18 +760,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (^ (gpr32 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (>>> b imm)))))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (^ (gpr64 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (>>> b imm)))))))
+        (= (gpr32 rd) (^ (gpr32 rn) (do-shift32 (gpr32 rm) shift imm)))
+        (= (gpr64 rd) (^ (gpr64 rn) (do-shift64 (gpr64 rm) shift imm)))))
 
 (def EXT
     "0 Q 101110 00 0 mmmmm 0 iiii 0 nnnnn ddddd"
@@ -2060,18 +2019,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-            (let b (gpr32 rm)
-                (= (gpr32 rd) (| (gpr32 rn) (~ (match shift
-                    0b00 (<< b imm)
-                    0b01 (>> b imm)
-                    0b10 (u32 (>> (i32 b) imm))
-                    (>>> b imm))))))
-            (let b (gpr64 rm)
-                (= (gpr64 rd) (| (gpr64 rn) (~ (match shift
-                    0b00 (<< b imm)
-                    0b01 (>> b imm)
-                    0b10 (u64 (>> (i64 b) imm))
-                    (>>> b imm))))))))
+            (= (gpr32 rd) (| (gpr32 rn) (~ (do-shift32 (gpr32 rm) shift imm))))
+            (= (gpr64 rd) (| (gpr64 rn) (~ (do-shift64 (gpr64 rm) shift imm))))))
 
 (def ORR-immediate
     "f 01 100100 u iiiiii ssssss nnnnn ddddd"
@@ -2092,18 +2041,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-            (let b (gpr32 rm)
-                (= (gpr32 rd) (| (gpr32 rn) (match shift
-                    0b00 (<< b imm)
-                    0b01 (>> b imm)
-                    0b10 (u32 (>> (i32 b) imm))
-                    (>>> b imm)))))
-            (let b (gpr64 rm)
-                (= (gpr64 rd) (| (gpr64 rn) (match shift
-                    0b00 (<< b imm)
-                    0b01 (>> b imm)
-                    0b10 (u64 (>> (i64 b) imm))
-                    (>>> b imm)))))))
+        (= (gpr32 rd) (| (gpr32 rn) (do-shift32 (gpr32 rm) shift imm)))
+        (= (gpr64 rd) (| (gpr64 rn) (do-shift64 (gpr64 rm) shift imm)))))
 
 (def ORR-simd-register
     "0 q 0 01110 10 1 mmmmm 00011 1 nnnnn ddddd"
@@ -2196,8 +2135,8 @@
     (names (size s) (rm m) (rn n) (rd d))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (add-with-carry-set-nzcv (gpr32 rn) (~ (gpr32 rm)) (nzcv c)))
-        (= (gpr64 rd) (add-with-carry-set-nzcv (gpr64 rn) (~ (gpr64 rm)) (nzcv c)))))
+        (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr32 rn) (~ (gpr32 rm)) (nzcv c)))
+        (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr64 rn) (~ (gpr64 rm)) (nzcv c)))))
 
 (def SBFM
     "f 00 100110 o pppppp ssssss nnnnn ddddd"
@@ -2777,18 +2716,8 @@
         (let r (if (== size 0) "W" "X"))
         (let shiftstr (shift-string shift)))
     (if (== size 0)
-        (let b (gpr32 rm)
-            (= (gpr32 rd) (- (gpr32 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u32 (>> (i32 b) imm))
-                (unimplemented)))))
-        (let b (gpr64 rm)
-            (= (gpr64 rd) (- (gpr64 rn) (match shift
-                0b00 (<< b imm)
-                0b01 (>> b imm)
-                0b10 (u64 (>> (i64 b) imm))
-                (unimplemented)))))))
+        (= (gpr32 rd) (- (gpr32 rn) (do-shift32 (gpr32 rm) shift imm)))
+        (= (gpr64 rd) (- (gpr64 rn) (do-shift64 (gpr64 rm) shift imm)))))
 
 (def SUBS-extended-register
     "s 1 1 01011 00 1 mmmmm ooo iii nnnnn ddddd"
@@ -2818,16 +2747,16 @@
                 "SXTX"))))
     (if (== size 0)
         (let m (gpr32 rm)
-            (= (gpr32 rd) (add-with-carry-set-nzcv (gpr-or-sp32 rn) (~ (<< (match option
+            (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr-or-sp32 rn) (~ (<< (match option
                 0b000 (& m 0xFF)
                 0b001 (& m 0xFFFF)
                 0b100 (u32 (signext (u8 m) i32))
                 0b101 (u32 (signext (u16 m) i32))
                 m) imm)) 1)))
         (if (== (& option 0b011) 0b011)
-            (= (gpr64 rd) (add-with-carry-set-nzcv (gpr-or-sp64 rn) (~ (<< (gpr64 rm) imm)) 1))
+            (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr-or-sp64 rn) (~ (<< (gpr64 rm) imm)) 1))
             (let m (u64 (gpr32 rm))
-                (= (gpr64 rd) (add-with-carry-set-nzcv (gpr-or-sp64 rn) (~ (<< (match option
+                (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr-or-sp64 rn) (~ (<< (match option
                     0b000 (& m 0xFF)
                     0b001 (& m 0xFFFF)
                     0b010 (& m 0xFFFFFFFF)
@@ -2845,36 +2774,23 @@
         (let r (if mode32 "W" "X"))
         (let shiftstr (shift-string shift)))
     (if mode32
-        (block
-            (let operand1 (gpr32 rn))
-            (let operand2 (~ (shift (gpr32 rm) shift imm)))
-            (= (gpr32 rd) (add-with-carry-set-nzcv operand1 operand2 1)))
-        (block
-            (let operand1 (gpr64 rn))
-            (let operand2 (~ (shift (gpr64 rm) shift imm)))
-            (= (gpr64 rd) (add-with-carry-set-nzcv operand1 operand2 1)))))
+        (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr32 rn) (~ (do-shift32 (gpr32 rm) shift imm)) 1))
+        (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr64 rn) (~ (do-shift64 (gpr64 rm) shift imm)) 1))))
 
 (def SUBS-immediate
     "s 1 1 10001 0h iiiiiiiiiiii nnnnn ddddd"
     "subs $r$rd, $r$rn, #$imm, $shiftstr"
     (names (size s) (shift h) (imm i) (rn n) (rd d))
     (block
-        (let mode32 (== size 0))
-        (let r (if mode32 "W" "X"))
+        (let r (if (== size 0) "W" "X"))
         (let shiftstr (match shift
             0b00 "LSL #0"
             0b01 "LSL #12"
             (unimplemented))))
     (let rimm (if shift (<< (u32 imm) 12) imm)
-        (if mode32
-            (block
-                (let operand1 (gpr32 rn))
-                (let operand2 (~ (u32 rimm)))
-                (= (gpr32 rd) (add-with-carry-set-nzcv operand1 operand2 1)))
-            (block
-                (let operand1 (gpr64 rn))
-                (let operand2 (~ (u64 rimm)))
-                (= (gpr64 rd) (add-with-carry-set-nzcv operand1 operand2 1))))))
+        (if (== size 0)
+            (= (gpr32 rd) (add-with-carry-set-nzcv32 (gpr32 rn) (~ (u32 rimm)) 1))
+            (= (gpr64 rd) (add-with-carry-set-nzcv64 (gpr64 rn) (~ (u64 rimm)) 1)))))
 
 (def SVC
     "11010100 000 iiiiiiiiiiiiiiii 000 01"

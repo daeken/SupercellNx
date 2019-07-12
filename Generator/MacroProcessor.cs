@@ -15,20 +15,26 @@ namespace Generator {
 				macros[name] = (varnames, list[3]);
 			}
 
-			PTree Repl(PTree elem, Dictionary<string, PTree> replacements) {
+			PTree Repl(string macroName, PTree elem, Dictionary<string, PTree> replacements) {
 				switch(elem) {
-					case PList list: return new PList(list.Select(x => Repl(x, replacements)));
-					case PName(var name): return replacements.TryGetValue(name, out var repl) ? repl : elem;
+					case PList list: return new PList(list.Select(x => Repl(macroName, x, replacements)));
+					case PName(var name):
+						if(replacements.TryGetValue(name, out var repl))
+							return repl;
+						if(name[0] == '$')
+							return new PName($"__macro_{macroName.Replace("-", "_")}_{name.Substring(1)}");
+						return elem;
 					default: return elem;
 				}
 			}
 
 			PTree Sub(PTree elem) {
+				if(elem is PName(var pname)) return new PName(pname);
 				if(!(elem is PList list)) return elem;
 				if(!(list[0] is PName(var name)) || !macros.TryGetValue(name, out var v)) return new PList(list.Select(Sub));
 				var (args, block) = v;
 				if(args.Count != list.Count - 1) throw new NotSupportedException($"Macro {name.ToPrettyString()} expects {args.Count} arguments, got {list.Count - 1}");
-				return Sub(Repl(block, args.Select((vn, i) => (vn, list[i + 1])).ToDictionary()));
+				return Sub(Repl(name, block, args.Select((vn, i) => (vn, list[i + 1])).ToDictionary()));
 			}
 			
 			return (PList) Sub(top);

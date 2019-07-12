@@ -8,7 +8,7 @@ namespace Cpu64 {
 		public Block BranchToBlock;
 		public ulong BranchTo;
 		readonly Recompiler Recompiler = new Recompiler();
-		
+
 		public Dynarec(IKernel kernel) : base(kernel) {}
 
 		public override unsafe void Run(ulong pc, ulong sp, bool one = false) {

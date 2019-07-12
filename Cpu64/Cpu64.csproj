@@ -7,12 +7,12 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <DefineConstants>TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0;DEBUG;NETCOREAPP;NETCOREAPP3_0</DefineConstants>
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <DefineConstants>TRACE;RELEASE;NETCOREAPP;NETCOREAPP3_0;RELEASE;NETCOREAPP;NETCOREAPP3_0</DefineConstants>
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

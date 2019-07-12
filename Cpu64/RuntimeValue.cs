@@ -43,7 +43,11 @@ namespace Cpu64 {
 
 		public static RuntimeValue<T> operator +(RuntimeValue<T> a, RuntimeValue<T> b) =>
 			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
-				if(typeof(T) == typeof(Vector128<float>))
+				if(typeof(T) == typeof(UInt128))
+					Ilg.Call(typeof(UInt128).GetMethod(
+						"op_Addition", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(UInt128), typeof(UInt128) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<float>))
 					Ilg.Call(typeof(Sse).GetMethod("Add", BindingFlags.Public | BindingFlags.Static));
 				else if(typeof(T) == typeof(Vector128<double>))
 					Ilg.Call(typeof(Sse2).GetMethod("Add", BindingFlags.Public | BindingFlags.Static, null,
@@ -211,7 +215,11 @@ namespace Cpu64 {
 		public static implicit operator RuntimeValue<uint>(RuntimeValue<T> value) => value is RuntimeValue<uint> v ? v
 			: new RuntimeValue<uint>(() => {
 				value.Emit();
-				Ilg.Convert<uint>();
+				if(typeof(T) == typeof(UInt128))
+					Ilg.Call(typeof(UInt128).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x =>
+						x.ReturnType == typeof(uint)));
+				else
+					Ilg.Convert<uint>();
 			});
 		public static implicit operator RuntimeValue<ulong>(RuntimeValue<T> value) => value is RuntimeValue<ulong> v ? v
 			: new RuntimeValue<ulong>(() => {
@@ -367,20 +375,23 @@ namespace Cpu64 {
 			}
 		}
 
-		public static implicit operator RuntimeValue<T>(T value) =>
-			new RuntimeValue<T>(value switch {
-				byte v => (Action) (() => Ilg.LoadConstant(v)), 
-				ushort v => (Action) (() => Ilg.LoadConstant(v)), 
-				uint v => (Action) (() => Ilg.LoadConstant(v)), 
-				ulong v => (Action) (() => Ilg.LoadConstant(v)), 
-				sbyte v => (Action) (() => Ilg.LoadConstant(v)), 
-				short v => (Action) (() => Ilg.LoadConstant(v)), 
-				int v => (Action) (() => Ilg.LoadConstant(v)), 
-				long v => (Action) (() => Ilg.LoadConstant(v)), 
-				float v => (Action) (() => Ilg.LoadConstant(v)), 
-				double v => (Action) (() => Ilg.LoadConstant(v)), 
+		public static implicit operator RuntimeValue<T>(T value) {
+			if(value is UInt128 uv128)
+				return (RuntimeValue<T>) (object) (RuntimeValue<UInt128>) (RuntimeValue<ulong>) unchecked((ulong) uv128.LoInt64Bits);
+			return new RuntimeValue<T>(value switch {
+				byte v => (Action) (() => Ilg.LoadConstant(v)),
+				ushort v => (Action) (() => Ilg.LoadConstant(v)),
+				uint v => (Action) (() => Ilg.LoadConstant(v)),
+				ulong v => (Action) (() => Ilg.LoadConstant(v)),
+				sbyte v => (Action) (() => Ilg.LoadConstant(v)),
+				short v => (Action) (() => Ilg.LoadConstant(v)),
+				int v => (Action) (() => Ilg.LoadConstant(v)),
+				long v => (Action) (() => Ilg.LoadConstant(v)),
+				float v => (Action) (() => Ilg.LoadConstant(v)),
+				double v => (Action) (() => Ilg.LoadConstant(v)),
 				_ => throw new NotImplementedException($"Unknown literal cast type: {typeof(T).FullName}")
 			});
+		}
 
 		public RuntimeValue<Vector128<float>> CreateVector() => new RuntimeValue<Vector128<float>>(() => {
 			Emit();

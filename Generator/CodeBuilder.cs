@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 
 namespace Generator {
@@ -25,6 +26,8 @@ namespace Generator {
 		}
 
 		public static CodeBuilder operator +(CodeBuilder left, string data) {
+			if(data.Contains("\n"))
+				return data.Split('\n').Aggregate(left, (current, line) => current + line);
 			left.Builder.Append(new string('\t', left.Indent) + data + "\n");
 			return left;
 		}

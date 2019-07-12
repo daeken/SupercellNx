@@ -65,7 +65,6 @@ namespace Generator {
 			Eval = eval;
 
 			var locals = new Dictionary<string, EType>();
-			#pragma warning disable 8619 // TODO: File bug with Roslyn
 			foreach(var (fname, (bits, _)) in Fields)
 				locals[fname] = new EInt(false, bits);
 			void InferList(PList list) => list.Skip(1).ForEach(x => InferType(x));
@@ -82,12 +81,12 @@ namespace Generator {
 								locals[((PName) list[1]).Name] = InferType(list[2]);
 								list.Skip(2).ForEach(x => InferType(x));
 								return list.Last().Type;
-							case "if":
+							case { } fname when Program.Statements.ContainsKey(fname):
 								InferList(list);
-								return InferType(list[2]);
-							case "match":
+								return Program.Statements[fname].Signature(list);
+							case { } fname when Program.Expressions.ContainsKey(fname):
 								InferList(list);
-								return list.Count == 3 ? list[2].Type : list[3].Type;
+								return Program.Expressions[fname].Signature(list);
 							case { } fname when BuiltinTypes.Builtins.ContainsKey(fname):
 								InferList(list);
 								return BuiltinTypes.Builtins[fname](list);

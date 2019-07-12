@@ -9,6 +9,7 @@ using SigilLite;
 using Label = SigilLite.Label;
 #endif
 using UltimateOrb;
+using Common;
 // ReSharper disable ArrangeRedundantParentheses
 // ReSharper disable RedundantCast
 // ReSharper disable UnusedVariable

@@ -80,7 +80,7 @@ namespace Cpu64 {
 				var immhi = (inst >> 5) & 0x7FFFFU;
 				var rd = (inst >> 0) & 0x1FU;
 				var imm = (long) (SignExt<long>((ulong) ((ulong) (((ulong) (ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) (immlo)) << 12)))) | ((ulong) (((ulong) (immhi)) << 14)))), 33));
-				var addr = (ulong) ((ulong) ((ulong) ((ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) ((ulong) ((ulong) ((ulong) (((ulong) (pc)) >> (int) (0xC)))))) << 12))))) + (ulong) (imm));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) ((ulong) (((ulong) (((ulong) ((ushort) ((ushort) (0x0)))) << 0)) | ((ulong) (((ulong) ((ulong) ((ulong) ((ulong) (((ulong) (pc)) >> (int) (0xC)))))) << 12)))))) + ((ulong) (long) (imm)));
 				return $"adrp X{rd}, #0x{addr:X}";
 			}
 			/* AND-immediate */
@@ -143,14 +143,14 @@ namespace Cpu64 {
 			/* B */
 			if((inst & 0xFC000000U) == 0x14000000U) {
 				var imm = (inst >> 0) & 0x3FFFFFFU;
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28)))));
 				return $"b #0x{addr:X}";
 			}
 			/* B.cond */
 			if((inst & 0xFF000010U) == 0x54000000U) {
 				var imm = (inst >> 5) & 0x7FFFFU;
 				var cond = (inst >> 0) & 0xFU;
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 21))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 21)))));
 				var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 				return $"b.{condstr} #0x{addr:X}";
 			}
@@ -181,7 +181,7 @@ namespace Cpu64 {
 			if((inst & 0xFC000000U) == 0x94000000U) {
 				var imm = (inst >> 0) & 0x3FFFFFFU;
 				var offset = (long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28));
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) (offset));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (offset)));
 				return $"bl #0x{addr:X}";
 			}
 			/* BLR */
@@ -201,8 +201,8 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+				var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 				return $"casp {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
 			}
 			/* CASPA */
@@ -212,8 +212,8 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+				var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 				return $"caspa {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
 			}
 			/* CASPAL */
@@ -223,8 +223,8 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+				var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 				return $"caspal {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
 			}
 			/* CASPL */
@@ -234,8 +234,8 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var rs2 = (ulong) ((ulong) (rs) + (ulong) (0x1));
-				var rt2 = (ulong) ((ulong) (rt) + (ulong) (0x1));
+				var rs2 = (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)));
+				var rt2 = (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)));
 				return $"caspl {r}{rs}, {r}0x{rs2:X}, {r}{rt}, {r}0x{rt2:X}, [X{rn}]";
 			}
 			/* CBNZ */
@@ -244,7 +244,7 @@ namespace Cpu64 {
 				var imm = (inst >> 5) & 0x7FFFFU;
 				var rs = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 				return $"cbnz {r}{rs}, #0x{addr:X}";
 			}
 			/* CBZ */
@@ -253,7 +253,7 @@ namespace Cpu64 {
 				var imm = (inst >> 5) & 0x7FFFFU;
 				var rs = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 				return $"cbz {r}{rs}, #0x{addr:X}";
 			}
 			/* CCMN-immediate */
@@ -558,7 +558,7 @@ namespace Cpu64 {
 				var scale = (inst >> 10) & 0x3FU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
-				var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+				var fbits = (ulong) (((ulong) (long) (0x40)) - ((ulong) (byte) (scale)));
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fcvtzs {r1}{rd}, {r2}{rn}, #0x{fbits:X}";
@@ -617,7 +617,7 @@ namespace Cpu64 {
 				var scale = (inst >> 10) & 0x3FU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
-				var fbits = (ulong) ((ulong) (0x40) - (ulong) (scale));
+				var fbits = (ulong) (((ulong) (long) (0x40)) - ((ulong) (byte) (scale)));
 				var r1 = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var r2 = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fcvtzu {r1}{rd}, {r2}{rn}, #0x{fbits:X}";
@@ -1048,7 +1048,7 @@ namespace Cpu64 {
 				var r1 = (string) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? ("Q") : ((string) ((size) switch { 0x0 => "B", 0x1 => "H", 0x2 => "S", 0x3 => "D", _ => throw new NotImplementedException() })));
 				var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
 				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
-				var amount = (ulong) ((ulong) (scale) * (ulong) ((long) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() })))));
+				var amount = (ulong) (((ulong) (byte) (scale)) * ((ulong) (long) ((long) (((byte) ((((byte) ((byte) (((size) == (0x0)) ? 1U : 0U))) & ((byte) ((byte) (((opc) == (0x1)) ? 1U : 0U))))) != 0) ? (0x4) : ((long) ((size) switch { 0x0 => 0x1, 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => throw new NotImplementedException() }))))));
 				return $"ldr {r1}{rt}, [X{rn}, {r2}{rm}, {extend} 0x{amount:X}]";
 			}
 			/* LDR-register */
@@ -1508,7 +1508,7 @@ namespace Cpu64 {
 				var imm = (inst >> 10) & 0xFFFU;
 				var rn = (inst >> 5) & 0x1FU;
 				var imm5 = (inst >> 0) & 0x1FU;
-				var pimm = (ulong) ((ulong) (imm) * (ulong) (0x8));
+				var pimm = (ulong) (((ulong) (ushort) (imm)) * ((ulong) (long) (0x8)));
 				return $"prfm #{imm5}, [X{rn}, #0x{pimm:X}]";
 			}
 			/* RBIT */
@@ -2017,8 +2017,7 @@ namespace Cpu64 {
 				var imm = (inst >> 10) & 0xFFFU;
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
-				var mode32 = (byte) (((size) == (0x0)) ? 1U : 0U);
-				var r = (string) ((mode32 != 0) ? ("W") : ("X"));
+				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var shiftstr = (string) ((shift) switch { 0x0 => "LSL #0", 0x1 => "LSL #12", _ => throw new NotImplementedException() });
 				return $"subs {r}{rd}, {r}{rn}, #0x{imm:X}, {shiftstr}";
 			}
@@ -2044,7 +2043,7 @@ namespace Cpu64 {
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
 				return $"tbz {r}{rt}, #{imm}, 0x{addr:X}";
 			}
 			/* TBNZ */
@@ -2055,7 +2054,7 @@ namespace Cpu64 {
 				var rt = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
-				var addr = (ulong) ((ulong) ((ulong) (pc)) + (ulong) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16))));
+				var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
 				return $"tbnz {r}{rt}, #{imm}, 0x{addr:X}";
 			}
 			/* UADDLV */
@@ -2067,7 +2066,7 @@ namespace Cpu64 {
 				var r = (string) ((size) switch { 0x0 => "H", 0x1 => "S", 0x2 => "D", _ => throw new NotImplementedException() });
 				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x5 => "4S", _ => throw new NotImplementedException() });
 				var esize = (long) ((0x8) << (int) (size));
-				var count = (long) ((long) ((long) ((Q != 0) ? (0x80) : (0x40))) / (long) (esize));
+				var count = (long) (((long) (long) ((long) ((Q != 0) ? (0x80) : (0x40)))) / ((long) (long) (esize)));
 				return $"uaddlv {r}{rd}, V{rn}.{t}";
 			}
 			/* UBFM */
