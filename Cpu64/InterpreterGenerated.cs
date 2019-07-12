@@ -9,6 +9,20 @@ namespace Cpu64 {
 	public partial class Interpreter : BaseCpu {
 		public unsafe bool Interpret(uint inst, ulong pc) {
 			unchecked {
+				/* ADCS */
+				if((inst & 0x7FE0FC00U) == 0x3A000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						W[(int) rd] = (uint) ((uint) (AddWithCarrySetNzcv((uint) ((rn) == 31 ? 0U : W[(int) rn]), (uint) ((rm) == 31 ? 0U : W[(int) rm]), (byte) (NZCV_C))));
+					} else {
+						X[(int) rd] = (ulong) (AddWithCarrySetNzcv((ulong) ((rn) == 31 ? 0UL : X[(int) rn]), (ulong) ((rm) == 31 ? 0UL : X[(int) rm]), (byte) (NZCV_C)));
+					}
+					return true;
+				}
 				/* ADD-extended-register */
 				if((inst & 0x7FE00000U) == 0x0B200000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -99,7 +113,7 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var shift = (long) (((byte) (((sh) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : (0xC));
-					var simm = (ushort) ((imm) << (int) (shift));
+					var simm = (uint) (((uint) ((uint) (imm))) << (int) (shift));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						W[(int) rd] = (uint) ((uint) (AddWithCarrySetNzcv((uint) ((rn) == 31 ? (uint) (SP & 0xFFFFFFFFUL) : W[(int) rn]), simm, 0x0)));
 					} else {
@@ -456,6 +470,27 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* CCMN-immediate */
+				if((inst & 0x7FE00C10U) == 0x3A400800U) {
+					var size = (inst >> 31) & 0x1U;
+					var imm = (inst >> 16) & 0x1FU;
+					var cond = (inst >> 12) & 0xFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var nzcv = (inst >> 0) & 0xFU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
+					var result = (byte) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (byte) (NZCV_Z), 0x1 => (byte) (NZCV_C), 0x2 => (byte) (NZCV_N), 0x3 => (byte) (NZCV_V), 0x4 => (byte) ((((byte) ((byte) (NZCV_C))) & ((byte) ((byte) (((byte) (NZCV_Z)) != 0 ? 0U : 1U))))), 0x5 => (byte) ((((byte) (NZCV_N)) == ((byte) (NZCV_V))) ? 1U : 0U), 0x6 => (byte) ((((byte) ((byte) ((((byte) (NZCV_N)) == ((byte) (NZCV_V))) ? 1U : 0U))) & ((byte) ((byte) (((byte) (NZCV_Z)) != 0 ? 0U : 1U))))), _ => 0x1 });
+					if(((byte) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U))))) != 0) ? ((byte) ((result) != 0 ? 0U : 1U)) : (result))) != 0) {
+						if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+							W[(int) 0x1F] = (uint) ((uint) (AddWithCarrySetNzcv((uint) ((rn) == 31 ? 0U : W[(int) rn]), (uint) ((uint) (imm)), 0x0)));
+						} else {
+							X[(int) 0x1F] = (ulong) (AddWithCarrySetNzcv((ulong) ((rn) == 31 ? 0UL : X[(int) rn]), (ulong) ((ulong) (imm)), 0x0));
+						}
+					} else {
+						NZCV = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
+					}
+					return true;
+				}
 				/* CCMP-immediate */
 				if((inst & 0x7FE00C10U) == 0x7A400800U) {
 					var size = (inst >> 31) & 0x1U;
@@ -651,6 +686,25 @@ namespace Cpu64 {
 					V[rd] = (Vector128<float>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((byte) ((byte) (src))).As<byte, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((byte) ((byte) (src))).As<byte, float>()))))) : ((Vector128<float>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((ushort) ((ushort) (src))).As<ushort, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((ushort) ((ushort) (src))).As<ushort, float>()))))) : ((Vector128<float>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U) != 0) ? ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create((uint) ((uint) (src))).As<uint, float>())) : ((Vector128<float>) ((Vector128<float>) (Vector128.Create((uint) ((uint) (src))).As<uint, float>()))))) : ((Vector128<float>) ((Q != 0) ? ((Vector128<float>) (Vector128.Create(src).As<ulong, float>())) : throw new NotImplementedException())))))));
 					return true;
 				}
+				/* EON-shifted-register */
+				if((inst & 0x7F200000U) == 0x4A200000U) {
+					var size = (inst >> 31) & 0x1U;
+					var shift = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var imm = (inst >> 10) & 0x3FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						var b = (uint) ((rm) == 31 ? 0U : W[(int) rm]);
+						W[(int) rd] = (uint) ((uint) ((((uint) ((uint) ((rn) == 31 ? 0U : W[(int) rn]))) ^ ((uint) ((uint) (~((uint) ((shift) switch { 0x0 => (uint) ((b) << (int) (imm)), 0x1 => (uint) ((b) >> (int) (imm)), 0x2 => (uint) ((uint) ((int) (((int) ((int) (b))) >> (int) (imm)))), _ => (uint) (((b) << (32 - (int) (imm))) | ((b) >> (int) (imm))) }))))))));
+					} else {
+						var b = (ulong) ((rm) == 31 ? 0UL : X[(int) rm]);
+						X[(int) rd] = (ulong) ((((ulong) ((ulong) ((rn) == 31 ? 0UL : X[(int) rn]))) ^ ((ulong) ((ulong) (~((ulong) ((shift) switch { 0x0 => (ulong) ((b) << (int) (imm)), 0x1 => (ulong) ((b) >> (int) (imm)), 0x2 => (ulong) ((ulong) ((long) (((long) ((long) (b))) >> (int) (imm)))), _ => (ulong) (((b) << (64 - (int) (imm))) | ((b) >> (int) (imm))) })))))));
+					}
+					return true;
+				}
 				/* EOR-immediate */
 				if((inst & 0x7F800000U) == 0x52000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -766,6 +820,71 @@ namespace Cpu64 {
 						}
 						case 0x3: {
 							V[rd] = (Vector128<float>) (Sse2.Add(((Vector128<float>) (V[rn])).As<float, double>(), ((Vector128<float>) (V[rm])).As<float, double>()).As<double, float>());
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FADDP-scalar */
+				if((inst & 0xFFBFFC00U) == 0x7E30D800U) {
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("S") : ("D"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						V[(int) (rd)] = new Vector128<float>().WithElement(0, (float) ((float) ((float) (V[(int) (rn)].Element<float>(0x0))) + (float) ((float) (V[(int) (rn)].Element<float>(0x1)))));
+					} else {
+						V[(int) (rd)] = new Vector128<double>().WithElement(0, (double) ((double) ((double) (V[(int) (rn)].Element<double>(0x0))) + (double) ((double) (V[(int) (rn)].Element<double>(0x1))))).As<double, float>();
+					}
+					return true;
+				}
+				/* FADDP-vector */
+				if((inst & 0xBFA0FC00U) == 0x2E20D400U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var a = (float) (V[(int) (rn)].Element<float>(0x0));
+							var b = (float) (V[(int) (rn)].Element<float>(0x1));
+							var c = (float) (V[(int) (rm)].Element<float>(0x0));
+							var d = (float) (V[(int) (rm)].Element<float>(0x1));
+							V[rd] = (Vector128<float>) (Vector128.Create((float) ((float) (0x0))).As<float, float>());
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x0, (float) ((float) (a) + (float) (b)));
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x1, (float) ((float) (c) + (float) (d)));
+							break;
+						}
+						case 0x1: {
+							var a = (float) (V[(int) (rn)].Element<float>(0x0));
+							var b = (float) (V[(int) (rn)].Element<float>(0x1));
+							var c = (float) (V[(int) (rn)].Element<float>(0x2));
+							var d = (float) (V[(int) (rn)].Element<float>(0x3));
+							var e = (float) (V[(int) (rm)].Element<float>(0x0));
+							var f = (float) (V[(int) (rm)].Element<float>(0x1));
+							var g = (float) (V[(int) (rm)].Element<float>(0x2));
+							var h = (float) (V[(int) (rm)].Element<float>(0x3));
+							V[rd] = (Vector128<float>) (Vector128.Create((float) ((float) (0x0))).As<float, float>());
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x0, (float) ((float) (a) + (float) (b)));
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x1, (float) ((float) (c) + (float) (d)));
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x2, (float) ((float) (e) + (float) (f)));
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x3, (float) ((float) (g) + (float) (h)));
+							break;
+						}
+						case 0x3: {
+							var a = (double) (V[(int) (rn)].Element<double>(0x0));
+							var b = (double) (V[(int) (rn)].Element<double>(0x1));
+							var c = (double) (V[(int) (rm)].Element<double>(0x0));
+							var d = (double) (V[(int) (rm)].Element<double>(0x1));
+							V[rd] = (Vector128<float>) (Vector128.Create((float) ((float) (0x0))).As<float, float>());
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x0, (double) ((double) (a) + (double) (b)));
+							V[(int) (rd)] = Insert(V[(int) (rd)], 0x1, (double) ((double) (c) + (double) (d)));
 							break;
 						}
 						default: {
@@ -1650,9 +1769,9 @@ namespace Cpu64 {
 					var rt = (inst >> 0) & 0x1FU;
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rt] = (uint) ((uint) (*(uint*) (address)));
+						W[(int) rt] = (uint) ((uint) (Exclusive32 = *(uint*) (address)));
 					} else {
-						X[(int) rt] = (ulong) (*(ulong*) (address));
+						X[(int) rt] = (ulong) (Exclusive64 = *(ulong*) (address));
 					}
 					return true;
 				}
@@ -1661,7 +1780,15 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rt = (inst >> 0) & 0x1FU;
 					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
-					X[(int) rt] = (ulong) ((ulong) ((byte) (*(byte*) (address))));
+					X[(int) rt] = (ulong) ((ulong) ((byte) (Exclusive8 = *(byte*) (address))));
+					return true;
+				}
+				/* LDAXRH */
+				if((inst & 0xFFFFFC00U) == 0x485FFC00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+					X[(int) rt] = (ulong) ((ulong) ((ushort) (Exclusive16 = *(ushort*) (address))));
 					return true;
 				}
 				/* LDP-immediate-postindex */
@@ -2122,6 +2249,24 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* LDRSB-register */
+				if((inst & 0xFFA00C00U) == 0x38A00800U) {
+					var opc = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var option = (inst >> 13) & 0x7U;
+					var amount = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((opc) == (0x0)) ? 1U : 0U) != 0) ? ("X") : ("W"));
+					var str = (string) ((option) switch { 0x2 => "UXTW", 0x3 => "LSL", 0x6 => "SXTW", 0x7 => "SXTX", _ => throw new NotImplementedException() });
+					var offset = (ulong) (((ulong) (((byte) (((option) == (0x6)) ? 1U : 0U) != 0) ? ((ulong) ((ulong) ((long) (SignExt<long>((uint) ((rm) == 31 ? 0U : W[(int) rm]), 32))))) : ((ulong) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ((ulong) ((rm) == 31 ? 0UL : X[(int) rm])) : ((ulong) ((ulong) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))))))) << (int) (amount));
+					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
+						W[(int) rt] = (uint) ((uint) ((uint) ((int) (SignExt<int>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset)))), 8)))));
+					} else {
+						X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset)))), 8))));
+					}
+					return true;
+				}
 				/* LDRSH-immediate-postindex */
 				if((inst & 0xFFA00C00U) == 0x78800400U) {
 					var opc = (inst >> 22) & 0x1U;
@@ -2140,6 +2285,26 @@ namespace Cpu64 {
 						SP = (ulong) ((ulong) (address) + (ulong) (imm));
 					else
 						X[(int) rn] = (ulong) ((ulong) (address) + (ulong) (imm));
+					return true;
+				}
+				/* LDRSH-immediate-preindex */
+				if((inst & 0xFFA00C00U) == 0x78800C00U) {
+					var opc = (inst >> 22) & 0x1U;
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var address = (ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm));
+					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
+						W[(int) rt] = (uint) ((uint) ((uint) ((int) (SignExt<int>((ushort) (*(ushort*) (address)), 16)))));
+					} else {
+						X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((ushort) (*(ushort*) (address)), 16))));
+					}
+					if(rn == 31)
+						SP = address;
+					else
+						X[(int) rn] = address;
 					return true;
 				}
 				/* LDRSH-immediate-unsigned-offset */
@@ -2173,6 +2338,20 @@ namespace Cpu64 {
 					} else {
 						X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (offset)))), 16))));
 					}
+					return true;
+				}
+				/* LDRSW-immediate-postindex */
+				if((inst & 0xFFE00C00U) == 0xB8800400U) {
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					var address = (ulong) ((rn) == 31 ? SP : X[(int) rn]);
+					X[(int) rt] = (ulong) ((ulong) ((long) (SignExt<long>((uint) (*(uint*) (address)), 32))));
+					if(rn == 31)
+						SP = (ulong) ((ulong) (address) + (ulong) (imm));
+					else
+						X[(int) rn] = (ulong) ((ulong) (address) + (ulong) (imm));
 					return true;
 				}
 				/* LDRSW-immediate-preindex */
@@ -2245,6 +2424,36 @@ namespace Cpu64 {
 					X[(int) rd] = (ulong) ((ulong) ((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm))))));
 					return true;
 				}
+				/* LDURSB */
+				if((inst & 0xFFA00C00U) == 0x38800000U) {
+					var opc = (inst >> 22) & 0x1U;
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
+						W[(int) rd] = (uint) ((uint) ((uint) ((int) (SignExt<int>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 8)))));
+					} else {
+						X[(int) rd] = (ulong) ((ulong) ((long) (SignExt<long>((byte) (*(byte*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 8))));
+					}
+					return true;
+				}
+				/* LDURSH */
+				if((inst & 0xFFA00C00U) == 0x78800000U) {
+					var opc = (inst >> 22) & 0x1U;
+					var rawimm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					var imm = (long) (SignExt<long>(rawimm, 9));
+					if(((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0) {
+						W[(int) rd] = (uint) ((uint) ((uint) ((int) (SignExt<int>((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 16)))));
+					} else {
+						X[(int) rd] = (ulong) ((ulong) ((long) (SignExt<long>((ushort) (*(ushort*) ((ulong) ((ulong) ((ulong) ((rn) == 31 ? SP : X[(int) rn])) + (ulong) (imm)))), 16))));
+					}
+					return true;
+				}
 				/* LDURSW */
 				if((inst & 0xFFE00C00U) == 0xB8800000U) {
 					var rawimm = (inst >> 12) & 0x1FFU;
@@ -2295,6 +2504,20 @@ namespace Cpu64 {
 					} else {
 						X[(int) rt] = (ulong) (Exclusive64 = *(ulong*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])));
 					}
+					return true;
+				}
+				/* LDXRB */
+				if((inst & 0xFFFFFC00U) == 0x085F7C00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					X[(int) rt] = (ulong) ((ulong) ((byte) (Exclusive8 = *(byte*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])))));
+					return true;
+				}
+				/* LDXRH */
+				if((inst & 0xFFFFFC00U) == 0x485F7C00U) {
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					X[(int) rt] = (ulong) ((ulong) ((ushort) (Exclusive16 = *(ushort*) ((ulong) ((rn) == 31 ? SP : X[(int) rn])))));
 					return true;
 				}
 				/* LSL-register */
@@ -2600,6 +2823,34 @@ namespace Cpu64 {
 					} else {
 						var x = (ulong) ((rn) == 31 ? 0UL : X[(int) rn]);
 						X[(int) rd] = (ulong) ((((((((((ulong) ((ulong) (((ulong) ((((ulong) (x)) & ((ulong) (0xFF))))) << (int) (0x8)))) | ((ulong) ((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x8)))) & ((ulong) (0xFF))))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x10)))) & ((ulong) (0xFF))))) << (int) (0x18))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x18)))) & ((ulong) (0xFF))))) << (int) (0x10))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x20)))) & ((ulong) (0xFF))))) << (int) (0x28))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x28)))) & ((ulong) (0xFF))))) << (int) (0x20))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x30)))) & ((ulong) (0xFF))))) << (int) (0x38))))) | ((ulong) ((ulong) (((ulong) ((((ulong) ((ulong) ((x) >> (int) (0x38)))) & ((ulong) (0xFF))))) << (int) (0x30))))));
+					}
+					return true;
+				}
+				/* RORV */
+				if((inst & 0x7FE0FC00U) == 0x1AC02C00U) {
+					var size = (inst >> 31) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						W[(int) rd] = (uint) ((uint) ((((uint) ((rn) == 31 ? 0U : W[(int) rn])) << (32 - (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))) | (((uint) ((rn) == 31 ? 0U : W[(int) rn])) >> (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))));
+					} else {
+						X[(int) rd] = (ulong) ((((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) << (64 - (int) ((ulong) ((rm) == 31 ? 0UL : X[(int) rm])))) | (((ulong) ((rn) == 31 ? 0UL : X[(int) rn])) >> (int) ((ulong) ((rm) == 31 ? 0UL : X[(int) rm]))));
+					}
+					return true;
+				}
+				/* SBCS */
+				if((inst & 0x7FE0FC00U) == 0x7A000000U) {
+					var size = (inst >> 31) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
+					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
+						W[(int) rd] = (uint) ((uint) (AddWithCarrySetNzcv((uint) ((rn) == 31 ? 0U : W[(int) rn]), (uint) (~((uint) ((rm) == 31 ? 0U : W[(int) rm]))), (byte) (NZCV_C))));
+					} else {
+						X[(int) rd] = (ulong) (AddWithCarrySetNzcv((ulong) ((rn) == 31 ? 0UL : X[(int) rn]), (ulong) (~((ulong) ((rm) == 31 ? 0UL : X[(int) rm]))), (byte) (NZCV_C)));
 					}
 					return true;
 				}

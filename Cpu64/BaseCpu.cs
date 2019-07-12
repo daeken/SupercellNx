@@ -14,6 +14,8 @@ namespace Cpu64 {
 		public readonly ulong[] X = new ulong[32];
 		public readonly Vector128<float>[] V = new Vector128<float>[32];
 
+		public byte Exclusive8;
+		public ushort Exclusive16;
 		public uint Exclusive32;
 		public ulong Exclusive64;
 
@@ -234,11 +236,13 @@ namespace Cpu64 {
 				case float v:
 					switch(ov) {
 						case uint _: return (OutT) (object) *(uint*) &v;
+						case int _: return (OutT) (object) *(int*) &v;
 						default: throw new NotImplementedException();
 					}
 				case double v:
 					switch(ov) {
 						case ulong _: return (OutT) (object) *(ulong*) &v;
+						case long _: return (OutT) (object) *(long*) &v;
 						default: throw new NotImplementedException();
 					}
 				default: throw new NotImplementedException();

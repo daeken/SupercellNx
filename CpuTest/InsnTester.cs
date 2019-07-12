@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Intrinsics;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Common;
 using Cpu64;
 using UnicornSharp;
 using Xunit;
-//[assembly: CollectionBehavior(DisableTestParallelization = true)]
-[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, MaxParallelThreads = 8)]
+using Xunit.Abstractions;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+//[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, MaxParallelThreads = 8)]
 
 namespace CpuTest {
 	public static class InsnTester {
@@ -48,18 +52,31 @@ namespace CpuTest {
 			Assert.Equal(BaseCpu.Disassemble(inst, pc), dasm);
 		}
 
-		public static unsafe void AutoTest(uint insn, Action<BaseCpu, ulong> setup) {
+		public static unsafe void AutoTest(ITestOutputHelper output, uint insn, Action<BaseCpu, ulong> setup) {
 			var data64 = new[] { 0UL, 1UL, 0x1234UL, 0x80000000UL, 1UL << 63, ulong.MaxValue };
 			var floats = new[] { 0f, 234f, 0f, 456f, 123f, -123f };
 
-			var size = 0x40000U;
-			Map(size, maddr => {
-				var bytes = new Span<byte>((void*) maddr, (int) size);
-				for(var j = 0; j < bytes.Length; ++j)
-					bytes[j] = (byte) (j % 255 + 1);
+			var asm = BaseCpu.Disassemble(insn, 1UL << 32);
+			Assert.NotNull(asm);
+
+			var regs = new HashSet<int>();
+			for(var i = 0; i < 31; ++i)
+				if(Regex.IsMatch(asm, $"X{i}($| |,|\\])"))
+					regs.Add(i);
+			for(var i = 0; i < 31; ++i)
+				if(Regex.IsMatch(asm, $"W{i}($| |,|\\])"))
+					regs.Add(i);
+			
+			output.WriteLine(asm);
+			var interpreter = new Interpreter(new TestKernel());
+			setup(interpreter, 0xDEADBEEFUL);
+			var needMap = interpreter.X.Any(x => x != 0UL) || interpreter.SP != 0;
+
+			void MainTest(Action<BaseCpu> cb) {
 				for(var i = 0; i < 6; ++i) {
 					Test(insn, (cpu, _) => {
 						if(cpu == null) return;
+						cpu.NZCV = i % 2 == 0 ? 0xFU << 28 : 0;
 						for(var j = 0; j < 31; ++j)
 							cpu.X[j] = data64[(j + i) % data64.Length];
 						var k = i;
@@ -69,10 +86,23 @@ namespace CpuTest {
 								.WithElement(1, floats[k++ % floats.Length])
 								.WithElement(2, floats[k++ % floats.Length])
 								.WithElement(3, floats[k++ % floats.Length]);
-						setup(cpu, maddr + (size >> 1));
+						cb(cpu);
+						foreach(var reg in regs)
+							output.WriteLine($"X{reg} == 0x{cpu.X[reg]:X}");
 					});
 				}
-			});
+			}
+
+			if(needMap) {
+				var size = 0x40000U;
+				Map(size, maddr => {
+					var bytes = new Span<byte>((void*) maddr, (int) size);
+					for(var j = 0; j < bytes.Length; ++j)
+						bytes[j] = (byte) (j % 255 + 1);
+					MainTest(cpu => setup(cpu, maddr + (size >> 1)));
+				});
+			} else
+				MainTest(_ => {});
 		}
 		
 		public static unsafe void Test(uint insn, Action<BaseCpu, ulong> pre = null, Action<BaseCpu, bool, ulong> post = null, Action<string> checkAsm = null) {

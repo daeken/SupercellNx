@@ -212,6 +212,14 @@ namespace Cpu64 {
 			}
 		}
 
+		RuntimeValue<byte> Exclusive8R {
+			get => Field<byte>(nameof(Dynarec.Exclusive8));
+			set => Field(nameof(Dynarec.Exclusive8), value);
+		}
+		RuntimeValue<ushort> Exclusive16R {
+			get => Field<ushort>(nameof(Dynarec.Exclusive16));
+			set => Field(nameof(Dynarec.Exclusive16), value);
+		}
 		RuntimeValue<uint> Exclusive32R {
 			get => Field<uint>(nameof(Dynarec.Exclusive32));
 			set => Field(nameof(Dynarec.Exclusive32), value);

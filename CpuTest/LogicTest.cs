@@ -44,5 +44,15 @@ namespace CpuTest {
 				cpu.V[0] = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f).WithElement(2, 345f).WithElement(3, 456f);
 			});
 		}
+
+		[Fact]
+		public void Sxtb() {
+			// SXTB W17, W8
+			InsnTester.Disassembly("sbfm W17, W8, #0, #7", 0x13001D11);
+			InsnTester.Test(0x13001D11, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+			});
+		}
 	}
 }

@@ -83,6 +83,25 @@ namespace CpuTest {
 		}
 
 		[Fact]
+		public void SubsNegNeg() {
+			// SUBS WZR, W2, W8
+			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
+			InsnTester.Test(0x6B08005F, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.X[2] = 0x80000000;
+				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+			});
+			// SUBS WZR, W2, W8
+			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
+			InsnTester.Test(0x6B08005F, (cpu, _) => {
+				if(cpu == null) return;
+				cpu.NZCV = 0xFU << 28;
+				cpu.X[2] = 0x80000000;
+				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+			});
+		}
+
+		[Fact]
 		public void SubExtendedRegister() {
 			// SUB W0, W8, W9, UXTB
 			InsnTester.Test(0x4B290100, (cpu, _) => {
@@ -157,6 +176,12 @@ namespace CpuTest {
 				if(cpu == null) return;
 				cpu.X[8] = 0x8;
 				cpu.X[23] = 0x1001FFF908;
+			});
+			
+			InsnTester.Disassembly("adds W31, W11, #0x380, LSL #0xC", 0x314E017F);
+			InsnTester.Test(0xAB17010B, (cpu, pc) => {
+				if(cpu == null) return;
+				cpu.X[11] = ulong.MaxValue;
 			});
 		}
 
