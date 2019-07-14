@@ -12,7 +12,7 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <DefineConstants>TRACE;FULLSIGIL</DefineConstants>
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +23,7 @@
 
     <ItemGroup>
       <PackageReference Include="LLVMSharp" Version="5.0.0" />
+      <PackageReference Include="ReSharper.Annotations" Version="7.1.3.130415" />
       <PackageReference Include="Sigil.NetStandard" Version="4.8.0" />
       <PackageReference Include="UltimateOrb.Int128" Version="1.0.8" />
     </ItemGroup>

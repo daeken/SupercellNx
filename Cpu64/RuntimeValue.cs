@@ -14,6 +14,7 @@ using SigilLite;
 using Emitter = SigilLite.Emit<Cpu64.BlockFunc>;
 #endif
 using UltimateOrb;
+using JetBrains.Annotations;
 
 namespace Cpu64 {
 	public interface RuntimeValue {

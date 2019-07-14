@@ -24,6 +24,7 @@ namespace Cpu64 {
 				BranchToBlock = null;
 				State->BranchTo = unchecked((ulong) -1);
 				block.HitCount++;
+				//Log($"Running block 0x{pc:X}");
 				try {
 					block.Func(State, this);
 				} catch(NullReferenceException) {
@@ -33,9 +34,11 @@ namespace Cpu64 {
 						Environment.Exit(1);
 					});
 				}
+				//Log($"Finished block at 0x{pc:X}");
 
 				if(!one && (State->SP < 0x100000 || State->SP >> 48 != 0))
 					throw new Exception($"SP likely corrupted by block {State->PC:X}: SP == 0x{State->SP:X}");
+				//Log($"Branch to 0x{State->BranchTo:X} from 0x{State->PC:X}");
 				State->PC = pc = State->BranchTo;
 				if(one)
 					break;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -7,9 +8,13 @@ using PrettyPrinter;
 
 namespace SigilLite {
 	public class Label {
+		internal readonly int Number;
 		internal readonly System.Reflection.Emit.Label ILabel;
 
-		internal Label(System.Reflection.Emit.Label ilabel) => ILabel = ilabel;
+		internal Label(int number, System.Reflection.Emit.Label ilabel) {
+			Number = number;
+			ILabel = ilabel;
+		}
 	}
 
 	public class Local {
@@ -25,7 +30,11 @@ namespace SigilLite {
 
 		readonly ILGenerator Ilg;
 		bool LastWasBranch;
-
+		int LabelIter;
+		
+		readonly List<string> AllInstructions = new List<string>();
+		public string Instructions() => string.Join('\n', AllInstructions);
+		
 		Emit(TypeBuilder tb, string name, MethodAttributes attr) {
 			if(!typeof(MulticastDelegate).IsAssignableFrom(typeof(DelegateT)))
 				throw new NotSupportedException($"Non-delegate type for Emit: {typeof(DelegateT).Name}");
@@ -36,57 +45,69 @@ namespace SigilLite {
 		}
 
 		void GEmit(OpCode opcode) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode);
+			AllInstructions.Add(opcode.ToString());
 		}
 
-		void GEmit(OpCode opcode, System.Reflection.Emit.Label label) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, label);
+		void GEmit(OpCode opcode, Label label) {
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, label.ILabel);
+			AllInstructions.Add($"{opcode} _label{label.Number}");
 		}
 
 		void GEmit(OpCode opcode, ConstructorInfo ci) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, ci);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, ci);
+			AllInstructions.Add($"{opcode} {ci.Name}");
 		}
 
 		void GEmitCall(OpCode opcode, MethodInfo mi, Type[] types) {
-			if(ShouldEmit(opcode))
-				Ilg.EmitCall(opcode, mi, types);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.EmitCall(opcode, mi, types);
+			AllInstructions.Add($"{opcode} {mi.ReturnType.Name} {mi.Name}({string.Join(", ", types?.Select(x => x.Name) ?? Enumerable.Empty<string>())})");
 		}
 
 		void GEmit(OpCode opcode, FieldInfo fi) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, fi);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, fi);
+			AllInstructions.Add($"{opcode} {fi.FieldType.Name} {fi.Name}");
 		}
 
 		void GEmit(OpCode opcode, Type type) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, type);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, type);
+			AllInstructions.Add($"{opcode} {type.Name}");
 		}
 		void GEmit(OpCode opcode, string constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, constant);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, constant);
+			AllInstructions.Add($"{opcode} {constant.ToPrettyString()}");
 		}
 		void GEmit(OpCode opcode, uint constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, constant);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, constant);
+			AllInstructions.Add($"{opcode} {constant}");
 		}
 		void GEmit(OpCode opcode, int constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, constant);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, constant);
+			AllInstructions.Add($"{opcode} {constant}");
 		}
 		void GEmit(OpCode opcode, ulong constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, unchecked((long) constant));
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, unchecked((long) constant));
+			AllInstructions.Add($"{opcode} {constant}");
 		}
 		void GEmit(OpCode opcode, float constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, constant);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, constant);
+			AllInstructions.Add($"{opcode} {constant}");
 		}
 		void GEmit(OpCode opcode, double constant) {
-			if(ShouldEmit(opcode))
-				Ilg.Emit(opcode, constant);
+			if(!ShouldEmit(opcode)) return;
+			Ilg.Emit(opcode, constant);
+			AllInstructions.Add($"{opcode} {constant}");
 		}
 
 		bool ShouldEmit(OpCode opcode) {
@@ -111,17 +132,17 @@ namespace SigilLite {
 		public Emit<DelegateT> Add() => Do(() => GEmit(OpCodes.Add));
 		public Emit<DelegateT> And() => Do(() => GEmit(OpCodes.And));
 
-		public Emit<DelegateT> Branch(Label label) => Do(() => GEmit(OpCodes.Br, label.ILabel));
-		public Emit<DelegateT> BranchIfEqual(Label label) => Do(() => GEmit(OpCodes.Beq, label.ILabel));
-		public Emit<DelegateT> UnsignedBranchIfGreater(Label label) => Do(() => GEmit(OpCodes.Bgt_Un, label.ILabel));
-		public Emit<DelegateT> BranchIfGreater(Label label) => Do(() => GEmit(OpCodes.Bgt, label.ILabel));
-		public Emit<DelegateT> UnsignedBranchIfGreaterOrEqual(Label label) => Do(() => GEmit(OpCodes.Bge_Un, label.ILabel));
-		public Emit<DelegateT> BranchIfGreaterOrEqual(Label label) => Do(() => GEmit(OpCodes.Bge, label.ILabel));
-		public Emit<DelegateT> UnsignedBranchIfLess(Label label)  => Do(() => GEmit(OpCodes.Blt_Un, label.ILabel));
-		public Emit<DelegateT> BranchIfLess(Label label)  => Do(() => GEmit(OpCodes.Blt, label.ILabel));
-		public Emit<DelegateT> UnsignedBranchIfLessOrEqual(Label label)  => Do(() => GEmit(OpCodes.Ble_Un, label.ILabel));
-		public Emit<DelegateT> BranchIfLessOrEqual(Label label)  => Do(() => GEmit(OpCodes.Ble, label.ILabel));
-		public Emit<DelegateT> BranchIfTrue(Label label)  => Do(() => GEmit(OpCodes.Brtrue, label.ILabel));
+		public Emit<DelegateT> Branch(Label label) => Do(() => GEmit(OpCodes.Br, label));
+		public Emit<DelegateT> BranchIfEqual(Label label) => Do(() => GEmit(OpCodes.Beq, label));
+		public Emit<DelegateT> UnsignedBranchIfGreater(Label label) => Do(() => GEmit(OpCodes.Bgt_Un, label));
+		public Emit<DelegateT> BranchIfGreater(Label label) => Do(() => GEmit(OpCodes.Bgt, label));
+		public Emit<DelegateT> UnsignedBranchIfGreaterOrEqual(Label label) => Do(() => GEmit(OpCodes.Bge_Un, label));
+		public Emit<DelegateT> BranchIfGreaterOrEqual(Label label) => Do(() => GEmit(OpCodes.Bge, label));
+		public Emit<DelegateT> UnsignedBranchIfLess(Label label)  => Do(() => GEmit(OpCodes.Blt_Un, label));
+		public Emit<DelegateT> BranchIfLess(Label label)  => Do(() => GEmit(OpCodes.Blt, label));
+		public Emit<DelegateT> UnsignedBranchIfLessOrEqual(Label label)  => Do(() => GEmit(OpCodes.Ble_Un, label));
+		public Emit<DelegateT> BranchIfLessOrEqual(Label label)  => Do(() => GEmit(OpCodes.Ble, label));
+		public Emit<DelegateT> BranchIfTrue(Label label)  => Do(() => GEmit(OpCodes.Brtrue, label));
 
 		public Emit<DelegateT> Call(MethodInfo method) => Do(() => GEmitCall(OpCodes.Call, method, null));
 
@@ -145,7 +166,7 @@ namespace SigilLite {
 			throw new NotImplementedException($"Conversion to unknown type: {tt}");
 		}
 
-		public Label DefineLabel() => new Label(Ilg.DefineLabel());
+		public Label DefineLabel() => new Label(LabelIter++, Ilg.DefineLabel());
 
 		public Local DeclareLocal<LocalT>() => new Local(Ilg.DeclareLocal(typeof(LocalT)));
 
@@ -243,7 +264,12 @@ namespace SigilLite {
 
 		public Emit<DelegateT> LoadObject<T>() => Do(() => GEmit(OpCodes.Ldobj, typeof(T)));
 
-		public Emit<DelegateT> MarkLabel(Label label) => Do(() => Ilg.MarkLabel(label.ILabel));
+		public Emit<DelegateT> MarkLabel(Label label) => Do(() => {
+			LastWasBranch = false;
+			Ilg.MarkLabel(label.ILabel);
+			AllInstructions.Add("");
+			AllInstructions.Add($"_label{label.Number}:");
+		});
 
 		public Emit<DelegateT> Multiply() => Do(() => GEmit(OpCodes.Mul));
 		
@@ -251,6 +277,7 @@ namespace SigilLite {
 
 		public Emit<DelegateT> NewObject<ObjT>() => Do(() => GEmit(OpCodes.Newobj, typeof(ObjT).GetConstructor(new Type[0])));
 		
+		public Emit<DelegateT> Nop() => Do(() => GEmit(OpCodes.Nop));
 		public Emit<DelegateT> Not() => Do(() => GEmit(OpCodes.Not));
 		
 		public Emit<DelegateT> Or() => Do(() => GEmit(OpCodes.Or));
@@ -295,7 +322,7 @@ namespace SigilLite {
 
 		public Emit<DelegateT> Subtract() => Do(() => GEmit(OpCodes.Sub));
 		
-		public Emit<DelegateT> UnsignedBranchIfNotEqual(Label label) => Do(() => GEmit(OpCodes.Bne_Un, label.ILabel));
+		public Emit<DelegateT> UnsignedBranchIfNotEqual(Label label) => Do(() => GEmit(OpCodes.Bne_Un, label));
 		
 		public Emit<DelegateT> UnsignedShiftRight() => Do(() => GEmit(OpCodes.Shr_Un));
 		
