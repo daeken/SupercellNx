@@ -31,10 +31,11 @@ namespace SigilLite {
 		readonly ILGenerator Ilg;
 		bool LastWasBranch;
 		int LabelIter;
-		
+
+#if LOGIL
 		readonly List<string> AllInstructions = new List<string>();
 		public string Instructions() => string.Join('\n', AllInstructions);
-		
+#endif
 		Emit(TypeBuilder tb, string name, MethodAttributes attr) {
 			if(!typeof(MulticastDelegate).IsAssignableFrom(typeof(DelegateT)))
 				throw new NotSupportedException($"Non-delegate type for Emit: {typeof(DelegateT).Name}");
@@ -47,67 +48,91 @@ namespace SigilLite {
 		void GEmit(OpCode opcode) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode);
+#if LOGIL
 			AllInstructions.Add(opcode.ToString());
+#endif
 		}
 
 		void GEmit(OpCode opcode, Label label) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, label.ILabel);
+#if LOGIL
 			AllInstructions.Add($"{opcode} _label{label.Number}");
+#endif
 		}
 
 		void GEmit(OpCode opcode, ConstructorInfo ci) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, ci);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {ci.Name}");
+#endif
 		}
 
 		void GEmitCall(OpCode opcode, MethodInfo mi, Type[] types) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.EmitCall(opcode, mi, types);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {mi.ReturnType.Name} {mi.Name}({string.Join(", ", types?.Select(x => x.Name) ?? Enumerable.Empty<string>())})");
+#endif
 		}
 
 		void GEmit(OpCode opcode, FieldInfo fi) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, fi);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {fi.FieldType.Name} {fi.Name}");
+#endif
 		}
 
 		void GEmit(OpCode opcode, Type type) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, type);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {type.Name}");
+#endif
 		}
 		void GEmit(OpCode opcode, string constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, constant);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant.ToPrettyString()}");
+#endif
 		}
 		void GEmit(OpCode opcode, uint constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, constant);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant}");
+#endif
 		}
 		void GEmit(OpCode opcode, int constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, constant);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant}");
+#endif
 		}
 		void GEmit(OpCode opcode, ulong constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, unchecked((long) constant));
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant}");
+#endif
 		}
 		void GEmit(OpCode opcode, float constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, constant);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant}");
+#endif
 		}
 		void GEmit(OpCode opcode, double constant) {
 			if(!ShouldEmit(opcode)) return;
 			Ilg.Emit(opcode, constant);
+#if LOGIL
 			AllInstructions.Add($"{opcode} {constant}");
+#endif
 		}
 
 		bool ShouldEmit(OpCode opcode) {
@@ -267,8 +292,10 @@ namespace SigilLite {
 		public Emit<DelegateT> MarkLabel(Label label) => Do(() => {
 			LastWasBranch = false;
 			Ilg.MarkLabel(label.ILabel);
+#if LOGIL
 			AllInstructions.Add("");
 			AllInstructions.Add($"_label{label.Number}:");
+#endif
 		});
 
 		public Emit<DelegateT> Multiply() => Do(() => GEmit(OpCodes.Mul));
