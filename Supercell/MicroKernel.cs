@@ -50,6 +50,8 @@ namespace Supercell {
 		public IStorage RomFs;
 		
 		public unsafe void LoadAndRun(string fn) {
+			SignalHandler.Setup();
+			
 			var pfs = new PartitionFileSystem(new FileStream(fn, FileMode.Open, FileAccess.Read).AsStorage());
 
 			var keyset = ExternalKeys.ReadKeyFile(

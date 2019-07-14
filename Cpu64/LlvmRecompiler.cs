@@ -24,6 +24,7 @@ namespace Cpu64 {
 			}
 			if(type == typeof(void))
 				return LLVMTypeRef.VoidType();
+			if(type.IsPointer) return LLVMTypeRef.Int64Type();
 			switch(Activator.CreateInstance(type)) {
 				case sbyte _: case byte _: return LLVMTypeRef.Int8Type();
 				case short _: case ushort _: return LLVMTypeRef.Int16Type();
@@ -49,11 +50,11 @@ namespace Cpu64 {
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	public struct LlvmCallbacks {
+	public unsafe struct LlvmCallbacks {
 		public delegate void SvcDelegate(uint svc);
 		public ulong Svc;
 
-		public delegate ulong GetSRDelegate(uint op0, uint op1, uint crn, uint crm, uint op2);
+		public delegate ulong GetSRDelegate(CpuState* state, uint op0, uint op1, uint crn, uint crm, uint op2);
 		public ulong GetSR;
 
 		public delegate void SetSRDelegate(uint op0, uint op1, uint crn, uint crm, uint op2, ulong value);
@@ -320,8 +321,17 @@ namespace Cpu64 {
 			VDR = new LlvmVectorDoubleMap(this);
 
 			Callbacks = (LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
-			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => Kernel.Svc((int) svc));
-			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>(SR);
+			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => {
+				Console.WriteLine("SVC!");
+				Environment.Exit(1);
+				Kernel.Svc((int) svc);
+			});
+			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>((state, op0, op1, crn, crm, op2) => {
+				var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
+				if(reg == 0b11_011_1101_0000_011) // TPIDR
+					return state->TlsBase;
+				return SR(op0, op1, crn, crm, op2);
+			});
 			Callbacks->SetSR = FunctionPtr<LlvmCallbacks.SetSRDelegate>(SR);
 
 			/*var bw = new BinaryWriter(File.OpenWrite("recinsns.bin"));
@@ -402,6 +412,7 @@ namespace Cpu64 {
 		}
 
 		public void RecompileMultiple(Block block) {
+			Instance = this;
 			Module = LLVM.ModuleCreateWithName("SupercellNXLLVM");
 			Builder = LLVM.CreateBuilder();
 
@@ -650,7 +661,8 @@ namespace Cpu64 {
 			new LlvmRuntimeValue<ulong>(() => Intrinsic<Func<ulong, ulong>>("llvm.bitreverse.i64", value));
 
 		LlvmRuntimeValue<ulong> CallSR(uint op0, uint op1, uint crn, uint crm, uint op2) =>
-			new LlvmRuntimeValue<ulong>(() => Call<LlvmCallbacks.GetSRDelegate>(nameof(LlvmCallbacks.GetSR), Const(op0), Const(op1), Const(crn), Const(crm), Const(op2)));
+			new LlvmRuntimeValue<ulong>(() => Call<LlvmCallbacks.GetSRDelegate>(nameof(LlvmCallbacks.GetSR),
+				CpuStateRef, Const(op0), Const(op1), Const(crn), Const(crm), Const(op2)));
 		void CallSR(uint op0, uint op1, uint crn, uint crm, uint op2, LlvmRuntimeValue<ulong> value) =>
 			Call<LlvmCallbacks.SetSRDelegate>(nameof(LlvmCallbacks.SetSR), Const(op0), Const(op1), Const(crn),
 				Const(crm), Const(op2), value);
@@ -730,7 +742,7 @@ namespace Cpu64 {
 			() => LLVM.BuildSelect(Builder,
 				LLVM.BuildExtractValue(Builder,
 					LLVM.BuildAtomicCmpXchg(Builder, ptr.Address, comparand, value,
-						LLVMAtomicOrdering.LLVMAtomicOrderingAcquireRelease,
+						LLVMAtomicOrdering.LLVMAtomicOrderingMonotonic,
 						LLVMAtomicOrdering.LLVMAtomicOrderingMonotonic,
 						false), 1, ""), Const((byte) 0), Const((byte) 1), ""));
 	}

@@ -9,6 +9,7 @@ using static Supercell.Globals;
 namespace Supercell {
 	public class Thread : KObject {
 		static readonly ThreadLocal<Thread> _CurrentThread = new ThreadLocal<Thread>();
+		public static readonly List<Thread> Threads = new List<Thread>();
 		public static Thread CurrentThread => _CurrentThread.Value;
 		static ulong ThreadIdIter;
 		//public readonly BaseCpu Cpu = new Interpreter(Kernel);
@@ -21,6 +22,7 @@ namespace Supercell {
 		public readonly ulong Stack, TlsBase;
 
 		public unsafe Thread(ulong isp = 0) {
+			Threads.Add(this);
 			if(isp == 0)
 				_CurrentThread.Value = this;
 			lock(Threading)
