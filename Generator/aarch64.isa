@@ -234,8 +234,8 @@
     (names (size s) (rd d) (rn n) (rm m))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (u32 (>> (i32 (gpr32 rn)) (gpr32 rm))))
-        (= (gpr64 rd) (u64 (>> (i64 (gpr64 rn)) (gpr64 rm))))))
+        (= (gpr32 rd) (u32 (>> (i32 (gpr32 rn)) (% (gpr32 rm) 32))))
+        (= (gpr64 rd) (u64 (>> (i64 (gpr64 rn)) (% (gpr64 rm) 64))))))
 
 (def B
     "0 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
@@ -1909,8 +1909,8 @@
     (names (size s) (rm m) (rn n) (rd d))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (<< (gpr32 rn) (gpr32 rm)))
-        (= (gpr64 rd) (<< (gpr64 rn) (gpr64 rm)))))
+        (= (gpr32 rd) (<< (gpr32 rn) (% (gpr32 rm) 32)))
+        (= (gpr64 rd) (<< (gpr64 rn) (% (gpr64 rm) 64)))))
 
 (def LSRV
     "s 0 0 11010110 mmmmm 0010 01 nnnnn ddddd"
@@ -1918,8 +1918,8 @@
     (names (size s) (rm m) (rn n) (rd d))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (>> (gpr32 rn) (gpr32 rm)))
-        (= (gpr64 rd) (>> (gpr64 rn) (gpr64 rm)))))
+        (= (gpr32 rd) (>> (gpr32 rn) (% (gpr32 rm) 32)))
+        (= (gpr64 rd) (>> (gpr64 rn) (% (gpr64 rm) 64)))))
 
 (def MADD
     "s 00 11011 000 mmmmm 0 aaaaa nnnnn ddddd"
@@ -2130,8 +2130,8 @@
     (names (size s) (rm m) (rn n) (rd d))
     (let r (if (== size 0) "W" "X"))
     (if (== size 0)
-        (= (gpr32 rd) (>>> (gpr32 rn) (gpr32 rm)))
-        (= (gpr64 rd) (>>> (gpr64 rn) (gpr64 rm)))))
+        (= (gpr32 rd) (>>> (gpr32 rn) (% (gpr32 rm) 32)))
+        (= (gpr64 rd) (>>> (gpr64 rn) (% (gpr64 rm) 64)))))
 
 (def SBCS
     "s 1 1 11010000 mmmmm 000000 nnnnn ddddd"

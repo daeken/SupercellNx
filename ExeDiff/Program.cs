@@ -90,6 +90,10 @@ namespace ExeDiff {
 				return;
 			}
 			$"Final instruction PC: {last.PC:X}".Debug();
+			$"NZCV  {last.NZCV:X}".Debug();
+			$"SP  {last.SP:X}".Debug();
+			for(var x = 0; x < 31; ++x)
+				$"X{x}  {last.X[x]:X}".Debug();
 		}
 	}
 }

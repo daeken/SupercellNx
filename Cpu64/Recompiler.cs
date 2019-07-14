@@ -564,8 +564,8 @@ namespace Cpu64 {
 		}
 
 		void BranchIf(RuntimeValue<int> cond, Label if_label, Label else_label) => cond.EmitThen(() => {
-			Ilg.BranchIfTrue(else_label);
-			Ilg.Branch(if_label);
+			Ilg.BranchIfTrue(if_label);
+			Ilg.Branch(else_label);
 		});
 
 		void Label(Label label) => Ilg.MarkLabel(label);

@@ -18,7 +18,7 @@ namespace Cpu64 {
 	
 	public static class CacheManager {
 		static readonly Dictionary<ulong, Block> Blocks = new Dictionary<ulong, Block>();
-		static readonly LlvmRecompiler Recompiler = new LlvmRecompiler();
+		static readonly LlvmRecompiler Recompiler;// = new LlvmRecompiler();
 		
 		//static CacheManager() => StartOptimizer();
 

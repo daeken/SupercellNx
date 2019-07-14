@@ -59,7 +59,7 @@ namespace Cpu64 {
 
 			var resetTicks = false;
 			var BW = new BinaryWriter(File.OpenWrite("uniinsns.bin"));
-			var skip = 131_000_000L;
+			var skip = 132_500_000;
 			Uc.OnCode += (_, addr, __) => {
 				if(resetTicks) {
 					resetTicks = false;
@@ -68,6 +68,8 @@ namespace Cpu64 {
 
 				if(skip > 0) {
 					skip--;
+					if(skip == 0)
+						Console.WriteLine($"Stopped skipping at 0x{addr:X}");
 					return;
 				}
 				BW.Write(addr);

@@ -58,7 +58,7 @@ namespace Generator {
 						var end_label = TempName();
 						var else_label = TempName();
 						c += $"Label {if_label} = DefineLabel(), {else_label} = DefineLabel(), {end_label} = DefineLabel();";
-						c += $"BranchIf(({GenerateExpression(list[1])}) == 0, {if_label}, {else_label});";
+						c += $"BranchIf({GenerateExpression(list[1])}, {if_label}, {else_label});";
 						c += $"Label({if_label});";
 						GenerateStatement(c, (PList) list[2]);
 						c += $"Branch({end_label});";

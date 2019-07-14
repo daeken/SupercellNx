@@ -27,7 +27,7 @@ namespace Generator {
 		
 		public override void Define() {
 			Expression(
-				new[] { "+", "-", "*", "/" }, LogicalType,
+				new[] { "+", "-", "*", "/", "%" }, LogicalType,
 				list => {
 					Debug.Assert(list.Count == 3);
 					if(list[1].Type is EInt(var sa, var ba) && list[2].Type is EInt(var sb, var bb)) {

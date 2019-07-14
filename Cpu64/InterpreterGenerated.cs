@@ -326,9 +326,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rd] = (uint) ((uint) ((uint) ((int) (((int) ((int) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))) >> (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))))));
+						W[(int) rd] = (uint) ((uint) ((uint) ((int) (((int) ((int) ((uint) ((rn) == 31 ? 0U : W[(int) rn])))) >> (int) ((ulong) (((ulong) (uint) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))) % ((ulong) (long) (0x20))))))));
 					} else {
-						(&State->X0)[(int) rd] = (ulong) ((ulong) ((long) (((long) ((long) ((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])))) >> (int) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])))));
+						(&State->X0)[(int) rd] = (ulong) ((ulong) ((long) (((long) ((long) ((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])))) >> (int) ((ulong) (((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))) % ((ulong) (long) (0x40)))))));
 					}
 					return true;
 				}
@@ -2666,9 +2666,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rd] = (uint) ((uint) (((uint) ((rn) == 31 ? 0U : W[(int) rn])) << (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))));
+						W[(int) rd] = (uint) ((uint) (((uint) ((rn) == 31 ? 0U : W[(int) rn])) << (int) ((ulong) (((ulong) (uint) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))) % ((ulong) (long) (0x20))))));
 					} else {
-						(&State->X0)[(int) rd] = (ulong) (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) << (int) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])));
+						(&State->X0)[(int) rd] = (ulong) (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) << (int) ((ulong) (((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))) % ((ulong) (long) (0x40)))));
 					}
 					return true;
 				}
@@ -2680,9 +2680,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rd] = (uint) ((uint) (((uint) ((rn) == 31 ? 0U : W[(int) rn])) >> (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))));
+						W[(int) rd] = (uint) ((uint) (((uint) ((rn) == 31 ? 0U : W[(int) rn])) >> (int) ((ulong) (((ulong) (uint) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))) % ((ulong) (long) (0x20))))));
 					} else {
-						(&State->X0)[(int) rd] = (ulong) (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) >> (int) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])));
+						(&State->X0)[(int) rd] = (ulong) (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) >> (int) ((ulong) (((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))) % ((ulong) (long) (0x40)))));
 					}
 					return true;
 				}
@@ -2968,9 +2968,9 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						W[(int) rd] = (uint) ((uint) ((((uint) ((rn) == 31 ? 0U : W[(int) rn])) << (32 - (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))) | (((uint) ((rn) == 31 ? 0U : W[(int) rn])) >> (int) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))));
+						W[(int) rd] = (uint) ((uint) ((((uint) ((rn) == 31 ? 0U : W[(int) rn])) << (32 - (int) ((ulong) (((ulong) (uint) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))) % ((ulong) (long) (0x20)))))) | (((uint) ((rn) == 31 ? 0U : W[(int) rn])) >> (int) ((ulong) (((ulong) (uint) ((uint) ((rm) == 31 ? 0U : W[(int) rm]))) % ((ulong) (long) (0x20)))))));
 					} else {
-						(&State->X0)[(int) rd] = (ulong) ((((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) << (64 - (int) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])))) | (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) >> (int) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))));
+						(&State->X0)[(int) rd] = (ulong) ((((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) << (64 - (int) ((ulong) (((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))) % ((ulong) (long) (0x40)))))) | (((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn])) >> (int) ((ulong) (((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))) % ((ulong) (long) (0x40))))));
 					}
 					return true;
 				}
