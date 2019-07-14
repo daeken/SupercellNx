@@ -54,14 +54,17 @@ namespace Generator {
 					c += "}";
 				}, (c, list) => {
 					if(list[1].Type.Runtime) {
+						var if_label = TempName();
 						var end_label = TempName();
 						var else_label = TempName();
-						c += $"Label {end_label} = Ilg.DefineLabel(), {else_label} = Ilg.DefineLabel();";
-						c += $"BranchIf(({GenerateExpression(list[1])}) == 0, {else_label});";
+						c += $"Label {if_label} = DefineLabel(), {else_label} = DefineLabel(), {end_label} = DefineLabel();";
+						c += $"BranchIf(({GenerateExpression(list[1])}) == 0, {if_label}, {else_label});";
+						c += $"Label({if_label});";
 						GenerateStatement(c, (PList) list[2]);
 						c += $"Branch({end_label});";
 						c += $"Label({else_label});";
 						GenerateStatement(c, (PList) list[3]);
+						c += $"Branch({end_label});";
 						c += $"Label({end_label});";
 					} else {
 						c += $"if(({GenerateExpression(list[1])}) != 0) {{";
@@ -144,7 +147,7 @@ namespace Generator {
 
 			Expression("svc", _ => EType.Unit.AsRuntime(),
 				list => $"Svc({GenerateExpression(list[1])})",
-				list => $"CallVoid(nameof(Svc), {GenerateExpression(list[1])})");
+				list => $"CallSvc({GenerateExpression(list[1])})");
 			
 			Expression("branch", _ => EType.Unit.AsRuntime(), list => $"Branch({GenerateExpression(list[1])})");
 			Expression("branch-default", _ => EType.Unit.AsRuntime(), list => $"Branch(pc + 4)");

@@ -7,22 +7,24 @@ namespace Cpu64 {
 		readonly Interpreter Interpreter;
 		public InterpreterWRegs(Interpreter interpreter) => Interpreter = interpreter;
 
-		public uint this[int index] {
-			get => (uint) (Interpreter.X[index] & 0xFFFFFFFFU);
-			set => Interpreter.X[index] = value;
+		public unsafe uint this[int index] {
+			get => (uint) ((&Interpreter.State->X0)[index] & 0xFFFFFFFFU);
+			set => (&Interpreter.State->X0)[index] = value;
 		}
 	}
 	
-	public partial class Interpreter : BaseCpu {
+	public unsafe partial class Interpreter : BaseCpu {
 		public readonly InterpreterWRegs W;
+		public ulong PC { get => State->PC; set => State->PC = value; }
+		public ulong SP { get => State->SP; set => State->SP = value; }
 
 		public Interpreter(IKernel kernel) : base(kernel) {
 			W = new InterpreterWRegs(this);
 		}
 
 		public override void Run(ulong pc, ulong sp, bool one = false) {
-			PC = pc;
-			SP = sp;
+			State->PC = pc;
+			State->SP = sp;
 			var errors = new List<string>();
 			do {
 				RunOne();
@@ -30,20 +32,20 @@ namespace Cpu64 {
 		}
 
 		public unsafe void RunOne() {
-			var before = PC;
-			var inst = *(uint*) PC;
-			var asm = Disassemble(inst, PC);
+			var before = State->PC;
+			var inst = *(uint*) State->PC;
+			var asm = Disassemble(inst, State->PC);
 			if(asm == null)
-				LogError($"Disassembly failed at {PC:X} --- {inst:X8}");
+				LogError($"Disassembly failed at {State->PC:X} --- {inst:X8}");
 			//$"{PC:X}: {asm}".Debug();
-			Interpret(inst, PC);
-			if(before == PC)
-				PC += 4;
+			Interpret(inst, State->PC);
+			if(before == State->PC)
+				State->PC += 4;
 		}
 
 		void Branch(ulong addr) {
 			//$"Branching to 0x{addr:X}".Debug();
-			PC = addr;
+			State->PC = addr;
 		}
 
 		uint Shift(uint value, uint shiftType, uint _amount) {

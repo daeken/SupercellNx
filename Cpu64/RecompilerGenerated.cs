@@ -356,13 +356,15 @@ namespace Cpu64 {
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 21)))));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_0 = Ilg.DefineLabel(), temp_1 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_1);
-					Branch(addr);
-					Branch(temp_0);
-					Label(temp_1);
-					Branch(pc + 4);
+					Label temp_0 = DefineLabel(), temp_2 = DefineLabel(), temp_1 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_0, temp_2);
 					Label(temp_0);
+					Branch(addr);
+					Branch(temp_1);
+					Label(temp_2);
+					Branch(pc + 4);
+					Branch(temp_1);
+					Label(temp_1);
 					return true;
 				}
 				/* BFM */
@@ -470,12 +472,14 @@ namespace Cpu64 {
 						var nh = ((RuntimeValue<uint>) (((ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) (ulong) (((ulong) (byte) (rt)) + ((ulong) (long) (0x1)))])).Store();
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
 						var data = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value)).Store();
-						Label temp_2 = Ilg.DefineLabel(), temp_3 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) ((data) == ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (ch))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (cl))))))))) == 0, temp_3);
-						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nh))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nl))))));
-						Branch(temp_2);
+						Label temp_3 = DefineLabel(), temp_5 = DefineLabel(), temp_4 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) ((data) == ((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (ch))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (cl))))))))) == 0, temp_3, temp_5);
 						Label(temp_3);
-						Label(temp_2);
+						((RuntimePointer<ulong>) (address)).Value = (RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nh))).ShiftLeft(0x20)))) | ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (nl))))));
+						Branch(temp_4);
+						Label(temp_5);
+						Branch(temp_4);
+						Label(temp_4);
 						XR[(int) rs] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (data)));
 						XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<ulong>) ((data).ShiftRight(0x20)))));
 					} else {
@@ -486,13 +490,15 @@ namespace Cpu64 {
 						var address = ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn])).Store();
 						var dl = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) (address)).Value)).Store();
 						var dh = ((RuntimeValue<ulong>) (((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value)).Store();
-						Label temp_4 = Ilg.DefineLabel(), temp_5 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dl) == (cl)))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dh) == (ch))))))) == 0, temp_5);
+						Label temp_6 = DefineLabel(), temp_8 = DefineLabel(), temp_7 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dl) == (cl)))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((dh) == (ch))))))) == 0, temp_6, temp_8);
+						Label(temp_6);
 						((RuntimePointer<ulong>) (address)).Value = nl;
 						((RuntimePointer<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x8))))).Value = nh;
-						Branch(temp_4);
-						Label(temp_5);
-						Label(temp_4);
+						Branch(temp_7);
+						Label(temp_8);
+						Branch(temp_7);
+						Label(temp_7);
 						XR[(int) rs] = dl;
 						XR[(int) (ulong) (((ulong) (byte) (rs)) + ((ulong) (long) (0x1)))] = dh;
 					}
@@ -518,21 +524,25 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						Label temp_6 = Ilg.DefineLabel(), temp_7 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) != ((uint) ((uint) (0x0))))) == 0, temp_7);
-						Branch(addr);
-						Branch(temp_6);
-						Label(temp_7);
-						Branch(pc + 4);
-						Label(temp_6);
-					} else {
-						Label temp_8 = Ilg.DefineLabel(), temp_9 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) != ((ulong) ((ulong) (0x0))))) == 0, temp_9);
-						Branch(addr);
-						Branch(temp_8);
+						Label temp_9 = DefineLabel(), temp_11 = DefineLabel(), temp_10 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) != ((uint) ((uint) (0x0))))) == 0, temp_9, temp_11);
 						Label(temp_9);
+						Branch(addr);
+						Branch(temp_10);
+						Label(temp_11);
 						Branch(pc + 4);
-						Label(temp_8);
+						Branch(temp_10);
+						Label(temp_10);
+					} else {
+						Label temp_12 = DefineLabel(), temp_14 = DefineLabel(), temp_13 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) != ((ulong) ((ulong) (0x0))))) == 0, temp_12, temp_14);
+						Label(temp_12);
+						Branch(addr);
+						Branch(temp_13);
+						Label(temp_14);
+						Branch(pc + 4);
+						Branch(temp_13);
+						Label(temp_13);
 					}
 					return true;
 				}
@@ -544,21 +554,25 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((uint) ((uint) ((uint) ((imm) << (int) (0x2)))), 21)))));
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
-						Label temp_10 = Ilg.DefineLabel(), temp_11 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) == ((uint) ((uint) (0x0))))) == 0, temp_11);
+						Label temp_15 = DefineLabel(), temp_17 = DefineLabel(), temp_16 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<uint>) ((rs) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rs])) == ((uint) ((uint) (0x0))))) == 0, temp_15, temp_17);
+						Label(temp_15);
 						Branch(addr);
-						Branch(temp_10);
-						Label(temp_11);
+						Branch(temp_16);
+						Label(temp_17);
 						Branch(pc + 4);
-						Label(temp_10);
+						Branch(temp_16);
+						Label(temp_16);
 					} else {
-						Label temp_12 = Ilg.DefineLabel(), temp_13 = Ilg.DefineLabel();
-						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) == ((ulong) ((ulong) (0x0))))) == 0, temp_13);
+						Label temp_18 = DefineLabel(), temp_20 = DefineLabel(), temp_19 = DefineLabel();
+						BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((rs) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rs])) == ((ulong) ((ulong) (0x0))))) == 0, temp_18, temp_20);
+						Label(temp_18);
 						Branch(addr);
-						Branch(temp_12);
-						Label(temp_13);
+						Branch(temp_19);
+						Label(temp_20);
 						Branch(pc + 4);
-						Label(temp_12);
+						Branch(temp_19);
+						Label(temp_19);
 					}
 					return true;
 				}
@@ -572,8 +586,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_14 = Ilg.DefineLabel(), temp_15 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_15);
+					Label temp_21 = DefineLabel(), temp_23 = DefineLabel(), temp_22 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_21, temp_23);
+					Label(temp_21);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
 								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
@@ -605,10 +620,11 @@ namespace Cpu64 {
 								return (usum).Store();
 							}));
 					}
-					Branch(temp_14);
-					Label(temp_15);
+					Branch(temp_22);
+					Label(temp_23);
 					NZCVR = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
-					Label(temp_14);
+					Branch(temp_22);
+					Label(temp_22);
 					return true;
 				}
 				/* CCMP-immediate */
@@ -621,8 +637,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_16 = Ilg.DefineLabel(), temp_17 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_17);
+					Label temp_24 = DefineLabel(), temp_26 = DefineLabel(), temp_25 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_24, temp_26);
+					Label(temp_24);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
 								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
@@ -654,10 +671,11 @@ namespace Cpu64 {
 								return (usum).Store();
 							}));
 					}
-					Branch(temp_16);
-					Label(temp_17);
+					Branch(temp_25);
+					Label(temp_26);
 					NZCVR = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
-					Label(temp_16);
+					Branch(temp_25);
+					Label(temp_25);
 					return true;
 				}
 				/* CCMP-register */
@@ -670,8 +688,9 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_18 = Ilg.DefineLabel(), temp_19 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_19);
+					Label temp_27 = DefineLabel(), temp_29 = DefineLabel(), temp_28 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_27, temp_29);
+					Label(temp_27);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) 0x1F] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (Extensions.StmtBlock<RuntimeValue<uint>>(() => {
 								var __macro_add_with_carry_set_nzcv_common_operand1 = ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn])))).Store();
@@ -703,10 +722,11 @@ namespace Cpu64 {
 								return (usum).Store();
 							}));
 					}
-					Branch(temp_18);
-					Label(temp_19);
+					Branch(temp_28);
+					Label(temp_29);
 					NZCVR = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
-					Label(temp_18);
+					Branch(temp_28);
+					Label(temp_28);
 					return true;
 				}
 				/* CLREX */
@@ -747,21 +767,23 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_20 = Ilg.DefineLabel(), temp_21 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_21);
+					Label temp_30 = DefineLabel(), temp_32 = DefineLabel(), temp_31 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_30, temp_32);
+					Label(temp_30);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
-					Branch(temp_20);
-					Label(temp_21);
+					Branch(temp_31);
+					Label(temp_32);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]);
 					}
-					Label(temp_20);
+					Branch(temp_31);
+					Label(temp_31);
 					return true;
 				}
 				/* CSINC */
@@ -774,21 +796,23 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_22 = Ilg.DefineLabel(), temp_23 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_23);
+					Label temp_33 = DefineLabel(), temp_35 = DefineLabel(), temp_34 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_33, temp_35);
+					Label(temp_33);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
-					Branch(temp_22);
-					Label(temp_23);
+					Branch(temp_34);
+					Label(temp_35);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (((RuntimeValue<uint>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))) + ((RuntimeValue<uint>) (RuntimeValue<uint>) ((uint) ((uint) (0x1))))));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (0x1)));
 					}
-					Label(temp_22);
+					Branch(temp_34);
+					Label(temp_34);
 					return true;
 				}
 				/* CSINV */
@@ -801,21 +825,23 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_24 = Ilg.DefineLabel(), temp_25 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_25);
+					Label temp_36 = DefineLabel(), temp_38 = DefineLabel(), temp_37 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_36, temp_38);
+					Label(temp_36);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
-					Branch(temp_24);
-					Label(temp_25);
+					Branch(temp_37);
+					Label(temp_38);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) (~((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) (~((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])));
 					}
-					Label(temp_24);
+					Branch(temp_37);
+					Label(temp_37);
 					return true;
 				}
 				/* CSNEG */
@@ -828,21 +854,23 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_26 = Ilg.DefineLabel(), temp_27 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_27);
+					Label temp_39 = DefineLabel(), temp_41 = DefineLabel(), temp_40 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_39, temp_41);
+					Label(temp_39);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((rn) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rn]));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((rn) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rn]);
 					}
-					Branch(temp_26);
-					Label(temp_27);
+					Branch(temp_40);
+					Label(temp_41);
 					if(((byte) (((size) == (0x0)) ? 1U : 0U)) != 0) {
 						XR[(int) rd] = (RuntimeValue<ulong>) (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<int>) (-((RuntimeValue<int>) ((RuntimeValue<int>) ((RuntimeValue<uint>) ((rm) == 31 ? 0U : (RuntimeValue<uint>) XR[(int) rm]))))))));
 					} else {
 						XR[(int) rd] = (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((RuntimeValue<long>) (-((RuntimeValue<long>) ((RuntimeValue<long>) ((RuntimeValue<ulong>) ((rm) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rm])))))));
 					}
-					Label(temp_26);
+					Branch(temp_40);
+					Label(temp_40);
 					return true;
 				}
 				/* DMB */
@@ -1084,15 +1112,20 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_28 = Ilg.DefineLabel(), temp_29 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_29);
+					Label temp_42 = DefineLabel(), temp_44 = DefineLabel(), temp_43 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_42, temp_44);
+					Label(temp_42);
 					switch(type) {
 						case 0x0: {
-							CallFloatCompare((RuntimeValue<float>) (VSR[(int) (rn)]), (RuntimeValue<float>) (VSR[(int) (rm)]));
+							var __macro_fcmp_a = ((RuntimeValue<float>) (VSR[(int) (rn)])).Store();
+							var __macro_fcmp_b = ((RuntimeValue<float>) (VSR[(int) (rm)])).Store();
+							NZCVR = (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<long>) (((RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a).IsNaN()))) | ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_b).IsNaN())))))), 0x3, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) == (__macro_fcmp_b))), 0x6, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) < (__macro_fcmp_b))), 0x8, 0x2))))))).ShiftLeft(0x1C))));
 							break;
 						}
 						case 0x1: {
-							CallFloatCompare((RuntimeValue<double>) (VDR[(int) (rn)]), (RuntimeValue<double>) (VDR[(int) (rm)]));
+							var __macro_fcmp_a = ((RuntimeValue<double>) (VDR[(int) (rn)])).Store();
+							var __macro_fcmp_b = ((RuntimeValue<double>) (VDR[(int) (rm)])).Store();
+							NZCVR = (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<long>) (((RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a).IsNaN()))) | ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_b).IsNaN())))))), 0x3, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) == (__macro_fcmp_b))), 0x6, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) < (__macro_fcmp_b))), 0x8, 0x2))))))).ShiftLeft(0x1C))));
 							break;
 						}
 						default: {
@@ -1100,10 +1133,11 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					Branch(temp_28);
-					Label(temp_29);
+					Branch(temp_43);
+					Label(temp_44);
 					NZCVR = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
-					Label(temp_28);
+					Branch(temp_43);
+					Label(temp_43);
 					return true;
 				}
 				/* FCMP */
@@ -1116,11 +1150,15 @@ namespace Cpu64 {
 					var zero = (string) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? ("/0") : (""));
 					switch(type) {
 						case 0x0: {
-							CallFloatCompare((RuntimeValue<float>) (VSR[(int) (rn)]), (RuntimeValue<float>) (((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0 ? ((float) ((float) (0x0))) : ((RuntimeValue<float>) (VSR[(int) (rm)]))));
+							var __macro_fcmp_a = ((RuntimeValue<float>) (VSR[(int) (rn)])).Store();
+							var __macro_fcmp_b = ((RuntimeValue<float>) (((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0 ? ((float) ((float) (0x0))) : ((RuntimeValue<float>) (VSR[(int) (rm)])))).Store();
+							NZCVR = (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<long>) (((RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a).IsNaN()))) | ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_b).IsNaN())))))), 0x3, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) == (__macro_fcmp_b))), 0x6, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) < (__macro_fcmp_b))), 0x8, 0x2))))))).ShiftLeft(0x1C))));
 							break;
 						}
 						case 0x1: {
-							CallFloatCompare((RuntimeValue<double>) (VDR[(int) (rn)]), (RuntimeValue<double>) (((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0 ? ((double) ((double) (0x0))) : ((RuntimeValue<double>) (VDR[(int) (rm)]))));
+							var __macro_fcmp_a = ((RuntimeValue<double>) (VDR[(int) (rn)])).Store();
+							var __macro_fcmp_b = ((RuntimeValue<double>) (((byte) (((opc) == (0x1)) ? 1U : 0U)) != 0 ? ((double) ((double) (0x0))) : ((RuntimeValue<double>) (VDR[(int) (rm)])))).Store();
+							NZCVR = (RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<long>) (((RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a).IsNaN()))) | ((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_b).IsNaN())))))), 0x3, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) == (__macro_fcmp_b))), 0x6, (RuntimeValue<long>) (Ternary<byte, long>((RuntimeValue<byte>) ((RuntimeValue<byte>) ((__macro_fcmp_a) < (__macro_fcmp_b))), 0x8, 0x2))))))).ShiftLeft(0x1C))));
 							break;
 						}
 						default: {
@@ -1140,8 +1178,9 @@ namespace Cpu64 {
 					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 					var result = ((RuntimeValue<byte>) (((byte) ((cond) >> (int) (0x1))) switch { 0x0 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_ZR)), 0x1 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR)), 0x2 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_NR)), 0x3 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_VR)), 0x4 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (NZCV_CR))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), 0x5 => (RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR)))), 0x6 => (RuntimeValue<byte>) ((RuntimeValue<byte>) ((((RuntimeValue<byte>) ((RuntimeValue<byte>) (((RuntimeValue<byte>) (NZCV_NR)) == ((RuntimeValue<byte>) (NZCV_VR))))) & ((RuntimeValue<byte>) ((RuntimeValue<byte>) (!((RuntimeValue<byte>) (NZCV_ZR)))))))), _ => (RuntimeValue<byte>) (0x1) })).Store();
-					Label temp_30 = Ilg.DefineLabel(), temp_31 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_31);
+					Label temp_45 = DefineLabel(), temp_47 = DefineLabel(), temp_46 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((byte) ((((byte) ((byte) ((((ulong) (cond)) & ((ulong) (0x1)))))) & ((byte) ((byte) (((cond) != (0xF)) ? 1U : 0U)))))) != 0 ? ((RuntimeValue<byte>) (!(result))) : (result))) == 0, temp_45, temp_47);
+					Label(temp_45);
 					switch(type) {
 						case 0x0: {
 							VSR[(int) (rd)] = (RuntimeValue<float>) (VSR[(int) (rn)]);
@@ -1156,8 +1195,8 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					Branch(temp_30);
-					Label(temp_31);
+					Branch(temp_46);
+					Label(temp_47);
 					switch(type) {
 						case 0x0: {
 							VSR[(int) (rd)] = (RuntimeValue<float>) (VSR[(int) (rm)]);
@@ -1172,7 +1211,8 @@ namespace Cpu64 {
 							break;
 						}
 					}
-					Label(temp_30);
+					Branch(temp_46);
+					Label(temp_46);
 					return true;
 				}
 				/* FCVT */
@@ -1684,10 +1724,6 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
-						case 0x3: {
-							throw new NotImplementedException();
-							break;
-						}
 						case 0x0: {
 							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) * ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
@@ -1783,10 +1819,6 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
-						case 0x3: {
-							throw new NotImplementedException();
-							break;
-						}
 						case 0x0: {
 							VSR[(int) (rd)] = (RuntimeValue<float>) ((RuntimeValue<float>) ((RuntimeValue<double>) ((RuntimeValue<float>) (VSR[(int) (rn)]))).Sqrt());
 							break;
@@ -1810,10 +1842,6 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 					switch(type) {
-						case 0x3: {
-							throw new NotImplementedException();
-							break;
-						}
 						case 0x0: {
 							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rn)]))) - ((RuntimeValue<float>) (RuntimeValue<float>) ((RuntimeValue<float>) (VSR[(int) (rm)]))));
 							break;
@@ -4035,7 +4063,7 @@ namespace Cpu64 {
 				/* SVC */
 				if((inst & 0xFFE0001FU) == 0xD4000001U) {
 					var imm = (inst >> 5) & 0xFFFFU;
-					CallVoid(nameof(Svc), imm);
+					CallSvc(imm);
 					return true;
 				}
 				/* SYS */
@@ -4056,13 +4084,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
-					Label temp_32 = Ilg.DefineLabel(), temp_33 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) == (0x0))) == 0, temp_33);
+					Label temp_48 = DefineLabel(), temp_50 = DefineLabel(), temp_49 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) == (0x0))) == 0, temp_48, temp_50);
+					Label(temp_48);
 					Branch(addr);
-					Branch(temp_32);
-					Label(temp_33);
+					Branch(temp_49);
+					Label(temp_50);
 					Branch(pc + 4);
-					Label(temp_32);
+					Branch(temp_49);
+					Label(temp_49);
 					return true;
 				}
 				/* TBNZ */
@@ -4074,13 +4104,15 @@ namespace Cpu64 {
 					var r = (string) (((byte) (((upper) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 					var imm = (byte) ((((byte) ((byte) ((upper) << (int) (0x5)))) | ((byte) (bottom))));
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) ((long) (SignExt<long>((ushort) (((ushort) ((ushort) (offset))) << (int) (0x2)), 16)))));
-					Label temp_34 = Ilg.DefineLabel(), temp_35 = Ilg.DefineLabel();
-					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) != (0x0))) == 0, temp_35);
+					Label temp_51 = DefineLabel(), temp_53 = DefineLabel(), temp_52 = DefineLabel();
+					BranchIf(((RuntimeValue<byte>) (((RuntimeValue<ulong>) ((((RuntimeValue<ulong>) ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) ((rt) == 31 ? 0UL : (RuntimeValue<ulong>) XR[(int) rt])).ShiftRight(imm)))) & ((RuntimeValue<ulong>) (0x1))))) != (0x0))) == 0, temp_51, temp_53);
+					Label(temp_51);
 					Branch(addr);
-					Branch(temp_34);
-					Label(temp_35);
+					Branch(temp_52);
+					Label(temp_53);
 					Branch(pc + 4);
-					Label(temp_34);
+					Branch(temp_52);
+					Label(temp_52);
 					return true;
 				}
 				/* UADDLV */

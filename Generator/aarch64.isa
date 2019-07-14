@@ -46,7 +46,14 @@
         (= (nzcv v) (& (== (>> $operand1 bits1) (>> $operand2 bits1)) (!= (>> usum bits1) (>> $operand1 bits1))))
         usum))
 
-
+(defm fcmp (_a _b)
+    (let $a _a (let $b _b)
+        (= (nzcv) (u32 (<<
+            (if (| (NaN? $a) (NaN? $b)) 0b0011
+            (if (== $a $b) 0b0110
+            (if (< $a $b) 0b1000
+            0b0010))) 28)))))
+    
 (def ADCS
     "s 0 1 11010000 mmmmm 000000 nnnnn ddddd"
     "adcs $r$rd, $r$rn, $r$rm"
@@ -1160,7 +1167,6 @@
         0b01 "D"
         (unimplemented)))
     (match type
-        0b11 (unimplemented)
         0b00 (= (vec-s rd) (* (vec-s rn) (vec-s rm)))
         0b01 (= (vec-d rd) (* (vec-d rn) (vec-d rm)))
         (unimplemented)))
@@ -1218,7 +1224,6 @@
         0b01 "D"
         (unimplemented)))
     (match type
-        0b11 (unimplemented)
         0b00 (= (vec-s rd) (sqrt (vec-s rn)))
         0b01 (= (vec-d rd) (sqrt (vec-d rn)))
         (unimplemented)))
@@ -1233,7 +1238,6 @@
         0b01 "D"
         (unimplemented)))
     (match type
-        0b11 (unimplemented)
         0b00 (= (vec-s rd) (- (vec-s rn) (vec-s rm)))
         0b01 (= (vec-d rd) (- (vec-d rn) (vec-d rm)))
         (unimplemented)))

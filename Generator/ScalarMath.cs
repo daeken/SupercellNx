@@ -126,6 +126,10 @@ namespace Generator {
 						default: throw new NotSupportedException(list[1].Type.ToString());
 					}
 				});
+
+			Expression("NaN?", list => new EInt(false, 1).AsRuntime(list[1].Type.Runtime),
+				list => $"{(!(list[1].Type is EFloat(var fwidth)) ? throw new NotSupportedException() : fwidth == 32 ? "float" : "double")}.IsNaN({GenerateExpression(list[1])}) ? 1U : 0U",
+				list => $"({GenerateExpression(list[1])}).IsNaN()");
 		}
 	}
 }

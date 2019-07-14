@@ -3,39 +3,39 @@ using System.Runtime.Intrinsics;
 using Xunit;
 
 namespace CpuTest {
-	public class AluTest {
+	public unsafe class AluTest {
 		[Fact]
 		public void SubsPosPos() {
 			// SUBS XZR, X8, X20
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x8000;
-				cpu.X[20] = 0x4000;
+				cpu.State->X8 = 0x8000;
+				cpu.State->X20 = 0x4000;
 			});
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x4000;
-				cpu.X[20] = 0x8000;
+				cpu.State->X8 = 0x4000;
+				cpu.State->X20 = 0x8000;
 			});
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0;
-				cpu.X[20] = 0;
+				cpu.State->X8 = 0;
+				cpu.State->X20 = 0;
 			});
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x8000;
-				cpu.X[20] = 0;
+				cpu.State->X8 = 0x8000;
+				cpu.State->X20 = 0;
 			});
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0;
-				cpu.X[20] = 0x8000;
+				cpu.State->X8 = 0;
+				cpu.State->X20 = 0x8000;
 			});
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0;
-				cpu.X[20] = 0x80UL << 12;
+				cpu.State->X8 = 0;
+				cpu.State->X20 = 0x80UL << 12;
 			});
 		}
 
@@ -44,13 +44,13 @@ namespace CpuTest {
 			// SUBS XZR, X19, #1, LSL#12
 			InsnTester.Test(0xF140067F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[19] = 0x10;
+				cpu.State->X19 = 0x10;
 			});
 			
 			// SUBS XZR, X8, #0x80,LSL#12
 			InsnTester.Test(0xF142011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0;
+				cpu.State->X8 = 0;
 			});
 		}
 
@@ -59,15 +59,15 @@ namespace CpuTest {
 			// SUBS XZR, X8, X20
 			InsnTester.Test(0xEB14011F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0xFFFFFFFFFFFFEBE0;
-				cpu.X[20] = 0x4000;
+				cpu.State->X8 = 0xFFFFFFFFFFFFEBE0;
+				cpu.State->X20 = 0x4000;
 			});
 			// SUBS WZR, W26, W13
 			InsnTester.Disassembly("subs W31, W26, W13, LSL #0", 0x6B0D035F);
 			InsnTester.Test(0x6B0D035F, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[26] = 0xFFFFFFFF;
-				cpu.X[13] = 0x7FFFFFFF;
+				cpu.State->X26 = 0xFFFFFFFF;
+				cpu.State->X13 = 0x7FFFFFFF;
 			});
 		}
 
@@ -77,8 +77,8 @@ namespace CpuTest {
 			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
 			InsnTester.Test(0x6B08005F, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[2] = 0x40284109;
-				cpu.X[8] = 0xC018481A;
+				cpu.State->X2 = 0x40284109;
+				cpu.State->X8 = 0xC018481A;
 			});
 		}
 
@@ -88,16 +88,16 @@ namespace CpuTest {
 			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
 			InsnTester.Test(0x6B08005F, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[2] = 0x80000000;
-				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+				cpu.State->X2 = 0x80000000;
+				cpu.State->X8 = 0xFFFFFFFFFFFFFFFF;
 			});
 			// SUBS WZR, W2, W8
 			InsnTester.Disassembly("subs W31, W2, W8, LSL #0", 0x6B08005F);
 			InsnTester.Test(0x6B08005F, (cpu, _) => {
 				if(cpu == null) return;
 				cpu.NZCV = 0xFU << 28;
-				cpu.X[2] = 0x80000000;
-				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+				cpu.State->X2 = 0x80000000;
+				cpu.State->X8 = 0xFFFFFFFFFFFFFFFF;
 			});
 		}
 
@@ -106,8 +106,8 @@ namespace CpuTest {
 			// SUB W0, W8, W9, UXTB
 			InsnTester.Test(0x4B290100, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x5F;
-				cpu.X[9] = 0x646E61374B4E5A;
+				cpu.State->X8 = 0x5F;
+				cpu.State->X9 = 0x646E61374B4E5A;
 			});
 		}
 
@@ -117,7 +117,7 @@ namespace CpuTest {
 			InsnTester.Disassembly("sub W10, W22, #0x10, LSL #0xC", 0x514042CA);
 			InsnTester.Test(0x514042CA, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[22] = 0xA0010045;
+				cpu.State->X22 = 0xA0010045;
 			});
 		}
 
@@ -127,14 +127,14 @@ namespace CpuTest {
 			InsnTester.Disassembly("add W9, W8, #0x900, LSL #0xC", 0x11640109);
 			InsnTester.Test(0x11640109, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x41200000;
+				cpu.State->X8 = 0x41200000;
 			});
 			
 			// ADD X29, SP, #0x10
 			InsnTester.Disassembly("add X29, X31, #0x10, LSL #0x0", 0x910043FD);
 			InsnTester.Test(0x910043FD, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.SP = 0xDEADBE00;
+				cpu.State->SP = 0xDEADBE00;
 			});
 		}
 
@@ -144,8 +144,8 @@ namespace CpuTest {
 			InsnTester.Disassembly("add X9, X11, W10, SXTW #0", 0x8B2AC169);
 			InsnTester.Test(0x8B2AC169, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[11] = 0x1001FFF9F0;
-				cpu.X[10] = 0xFFFFFFD8;
+				cpu.State->X11 = 0x1001FFF9F0;
+				cpu.State->X10 = 0xFFFFFFD8;
 			});
 		}
 
@@ -154,17 +154,17 @@ namespace CpuTest {
 			// ADDS WZR, W9, #1
 			InsnTester.Test(0x3100053F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[9] = 0;
+				cpu.State->X9 = 0;
 			});
 			// ADDS WZR, W9, #1
 			InsnTester.Test(0x3100053F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[9] = 0xDEAD;
+				cpu.State->X9 = 0xDEAD;
 			});
 			// ADDS WZR, W9, #1
 			InsnTester.Test(0x3100053F, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[9] = 0xDEADBEEFU;
+				cpu.State->X9 = 0xDEADBEEFU;
 			});
 		}
 
@@ -174,14 +174,14 @@ namespace CpuTest {
 			InsnTester.Disassembly("adds X11, X8, X23, LSL #0", 0xAB17010B);
 			InsnTester.Test(0xAB17010B, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x8;
-				cpu.X[23] = 0x1001FFF908;
+				cpu.State->X8 = 0x8;
+				cpu.State->X23 = 0x1001FFF908;
 			});
 			
 			InsnTester.Disassembly("adds W31, W11, #0x380, LSL #0xC", 0x314E017F);
 			InsnTester.Test(0xAB17010B, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[11] = ulong.MaxValue;
+				cpu.State->X11 = ulong.MaxValue;
 			});
 		}
 
@@ -193,8 +193,8 @@ namespace CpuTest {
 			// SMADDL X11, W0, W11, XZR
 			InsnTester.Test(0x9B2B7C0B, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[0] = 0x7B2;
-				cpu.X[11] = 0xAE147AE1;
+				cpu.State->X0 = 0x7B2;
+				cpu.State->X11 = 0xAE147AE1;
 			});
 		}
 
@@ -204,8 +204,8 @@ namespace CpuTest {
 			InsnTester.Disassembly("smulh X8, X8, X9", 0x9B497D08);
 			InsnTester.Test(0x9B497D08, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0x124F800;
-				cpu.X[9] = 0x29F16B11C6D1E109;
+				cpu.State->X8 = 0x124F800;
+				cpu.State->X9 = 0x29F16B11C6D1E109;
 			});
 		}
 
@@ -215,8 +215,8 @@ namespace CpuTest {
 			InsnTester.Disassembly("udiv X10, X22, X9", 0x9AC90ACA);
 			InsnTester.Test(0x9AC90ACA, (cpu, pc) => {
 				if(cpu == null) return;
-				cpu.X[22] = 0xFFFF_FFFF_FFFF_FFFFUL;
-				cpu.X[9] = 0x18UL;
+				cpu.State->X22 = 0xFFFF_FFFF_FFFF_FFFFUL;
+				cpu.State->X9 = 0x18UL;
 			});
 		}
 
@@ -226,8 +226,8 @@ namespace CpuTest {
 			InsnTester.Disassembly("fadd V3.2S, V5.2S, V3.2S", 0x0E23D4A3);
 			InsnTester.Test(0x0E23D4A3, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.V[5] = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f);
-				cpu.V[3] = new Vector128<float>().WithElement(0, 345f).WithElement(1, 456f);
+				cpu.State->V5 = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f);
+				cpu.State->V3 = new Vector128<float>().WithElement(0, 345f).WithElement(1, 456f);
 			});
 		}
 	}

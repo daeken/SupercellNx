@@ -23,7 +23,7 @@ namespace Generator {
 								c--;
 								return;
 							case PName("gpr64"):
-								c += $"X[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
+								c += $"(&State->X0)[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
 								return;
 							case PName("gpr-or-sp64"):
 								c += $"if({GenerateExpression(sub[1])} == 31)";
@@ -32,21 +32,21 @@ namespace Generator {
 								c--;
 								c += "else";
 								c++;
-								c += $"X[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
+								c += $"(&State->X0)[(int) {GenerateExpression(sub[1])}] = {GenerateExpression(list[2])};";
 								c--;
 								return;
 							
 							case PName("vec-b"):
-								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<byte>().WithElement(0, {GenerateExpression(list[2])}).As<byte, float>();";
+								c += $"(&State->V0)[(int) ({GenerateExpression(sub[1])})] = new Vector128<byte>().WithElement(0, {GenerateExpression(list[2])}).As<byte, float>();";
 								return;
 							case PName("vec-h"):
-								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<ushort>().WithElement(0, {GenerateExpression(list[2])}).As<ushort, float>();";
+								c += $"(&State->V0)[(int) ({GenerateExpression(sub[1])})] = new Vector128<ushort>().WithElement(0, {GenerateExpression(list[2])}).As<ushort, float>();";
 								return;
 							case PName("vec-s"):
-								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<float>().WithElement(0, {GenerateExpression(list[2])});";
+								c += $"(&State->V0)[(int) ({GenerateExpression(sub[1])})] = new Vector128<float>().WithElement(0, {GenerateExpression(list[2])});";
 								return;
 							case PName("vec-d"):
-								c += $"V[(int) ({GenerateExpression(sub[1])})] = new Vector128<double>().WithElement(0, {GenerateExpression(list[2])}).As<double, float>();";
+								c += $"(&State->V0)[(int) ({GenerateExpression(sub[1])})] = new Vector128<double>().WithElement(0, {GenerateExpression(list[2])}).As<double, float>();";
 								return;
 							
 							case PName("sr"):

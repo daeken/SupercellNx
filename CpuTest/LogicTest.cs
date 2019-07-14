@@ -2,20 +2,20 @@ using System.Runtime.Intrinsics;
 using Xunit;
 
 namespace CpuTest {
-	public class LogicTest {
+	public unsafe class LogicTest {
 		[Fact]
 		public void Csel() {
 			// CSEL W0, WZR, W9, EQ
 			InsnTester.Test(0x1A8903E0, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.NZCV_Z = 0;
-				cpu.X[9] = 0xDEADBEEFU;
+				cpu.State->NZCV_Z = 0;
+				cpu.State->X9 = 0xDEADBEEFU;
 			});
 			// CSEL W0, WZR, W9, EQ
 			InsnTester.Test(0x1A8903E0, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.NZCV_Z = 1;
-				cpu.X[9] = 0xDEADBEEFU;
+				cpu.State->NZCV_Z = 1;
+				cpu.State->X9 = 0xDEADBEEFU;
 			});
 		}
 
@@ -31,7 +31,7 @@ namespace CpuTest {
 			// MOVK X12, #0x3E00
 			InsnTester.Test(0xF287C00C, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[12] = 0x100000001;
+				cpu.State->X12 = 0x100000001;
 			});
 		}
 
@@ -40,8 +40,8 @@ namespace CpuTest {
 			// FMOV W9, S0
 			InsnTester.Test(0x1E260009, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[9] = 0xDEADBEEFCAFEBABE;
-				cpu.V[0] = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f).WithElement(2, 345f).WithElement(3, 456f);
+				cpu.State->X9 = 0xDEADBEEFCAFEBABE;
+				cpu.State->V0 = new Vector128<float>().WithElement(0, 123f).WithElement(1, 234f).WithElement(2, 345f).WithElement(3, 456f);
 			});
 		}
 
@@ -51,7 +51,7 @@ namespace CpuTest {
 			InsnTester.Disassembly("sbfm W17, W8, #0, #7", 0x13001D11);
 			InsnTester.Test(0x13001D11, (cpu, _) => {
 				if(cpu == null) return;
-				cpu.X[8] = 0xFFFFFFFFFFFFFFFF;
+				cpu.State->X8 = 0xFFFFFFFFFFFFFFFF;
 			});
 		}
 	}

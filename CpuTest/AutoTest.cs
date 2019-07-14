@@ -4,7 +4,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace CpuTest {
-	public class AutoTest {
+	public unsafe class AutoTest {
 		readonly ITestOutputHelper Output;
 		public AutoTest(ITestOutputHelper output) => Output = output;
 
@@ -34,27 +34,27 @@ namespace CpuTest {
 		public void Ldurb() {
 			// ldurb W1, [X0, #-1]
 			InsnTester.AutoTest(Output, 0x385FF001, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldurb W21, [X28, #-0x10]
 			InsnTester.AutoTest(Output, 0x385F0395, (cpu, maddr) => {
-				cpu.X[28] = maddr;
+				cpu.State->X28 = maddr;
 			});
 			// ldurb W22, [X5, #-0x1B]
 			InsnTester.AutoTest(Output, 0x385E50B6, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldurb W6, [X5, #-1]
 			InsnTester.AutoTest(Output, 0x385FF0A6, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldurb W8, [X24, #-0x3F]
 			InsnTester.AutoTest(Output, 0x385C1308, (cpu, maddr) => {
-				cpu.X[24] = maddr;
+				cpu.State->X24 = maddr;
 			});
 			// ldurb W0, [X15, #-5]
 			InsnTester.AutoTest(Output, 0x385FB1E0, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 		}
 
@@ -172,19 +172,19 @@ namespace CpuTest {
 		public void Ldaxrb() {
 			// ldaxrb W8, [X0]
 			InsnTester.AutoTest(Output, 0x085FFC08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrb W10, [X0]
 			InsnTester.AutoTest(Output, 0x085FFC0A, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrb W9, [X0]
 			InsnTester.AutoTest(Output, 0x085FFC09, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrb W10, [X8]
 			InsnTester.AutoTest(Output, 0x085FFD0A, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -192,28 +192,28 @@ namespace CpuTest {
 		public void Ldr() {
 			// ldr X0, [X0]
 			InsnTester.AutoTest(Output, 0xF9400000, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldr W15, [X16, W15, SXTW #2]
 			InsnTester.AutoTest(Output, 0xB86FDA0F, (cpu, maddr) => {
-				cpu.X[16] = maddr;
-				cpu.X[15] = 0x10;
+				cpu.State->X16 = maddr;
+				cpu.State->X15 = 0x10;
 			});
 			// ldr W3, [X0]
 			InsnTester.AutoTest(Output, 0xB9400003, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldr S17, [SP, #0x14C]
 			InsnTester.AutoTest(Output, 0xBD414FF1, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldr S2, [X3, #0x6C]
 			InsnTester.AutoTest(Output, 0xBD406C62, (cpu, maddr) => {
-				cpu.X[3] = maddr;
+				cpu.State->X3 = maddr;
 			});
 			// ldr W0, [X8, #0x73C]
 			InsnTester.AutoTest(Output, 0xB9473D00, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -221,27 +221,27 @@ namespace CpuTest {
 		public void Ldp() {
 			// ldp X8, X2, [X0]
 			InsnTester.AutoTest(Output, 0xA9400808, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldp X23, X22, [X27, #-0x10]
 			InsnTester.AutoTest(Output, 0xA97F5B77, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 			// ldp X1, X3, [X29, #-0x60]
 			InsnTester.AutoTest(Output, 0xA97A0FA1, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 			// ldp W19, W17, [X17, #8]
 			InsnTester.AutoTest(Output, 0x29414633, (cpu, maddr) => {
-				cpu.X[17] = maddr;
+				cpu.State->X17 = maddr;
 			});
 			// ldp X14, X12, [SP, #0x60]
 			InsnTester.AutoTest(Output, 0xA94633EE, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldp W9, W12, [SP, #0x44]
 			InsnTester.AutoTest(Output, 0x2948B3E9, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 		}
 
@@ -347,27 +347,27 @@ namespace CpuTest {
 		public void Ldaxr() {
 			// ldaxr X8, [X0]
 			InsnTester.AutoTest(Output, 0xC85FFC08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxr W10, [X28]
 			InsnTester.AutoTest(Output, 0x885FFF8A, (cpu, maddr) => {
-				cpu.X[28] = maddr;
+				cpu.State->X28 = maddr;
 			});
 			// ldaxr W8, [X2]
 			InsnTester.AutoTest(Output, 0x885FFC48, (cpu, maddr) => {
-				cpu.X[2] = maddr;
+				cpu.State->X2 = maddr;
 			});
 			// ldaxr X0, [X9]
 			InsnTester.AutoTest(Output, 0xC85FFD20, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldaxr W0, [X8]
 			InsnTester.AutoTest(Output, 0x885FFD00, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldaxr W10, [X27]
 			InsnTester.AutoTest(Output, 0x885FFF6A, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 		}
 
@@ -570,27 +570,27 @@ namespace CpuTest {
 		public void Ldurh() {
 			// ldurh W0, [X8, #1]
 			InsnTester.AutoTest(Output, 0x78401100, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldurh W18, [X15, #-0x10]
 			InsnTester.AutoTest(Output, 0x785F01F2, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ldurh W8, [X22, #-7]
 			InsnTester.AutoTest(Output, 0x785F92C8, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldurh W16, [X11, #-2]
 			InsnTester.AutoTest(Output, 0x785FE170, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldurh W11, [X9, #-2]
 			InsnTester.AutoTest(Output, 0x785FE12B, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldurh W20, [X8, #-2]
 			InsnTester.AutoTest(Output, 0x785FE114, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -598,27 +598,27 @@ namespace CpuTest {
 		public void LdrhPreIndex() {
 			// ldrh W9, [X8, #6]!
 			InsnTester.AutoTest(Output, 0x78406D09, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrh W13, [X10, #-0x20]!
 			InsnTester.AutoTest(Output, 0x785E0D4D, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrh W8, [X20, #2]!
 			InsnTester.AutoTest(Output, 0x78402E88, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldrh W8, [X24, #2]!
 			InsnTester.AutoTest(Output, 0x78402F08, (cpu, maddr) => {
-				cpu.X[24] = maddr;
+				cpu.State->X24 = maddr;
 			});
 			// ldrh W3, [X18, #0x34]!
 			InsnTester.AutoTest(Output, 0x78434E43, (cpu, maddr) => {
-				cpu.X[18] = maddr;
+				cpu.State->X18 = maddr;
 			});
 			// ldrh W8, [X24, #0x6C]!
 			InsnTester.AutoTest(Output, 0x7846CF08, (cpu, maddr) => {
-				cpu.X[24] = maddr;
+				cpu.State->X24 = maddr;
 			});
 		}
 
@@ -626,27 +626,27 @@ namespace CpuTest {
 		public void Ldursb() {
 			// ldursb W1, [X8, #-1]
 			InsnTester.AutoTest(Output, 0x38DFF101, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldursb W18, [X15, #-0x30]
 			InsnTester.AutoTest(Output, 0x38DD01F2, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ldursb W9, [X1, #-1]
 			InsnTester.AutoTest(Output, 0x38DFF029, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ldursb W18, [X17, #-2]
 			InsnTester.AutoTest(Output, 0x38DFE232, (cpu, maddr) => {
-				cpu.X[17] = maddr;
+				cpu.State->X17 = maddr;
 			});
 			// ldursb W12, [X10, #-2]
 			InsnTester.AutoTest(Output, 0x38DFE14C, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldursb W1, [X29, #-0x1D]
 			InsnTester.AutoTest(Output, 0x38DE33A1, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 		}
 
@@ -730,15 +730,15 @@ namespace CpuTest {
 		public void Ld2() {
 			// ld2 {V3.2S, V4.2S}, [X15]
 			InsnTester.AutoTest(Output, 0x0C4089E3, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ld2 {V4.2D, V5.2D}, [X15]
 			InsnTester.AutoTest(Output, 0x4C408DE4, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ld2 {V6.2D, V7.2D}, [X13]
 			InsnTester.AutoTest(Output, 0x4C408DA6, (cpu, maddr) => {
-				cpu.X[13] = maddr;
+				cpu.State->X13 = maddr;
 			});
 		}
 
@@ -812,27 +812,27 @@ namespace CpuTest {
 		public void LdpPostIndex() {
 			// ldp W8, W9, [X1], #8
 			InsnTester.AutoTest(Output, 0x28C12428, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ldp S16, S17, [X16], #0x10
 			InsnTester.AutoTest(Output, 0x2CC24610, (cpu, maddr) => {
-				cpu.X[16] = maddr;
+				cpu.State->X16 = maddr;
 			});
 			// ldp X14, X15, [X2], #0x10
 			InsnTester.AutoTest(Output, 0xA8C13C4E, (cpu, maddr) => {
-				cpu.X[2] = maddr;
+				cpu.State->X2 = maddr;
 			});
 			// ldp X24, X23, [SP], #0x40
 			InsnTester.AutoTest(Output, 0xA8C45FF8, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldp W11, W12, [X9], #8
 			InsnTester.AutoTest(Output, 0x28C1312B, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldp D13, D12, [SP], #0x40
 			InsnTester.AutoTest(Output, 0x6CC433ED, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 		}
 
@@ -1183,27 +1183,27 @@ namespace CpuTest {
 		public void Ld1RPostIndex() {
 			// ld1r {V5.2S}, [X1], #4
 			InsnTester.AutoTest(Output, 0x0DDFC825, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ld1r {V27.4S}, [X8], #4
 			InsnTester.AutoTest(Output, 0x4DDFC91B, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ld1r {V1.4S}, [X8], #4
 			InsnTester.AutoTest(Output, 0x4DDFC901, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ld1r {V6.4S}, [X16], #4
 			InsnTester.AutoTest(Output, 0x4DDFCA06, (cpu, maddr) => {
-				cpu.X[16] = maddr;
+				cpu.State->X16 = maddr;
 			});
 			// ld1r {V0.16B}, [X8], #1
 			InsnTester.AutoTest(Output, 0x4DDFC100, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ld1r {V9.4S}, [X12], #4
 			InsnTester.AutoTest(Output, 0x4DDFC989, (cpu, maddr) => {
-				cpu.X[12] = maddr;
+				cpu.State->X12 = maddr;
 			});
 		}
 
@@ -1211,27 +1211,27 @@ namespace CpuTest {
 		public void LdrPreIndex() {
 			// ldr W6, [X0, #4]!
 			InsnTester.AutoTest(Output, 0xB8404C06, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldr X10, [X20, #-0x10]!
 			InsnTester.AutoTest(Output, 0xF85F0E8A, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldr X22, [X21, #0x10]!
 			InsnTester.AutoTest(Output, 0xF8410EB6, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 			// ldr X0, [X8, #8]!
 			InsnTester.AutoTest(Output, 0xF8408D00, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldr X25, [X22, #0xA0]!
 			InsnTester.AutoTest(Output, 0xF84A0ED9, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldr X8, [X21, #-0x10]!
 			InsnTester.AutoTest(Output, 0xF85F0EA8, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 		}
 
@@ -1481,27 +1481,27 @@ namespace CpuTest {
 		public void Ldarb() {
 			// ldarb W8, [X0]
 			InsnTester.AutoTest(Output, 0x08DFFC08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldarb W10, [X10]
 			InsnTester.AutoTest(Output, 0x08DFFD4A, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldarb W9, [X8]
 			InsnTester.AutoTest(Output, 0x08DFFD09, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldarb W8, [X26]
 			InsnTester.AutoTest(Output, 0x08DFFF48, (cpu, maddr) => {
-				cpu.X[26] = maddr;
+				cpu.State->X26 = maddr;
 			});
 			// ldarb W8, [X27]
 			InsnTester.AutoTest(Output, 0x08DFFF68, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 			// ldarb W8, [X22]
 			InsnTester.AutoTest(Output, 0x08DFFEC8, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 		}
 
@@ -1541,15 +1541,15 @@ namespace CpuTest {
 		public void Ldarh() {
 			// ldarh W0, [X0]
 			InsnTester.AutoTest(Output, 0x48DFFC00, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldarh W8, [X20]
 			InsnTester.AutoTest(Output, 0x48DFFE88, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldarh W8, [X8]
 			InsnTester.AutoTest(Output, 0x48DFFD08, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -1689,28 +1689,28 @@ namespace CpuTest {
 		public void Ldrb() {
 			// ldrb W9, [X1]
 			InsnTester.AutoTest(Output, 0x39400029, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ldrb W14, [X13, W14, SXTW]
 			InsnTester.AutoTest(Output, 0x386EC9AE, (cpu, maddr) => {
-				cpu.X[13] = maddr;
-				cpu.X[14] = 0x10;
+				cpu.State->X13 = maddr;
+				cpu.State->X14 = 0x10;
 			});
 			// ldrb W9, [X0, #6]
 			InsnTester.AutoTest(Output, 0x39401809, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrb W10, [SP, #0xC7]
 			InsnTester.AutoTest(Output, 0x39431FEA, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldrb W8, [X19, #0xBEA]
 			InsnTester.AutoTest(Output, 0x396FAA68, (cpu, maddr) => {
-				cpu.X[19] = maddr;
+				cpu.State->X19 = maddr;
 			});
 			// ldrb W9, [X2, #0x1C]
 			InsnTester.AutoTest(Output, 0x39407049, (cpu, maddr) => {
-				cpu.X[2] = maddr;
+				cpu.State->X2 = maddr;
 			});
 		}
 
@@ -1740,27 +1740,27 @@ namespace CpuTest {
 		public void LdrsbPostIndex() {
 			// ldrsb W9, [X8], #1
 			InsnTester.AutoTest(Output, 0x38C01509, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrsb W11, [X8], #0xFFFFFFFFFFFFFFFF
 			InsnTester.AutoTest(Output, 0x38DFF50B, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrsb X12, [X10], #1
 			InsnTester.AutoTest(Output, 0x3880154C, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrsb W11, [X9], #1
 			InsnTester.AutoTest(Output, 0x38C0152B, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrsb X8, [X20], #1
 			InsnTester.AutoTest(Output, 0x38801688, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldrsb W26, [X20], #1
 			InsnTester.AutoTest(Output, 0x38C0169A, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 		}
 
@@ -1768,27 +1768,27 @@ namespace CpuTest {
 		public void LdrshPostIndex() {
 			// ldrsh W2, [X1], #2
 			InsnTester.AutoTest(Output, 0x78C02422, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ldrsh W10, [X26], #0xFFFFFFFFFFFFFFFE
 			InsnTester.AutoTest(Output, 0x78DFE74A, (cpu, maddr) => {
-				cpu.X[26] = maddr;
+				cpu.State->X26 = maddr;
 			});
 			// ldrsh W12, [X0], #2
 			InsnTester.AutoTest(Output, 0x78C0240C, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrsh W13, [X9], #0xFFFFFFFFFFFFFFFE
 			InsnTester.AutoTest(Output, 0x78DFE52D, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrsh W11, [X10], #2
 			InsnTester.AutoTest(Output, 0x78C0254B, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrsh W9, [X1], #2
 			InsnTester.AutoTest(Output, 0x78C02429, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 		}
 
@@ -2126,27 +2126,27 @@ namespace CpuTest {
 		public void Ldur() {
 			// ldur X7, [X4, #6]
 			InsnTester.AutoTest(Output, 0xF8406087, (cpu, maddr) => {
-				cpu.X[4] = maddr;
+				cpu.State->X4 = maddr;
 			});
 			// ldur W11, [X29, #-0xF0]
 			InsnTester.AutoTest(Output, 0xB85103AB, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 			// ldur Q0, [X8, #0x4C]
 			InsnTester.AutoTest(Output, 0x3CC4C100, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldur X11, [SP, #0x26]
 			InsnTester.AutoTest(Output, 0xF84263EB, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldur X21, [X21, #-0x10]
 			InsnTester.AutoTest(Output, 0xF85F02B5, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 			// ldur X25, [X29, #-0xF0]
 			InsnTester.AutoTest(Output, 0xF85103B9, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 		}
 
@@ -2296,29 +2296,29 @@ namespace CpuTest {
 		public void Ldrh() {
 			// ldrh W7, [X1]
 			InsnTester.AutoTest(Output, 0x79400027, (cpu, maddr) => {
-				cpu.X[1] = maddr;
+				cpu.State->X1 = maddr;
 			});
 			// ldrh W10, [X11, W10, UXTW #1]
 			InsnTester.AutoTest(Output, 0x786A596A, (cpu, maddr) => {
-				cpu.X[11] = maddr;
-				cpu.X[10] = 0x10;
+				cpu.State->X11 = maddr;
+				cpu.State->X10 = 0x10;
 			});
 			// ldrh W8, [X8, #0x128]
 			InsnTester.AutoTest(Output, 0x79425108, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrh W11, [SP, #0x18]
 			InsnTester.AutoTest(Output, 0x794033EB, (cpu, maddr) => {
-				cpu.SP = maddr;
+				cpu.State->SP = maddr;
 			});
 			// ldrh W9, [X5, #2]
 			InsnTester.AutoTest(Output, 0x794004A9, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldrh W4, [X14, X2]
 			InsnTester.AutoTest(Output, 0x786269C4, (cpu, maddr) => {
-				cpu.X[14] = maddr;
-				cpu.X[2] = 0x10;
+				cpu.State->X14 = maddr;
+				cpu.State->X2 = 0x10;
 			});
 		}
 
@@ -2326,27 +2326,27 @@ namespace CpuTest {
 		public void LdrsbPreIndex() {
 			// ldrsb W9, [X0, #1]!
 			InsnTester.AutoTest(Output, 0x38C01C09, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrsb X11, [X10, #0x11]!
 			InsnTester.AutoTest(Output, 0x38811D4B, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrsb W10, [X9, #1]!
 			InsnTester.AutoTest(Output, 0x38C01D2A, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrsb W8, [X21, #1]!
 			InsnTester.AutoTest(Output, 0x38C01EA8, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 			// ldrsb W27, [X11, #2]!
 			InsnTester.AutoTest(Output, 0x38C02D7B, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldrsb W13, [X9, #-1]!
 			InsnTester.AutoTest(Output, 0x38DFFD2D, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 		}
 
@@ -2376,27 +2376,27 @@ namespace CpuTest {
 		public void LdrswPreIndex() {
 			// ldrsw X4, [X0, #8]!
 			InsnTester.AutoTest(Output, 0xB8808C04, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrsw X25, [X9, #-0x14]!
 			InsnTester.AutoTest(Output, 0xB89ECD39, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrsw X8, [X28, #0x2C]!
 			InsnTester.AutoTest(Output, 0xB882CF88, (cpu, maddr) => {
-				cpu.X[28] = maddr;
+				cpu.State->X28 = maddr;
 			});
 			// ldrsw X3, [X18, #8]!
 			InsnTester.AutoTest(Output, 0xB8808E43, (cpu, maddr) => {
-				cpu.X[18] = maddr;
+				cpu.State->X18 = maddr;
 			});
 			// ldrsw X8, [X21, #0x1C]!
 			InsnTester.AutoTest(Output, 0xB881CEA8, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 			// ldrsw X9, [X8, #0x68]!
 			InsnTester.AutoTest(Output, 0xB8868D09, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -2511,27 +2511,27 @@ namespace CpuTest {
 		public void Ldar() {
 			// ldar W8, [X8]
 			InsnTester.AutoTest(Output, 0x88DFFD08, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldar X28, [X27]
 			InsnTester.AutoTest(Output, 0xC8DFFF7C, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 			// ldar W9, [X27]
 			InsnTester.AutoTest(Output, 0x88DFFF69, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 			// ldar X24, [X28]
 			InsnTester.AutoTest(Output, 0xC8DFFF98, (cpu, maddr) => {
-				cpu.X[28] = maddr;
+				cpu.State->X28 = maddr;
 			});
 			// ldar X9, [X8]
 			InsnTester.AutoTest(Output, 0xC8DFFD09, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldar X0, [X8]
 			InsnTester.AutoTest(Output, 0xC8DFFD00, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -2539,19 +2539,19 @@ namespace CpuTest {
 		public void Ldxrh() {
 			// ldxrh W8, [X0]
 			InsnTester.AutoTest(Output, 0x485F7C08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldxrh W10, [X20]
 			InsnTester.AutoTest(Output, 0x485F7E8A, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldxrh W9, [X0]
 			InsnTester.AutoTest(Output, 0x485F7C09, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldxrh W9, [X20]
 			InsnTester.AutoTest(Output, 0x485F7E89, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 		}
 
@@ -2559,27 +2559,27 @@ namespace CpuTest {
 		public void Ld1R() {
 			// ld1r {V6.4S}, [X8]
 			InsnTester.AutoTest(Output, 0x4D40C906, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ld1r {V19.4S}, [X10]
 			InsnTester.AutoTest(Output, 0x4D40C953, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ld1r {V25.4S}, [X10]
 			InsnTester.AutoTest(Output, 0x4D40C959, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ld1r {V7.16B}, [X8]
 			InsnTester.AutoTest(Output, 0x4D40C107, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ld1r {V0.4S}, [X11]
 			InsnTester.AutoTest(Output, 0x4D40C960, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ld1r {V5.4S}, [X11]
 			InsnTester.AutoTest(Output, 0x4D40C965, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 		}
 
@@ -2622,11 +2622,11 @@ namespace CpuTest {
 		public void Ldxrb() {
 			// ldxrb W8, [X0]
 			InsnTester.AutoTest(Output, 0x085F7C08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldxrb W9, [X0]
 			InsnTester.AutoTest(Output, 0x085F7C09, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 		}
 
@@ -2656,27 +2656,27 @@ namespace CpuTest {
 		public void Ldursw() {
 			// ldursw X8, [X9, #1]
 			InsnTester.AutoTest(Output, 0xB8801128, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldursw X21, [X29, #-0x14]
 			InsnTester.AutoTest(Output, 0xB89EC3B5, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 			// ldursw X10, [X23, #-0x10]
 			InsnTester.AutoTest(Output, 0xB89F02EA, (cpu, maddr) => {
-				cpu.X[23] = maddr;
+				cpu.State->X23 = maddr;
 			});
 			// ldursw X8, [X29, #-0x3C]
 			InsnTester.AutoTest(Output, 0xB89C43A8, (cpu, maddr) => {
-				cpu.X[29] = maddr;
+				cpu.State->X29 = maddr;
 			});
 			// ldursw X16, [X10, #-0xC0]
 			InsnTester.AutoTest(Output, 0xB8940150, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldursw X13, [X11, #-4]
 			InsnTester.AutoTest(Output, 0xB89FC16D, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 		}
 
@@ -2684,27 +2684,27 @@ namespace CpuTest {
 		public void Ldursh() {
 			// ldursh X8, [X9, #1]
 			InsnTester.AutoTest(Output, 0x78801128, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldursh W14, [X23, #-0x10]
 			InsnTester.AutoTest(Output, 0x78DF02EE, (cpu, maddr) => {
-				cpu.X[23] = maddr;
+				cpu.State->X23 = maddr;
 			});
 			// ldursh W6, [X15, #-0x1E]
 			InsnTester.AutoTest(Output, 0x78DE21E6, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ldursh X24, [X14, #-2]
 			InsnTester.AutoTest(Output, 0x789FE1D8, (cpu, maddr) => {
-				cpu.X[14] = maddr;
+				cpu.State->X14 = maddr;
 			});
 			// ldursh W12, [X11, #-2]
 			InsnTester.AutoTest(Output, 0x78DFE16C, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldursh W5, [X4, #-2]
 			InsnTester.AutoTest(Output, 0x78DFE085, (cpu, maddr) => {
-				cpu.X[4] = maddr;
+				cpu.State->X4 = maddr;
 			});
 		}
 
@@ -2712,27 +2712,27 @@ namespace CpuTest {
 		public void LdrhPostIndex() {
 			// ldrh W5, [X6], #2
 			InsnTester.AutoTest(Output, 0x784024C5, (cpu, maddr) => {
-				cpu.X[6] = maddr;
+				cpu.State->X6 = maddr;
 			});
 			// ldrh W13, [X11], #0xFFFFFFFFFFFFFFFE
 			InsnTester.AutoTest(Output, 0x785FE56D, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldrh W16, [X15], #0xFFFFFFFFFFFFFFF0
 			InsnTester.AutoTest(Output, 0x785F05F0, (cpu, maddr) => {
-				cpu.X[15] = maddr;
+				cpu.State->X15 = maddr;
 			});
 			// ldrh W24, [X19], #2
 			InsnTester.AutoTest(Output, 0x78402678, (cpu, maddr) => {
-				cpu.X[19] = maddr;
+				cpu.State->X19 = maddr;
 			});
 			// ldrh W0, [X8], #2
 			InsnTester.AutoTest(Output, 0x78402500, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrh W10, [X2], #2
 			InsnTester.AutoTest(Output, 0x7840244A, (cpu, maddr) => {
-				cpu.X[2] = maddr;
+				cpu.State->X2 = maddr;
 			});
 		}
 
@@ -2762,27 +2762,27 @@ namespace CpuTest {
 		public void LdrbPreIndex() {
 			// ldrb W4, [X5, #1]!
 			InsnTester.AutoTest(Output, 0x38401CA4, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldrb W11, [X10, #-0x10]!
 			InsnTester.AutoTest(Output, 0x385F0D4B, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrb W11, [X10, #0x81]!
 			InsnTester.AutoTest(Output, 0x38481D4B, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrb W8, [X0, #0xB0]!
 			InsnTester.AutoTest(Output, 0x384B0C08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrb W10, [X9, #8]!
 			InsnTester.AutoTest(Output, 0x38408D2A, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrb W14, [X13, #-1]!
 			InsnTester.AutoTest(Output, 0x385FFDAE, (cpu, maddr) => {
-				cpu.X[13] = maddr;
+				cpu.State->X13 = maddr;
 			});
 		}
 
@@ -2878,27 +2878,27 @@ namespace CpuTest {
 		public void LdrbPostIndex() {
 			// ldrb W8, [X0], #1
 			InsnTester.AutoTest(Output, 0x38401408, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrb W18, [X11], #0xFFFFFFFFFFFFFFFF
 			InsnTester.AutoTest(Output, 0x385FF572, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldrb W12, [X8], #0x70
 			InsnTester.AutoTest(Output, 0x3847050C, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrb W0, [X17], #1
 			InsnTester.AutoTest(Output, 0x38401620, (cpu, maddr) => {
-				cpu.X[17] = maddr;
+				cpu.State->X17 = maddr;
 			});
 			// ldrb W24, [X18], #1
 			InsnTester.AutoTest(Output, 0x38401658, (cpu, maddr) => {
-				cpu.X[18] = maddr;
+				cpu.State->X18 = maddr;
 			});
 			// ldrb W13, [X11], #2
 			InsnTester.AutoTest(Output, 0x3840256D, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 		}
 
@@ -2906,30 +2906,30 @@ namespace CpuTest {
 		public void Ldrsb() {
 			// ldrsb X8, [X8]
 			InsnTester.AutoTest(Output, 0x39800108, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrsb W15, [X10, W15, SXTW]
 			InsnTester.AutoTest(Output, 0x38EFC94F, (cpu, maddr) => {
-				cpu.X[10] = maddr;
-				cpu.X[15] = 0x10;
+				cpu.State->X10 = maddr;
+				cpu.State->X15 = 0x10;
 			});
 			// ldrsb W22, [X21, X9]
 			InsnTester.AutoTest(Output, 0x38E96AB6, (cpu, maddr) => {
-				cpu.X[21] = maddr;
-				cpu.X[9] = 0x10;
+				cpu.State->X21 = maddr;
+				cpu.State->X9 = 0x10;
 			});
 			// ldrsb W9, [X25, X28]
 			InsnTester.AutoTest(Output, 0x38FC6B29, (cpu, maddr) => {
-				cpu.X[25] = maddr;
-				cpu.X[28] = 0x10;
+				cpu.State->X25 = maddr;
+				cpu.State->X28 = 0x10;
 			});
 			// ldrsb W8, [X19, #0x19A]
 			InsnTester.AutoTest(Output, 0x39C66A68, (cpu, maddr) => {
-				cpu.X[19] = maddr;
+				cpu.State->X19 = maddr;
 			});
 			// ldrsb W12, [X0, #3]
 			InsnTester.AutoTest(Output, 0x39C00C0C, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 		}
 
@@ -2959,27 +2959,27 @@ namespace CpuTest {
 		public void Ldxr() {
 			// ldxr W8, [X0]
 			InsnTester.AutoTest(Output, 0x885F7C08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldxr X26, [X27]
 			InsnTester.AutoTest(Output, 0xC85F7F7A, (cpu, maddr) => {
-				cpu.X[27] = maddr;
+				cpu.State->X27 = maddr;
 			});
 			// ldxr W11, [X10]
 			InsnTester.AutoTest(Output, 0x885F7D4B, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldxr X9, [X20]
 			InsnTester.AutoTest(Output, 0xC85F7E89, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldxr X0, [X8]
 			InsnTester.AutoTest(Output, 0xC85F7D00, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldxr X8, [X21]
 			InsnTester.AutoTest(Output, 0xC85F7EA8, (cpu, maddr) => {
-				cpu.X[21] = maddr;
+				cpu.State->X21 = maddr;
 			});
 		}
 
@@ -2987,27 +2987,27 @@ namespace CpuTest {
 		public void Prfm() {
 			// prfm PLDL2STRM, [X8]
 			InsnTester.AutoTest(Output, 0xF9800103, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// prfm PSTL1KEEP, [X9, #0x40]
 			InsnTester.AutoTest(Output, 0xF9802130, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// prfm PSTL2STRM, [X11]
 			InsnTester.AutoTest(Output, 0xF9800173, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// prfm PSTL1KEEP, [X8, #0x40]
 			InsnTester.AutoTest(Output, 0xF9802110, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// prfm PLDL2STRM, [X10]
 			InsnTester.AutoTest(Output, 0xF9800143, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// prfm PSTL2STRM, [X10]
 			InsnTester.AutoTest(Output, 0xF9800153, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 		}
 
@@ -3015,27 +3015,27 @@ namespace CpuTest {
 		public void LdrshPreIndex() {
 			// ldrsh W6, [X5, #8]!
 			InsnTester.AutoTest(Output, 0x78C08CA6, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldrsh W13, [X12, #-0x60]!
 			InsnTester.AutoTest(Output, 0x78DA0D8D, (cpu, maddr) => {
-				cpu.X[12] = maddr;
+				cpu.State->X12 = maddr;
 			});
 			// ldrsh W9, [X11, #-2]!
 			InsnTester.AutoTest(Output, 0x78DFED69, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldrsh W9, [X22, #4]!
 			InsnTester.AutoTest(Output, 0x78C04EC9, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldrsh W10, [X9, #2]!
 			InsnTester.AutoTest(Output, 0x78C02D2A, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldrsh W13, [X9, #-2]!
 			InsnTester.AutoTest(Output, 0x78DFED2D, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 		}
 
@@ -3215,27 +3215,27 @@ namespace CpuTest {
 		public void LdrPostIndex() {
 			// ldr W5, [X0], #4
 			InsnTester.AutoTest(Output, 0xB8404405, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldr W23, [X20], #0xFFFFFFFFFFFFFFFC
 			InsnTester.AutoTest(Output, 0xB85FC697, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldr X1, [X22], #8
 			InsnTester.AutoTest(Output, 0xF84086C1, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldr X8, [X22], #0x30
 			InsnTester.AutoTest(Output, 0xF84306C8, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldr D2, [X9], #0xFFFFFFFFFFFFFFF8
 			InsnTester.AutoTest(Output, 0xFC5F8522, (cpu, maddr) => {
-				cpu.X[9] = maddr;
+				cpu.State->X9 = maddr;
 			});
 			// ldr X0, [X20], #0x30
 			InsnTester.AutoTest(Output, 0xF8430680, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 		}
 
@@ -3287,23 +3287,23 @@ namespace CpuTest {
 		public void Ldaxrh() {
 			// ldaxrh W8, [X0]
 			InsnTester.AutoTest(Output, 0x485FFC08, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrh W10, [X20]
 			InsnTester.AutoTest(Output, 0x485FFE8A, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 			// ldaxrh W9, [X0]
 			InsnTester.AutoTest(Output, 0x485FFC09, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrh W10, [X0]
 			InsnTester.AutoTest(Output, 0x485FFC0A, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldaxrh W9, [X20]
 			InsnTester.AutoTest(Output, 0x485FFE89, (cpu, maddr) => {
-				cpu.X[20] = maddr;
+				cpu.State->X20 = maddr;
 			});
 		}
 
@@ -3465,27 +3465,27 @@ namespace CpuTest {
 		public void LdrswPostIndex() {
 			// ldrsw X7, [X2], #4
 			InsnTester.AutoTest(Output, 0xB8804447, (cpu, maddr) => {
-				cpu.X[2] = maddr;
+				cpu.State->X2 = maddr;
 			});
 			// ldrsw X15, [X16], #0xFFFFFFFFFFFFFFFC
 			InsnTester.AutoTest(Output, 0xB89FC60F, (cpu, maddr) => {
-				cpu.X[16] = maddr;
+				cpu.State->X16 = maddr;
 			});
 			// ldrsw X19, [X18], #4
 			InsnTester.AutoTest(Output, 0xB8804653, (cpu, maddr) => {
-				cpu.X[18] = maddr;
+				cpu.State->X18 = maddr;
 			});
 			// ldrsw X23, [X26], #4
 			InsnTester.AutoTest(Output, 0xB8804757, (cpu, maddr) => {
-				cpu.X[26] = maddr;
+				cpu.State->X26 = maddr;
 			});
 			// ldrsw X14, [X10], #4
 			InsnTester.AutoTest(Output, 0xB880454E, (cpu, maddr) => {
-				cpu.X[10] = maddr;
+				cpu.State->X10 = maddr;
 			});
 			// ldrsw X8, [X23], #0x84
 			InsnTester.AutoTest(Output, 0xB88846E8, (cpu, maddr) => {
-				cpu.X[23] = maddr;
+				cpu.State->X23 = maddr;
 			});
 		}
 
@@ -3713,29 +3713,29 @@ namespace CpuTest {
 		public void Ldrsh() {
 			// ldrsh W0, [X0]
 			InsnTester.AutoTest(Output, 0x79C00000, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrsh W15, [X20, W15, SXTW #1]
 			InsnTester.AutoTest(Output, 0x78EFDA8F, (cpu, maddr) => {
-				cpu.X[20] = maddr;
-				cpu.X[15] = 0x10;
+				cpu.State->X20 = maddr;
+				cpu.State->X15 = 0x10;
 			});
 			// ldrsh W8, [X8, #6]
 			InsnTester.AutoTest(Output, 0x79C00D08, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrsh W9, [X17, #0x80]
 			InsnTester.AutoTest(Output, 0x79C10229, (cpu, maddr) => {
-				cpu.X[17] = maddr;
+				cpu.State->X17 = maddr;
 			});
 			// ldrsh X14, [X21, X13]
 			InsnTester.AutoTest(Output, 0x78AD6AAE, (cpu, maddr) => {
-				cpu.X[21] = maddr;
-				cpu.X[13] = 0x10;
+				cpu.State->X21 = maddr;
+				cpu.State->X13 = 0x10;
 			});
 			// ldrsh W0, [X8, #4]
 			InsnTester.AutoTest(Output, 0x79C00900, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 		}
 
@@ -3989,27 +3989,27 @@ namespace CpuTest {
 		public void Ldpsw() {
 			// ldpsw X6, X5, [X5]
 			InsnTester.AutoTest(Output, 0x694014A6, (cpu, maddr) => {
-				cpu.X[5] = maddr;
+				cpu.State->X5 = maddr;
 			});
 			// ldpsw X14, X15, [X11, #-0x10]
 			InsnTester.AutoTest(Output, 0x697E3D6E, (cpu, maddr) => {
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			});
 			// ldpsw X10, X8, [X19, #8]
 			InsnTester.AutoTest(Output, 0x6941226A, (cpu, maddr) => {
-				cpu.X[19] = maddr;
+				cpu.State->X19 = maddr;
 			});
 			// ldpsw X18, X14, [X14]
 			InsnTester.AutoTest(Output, 0x694039D2, (cpu, maddr) => {
-				cpu.X[14] = maddr;
+				cpu.State->X14 = maddr;
 			});
 			// ldpsw X10, X11, [X19, #0xAC]
 			InsnTester.AutoTest(Output, 0x6955AE6A, (cpu, maddr) => {
-				cpu.X[19] = maddr;
+				cpu.State->X19 = maddr;
 			});
 			// ldpsw X1, X14, [X12, #0x30]
 			InsnTester.AutoTest(Output, 0x69463981, (cpu, maddr) => {
-				cpu.X[12] = maddr;
+				cpu.State->X12 = maddr;
 			});
 		}
 
@@ -4017,29 +4017,29 @@ namespace CpuTest {
 		public void Ldrsw() {
 			// ldrsw X2, [X8]
 			InsnTester.AutoTest(Output, 0xB9800102, (cpu, maddr) => {
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			});
 			// ldrsw X12, [X21, W28, SXTW #2]
 			InsnTester.AutoTest(Output, 0xB8BCDAAC, (cpu, maddr) => {
-				cpu.X[21] = maddr;
-				cpu.X[28] = 0x10;
+				cpu.State->X21 = maddr;
+				cpu.State->X28 = 0x10;
 			});
 			// ldrsw X13, [X0, #8]
 			InsnTester.AutoTest(Output, 0xB980080D, (cpu, maddr) => {
-				cpu.X[0] = maddr;
+				cpu.State->X0 = maddr;
 			});
 			// ldrsw X22, [X22]
 			InsnTester.AutoTest(Output, 0xB98002D6, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldrsw X8, [X22, #0x1C]
 			InsnTester.AutoTest(Output, 0xB9801EC8, (cpu, maddr) => {
-				cpu.X[22] = maddr;
+				cpu.State->X22 = maddr;
 			});
 			// ldrsw X26, [X8, X21, LSL #2]
 			InsnTester.AutoTest(Output, 0xB8B5791A, (cpu, maddr) => {
-				cpu.X[8] = maddr;
-				cpu.X[21] = 0x10;
+				cpu.State->X8 = maddr;
+				cpu.State->X21 = 0x10;
 			});
 		}
 

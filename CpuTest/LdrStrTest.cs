@@ -18,8 +18,8 @@ namespace CpuTest {
 					for(var i = 0; i < bytes.Length; ++i)
 						bytes[i] = (byte) (i % 255 + 1);
 					if(cpu == null) return;
-					cpu.X[8] = maddr + 512;
-					cpu.X[19] = unchecked((ulong) offset);
+					cpu.State->X8 = maddr + 512;
+					cpu.State->X19 = unchecked((ulong) offset);
 				}));
 			}
 			MTest(13);
@@ -35,7 +35,7 @@ namespace CpuTest {
 				InsnTester.Map((uint) size, maddr => InsnTester.Test(0x39C21008, (cpu, addr) => {
 					var bytes = new Span<byte>((void*) maddr, size) { [0x84] = value };
 					if(cpu == null) return;
-					cpu.X[0] = maddr;
+					cpu.State->X0 = maddr;
 				}));
 			}
 			MTest(0xFF);
@@ -54,7 +54,7 @@ namespace CpuTest {
 				for(var i = 0; i < bytes.Length; ++i)
 					bytes[i] = (byte) (i % 255 + 1);
 				if(cpu == null) return;
-				cpu.X[11] = maddr;
+				cpu.State->X11 = maddr;
 			}));
 		}
 
@@ -68,7 +68,7 @@ namespace CpuTest {
 				for(var i = 0; i < bytes.Length; ++i)
 					bytes[i] = (byte) (i % 255 + 1);
 				if(cpu == null) return;
-				cpu.X[8] = maddr;
+				cpu.State->X8 = maddr;
 			}));
 		}
 
@@ -82,7 +82,7 @@ namespace CpuTest {
 				for(var i = 0; i < bytes.Length; ++i)
 					bytes[i] = (byte) (i % 255 + 1);
 				if(cpu == null) return;
-				cpu.X[29] = maddr + 0x60;
+				cpu.State->X29 = maddr + 0x60;
 			}));
 		}
 	}

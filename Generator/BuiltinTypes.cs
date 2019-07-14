@@ -35,7 +35,6 @@ namespace Generator {
 		public static readonly IReadOnlyDictionary<string, Func<PList, EType>> Builtins = new Dictionary<string, Func<PList, EType>> {
 			["make-wmask"] = _ => new EInt(false, 64), 
 			["make-tmask"] = _ => new EInt(false, 64), 
-			["fcmp"] = _ => EType.Unit, 
 			["count-leading-zeros"] = x => x[1].Type, 
 			["reverse-bits"] = x => x[1].Type, 
 			["vector-all"] = _ => EType.Vector.AsRuntime(), 

@@ -8,10 +8,10 @@ using Common;
 using PrettyPrinter;
 #if FULLSIGIL
 using Sigil;
-using Emitter = Sigil.Emit<System.Action<Cpu64.Dynarec>>;
+using Emitter = Sigil.Emit<Cpu64.BlockFunc>;
 #else
 using SigilLite;
-using Emitter = SigilLite.Emit<System.Action<Cpu64.Dynarec>>;
+using Emitter = SigilLite.Emit<Cpu64.BlockFunc>;
 #endif
 using UltimateOrb;
 
@@ -435,6 +435,17 @@ namespace Cpu64 {
 				Ilg.Call(typeof(Vector128).GetMethod("GetElement", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(ElementT)));
 			});
 		}
+		
+		public RuntimeValue<byte> IsNaN() => new RuntimeValue<byte>(() => {
+			Emit();
+			if(typeof(T) == typeof(float))
+				Ilg.Call(typeof(float).GetMethod("IsNaN"));
+			else if(typeof(T) == typeof(double))
+				Ilg.Call(typeof(double).GetMethod("IsNaN"));
+			else
+				throw new NotSupportedException();
+			Ilg.Convert<byte>();
+		});
 
 		public override bool Equals(object obj) => throw new NotImplementedException();
 		public override int GetHashCode() => throw new NotImplementedException();
@@ -445,20 +456,14 @@ namespace Cpu64 {
 
 		public RuntimeValue<T> Value {
 			get => new RuntimeValue<T>(() => {
-				Recompiler.LogLoad<T>(Address);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				if(typeof(T) == typeof(Vector128<float>))
 					Recompiler.Ilg.Call(typeof(Sse).GetMethod("LoadVector128", new[] { typeof(float*) }));
 				else
 					Recompiler.Ilg.LoadIndirect<T>();
-				var local = Recompiler.Ilg.DeclareLocal<T>();
-				Recompiler.Ilg.Duplicate();
-				Recompiler.Ilg.StoreLocal(local);
-				Recompiler.LogLoaded(Address, new RuntimeValue<T>(() => Recompiler.Ilg.LoadLocal(local)));
 			});
 			set {
-				Recompiler.LogStore(Address, value);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				value.Emit();

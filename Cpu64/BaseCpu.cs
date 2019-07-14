@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
@@ -8,31 +9,27 @@ using Common;
 using UltimateOrb;
 
 namespace Cpu64 {
-	public abstract partial class BaseCpu {
+	public abstract unsafe partial class BaseCpu {
 		public readonly IKernel Kernel;
-		public ulong PC, SP;
-		public readonly ulong[] X = new ulong[32];
-		public readonly Vector128<float>[] V = new Vector128<float>[32];
-
-		public byte Exclusive8;
-		public ushort Exclusive16;
-		public uint Exclusive32;
-		public ulong Exclusive64;
+		public CpuState* State;
+		public Block BranchToBlock;
 
 		public ulong NZCV {
-			get => (NZCV_N << 31) | (NZCV_Z << 30) | (NZCV_C << 29) | (NZCV_V << 28);
+			get => (State->NZCV_N << 31) | (State->NZCV_Z << 30) | (State->NZCV_C << 29) | (State->NZCV_V << 28);
 			set {
-				NZCV_N = (value >> 31) & 1;
-				NZCV_Z = (value >> 30) & 1;
-				NZCV_C = (value >> 29) & 1;
-				NZCV_V = (value >> 28) & 1;
+				State->NZCV_N = (uint) (value >> 31) & 1;
+				State->NZCV_Z = (uint) (value >> 30) & 1;
+				State->NZCV_C = (uint) (value >> 29) & 1;
+				State->NZCV_V = (uint) (value >> 28) & 1;
 			}
 		}
-		public ulong NZCV_N, NZCV_Z, NZCV_C, NZCV_V;
 
-		public ulong TlsBase;
-		
-		protected BaseCpu(IKernel kernel) => Kernel = kernel;
+		protected BaseCpu(IKernel kernel) {
+			Kernel = kernel;
+			State = (CpuState*) Marshal.AllocHGlobal(Marshal.SizeOf<CpuState>());
+			*State = new CpuState();
+		}
+
 		public abstract void Run(ulong pc, ulong sp, bool one = false);
 
 		public void Log(string message) => Kernel.Log(message);
@@ -45,10 +42,10 @@ namespace Cpu64 {
 		public void DebugRegs() {
 			Kernel.LogExclusive(() => {
 				Log("========================");
-				Log($"NZCV {NZCV_N}{NZCV_Z}{NZCV_C}{NZCV_V}");
-				Log($"PC == {Kernel.MapAddress(PC)}    SP == 0x{SP:X}");
+				Log($"NZCV {State->NZCV_N}{State->NZCV_Z}{State->NZCV_C}{State->NZCV_V}");
+				Log($"PC == {Kernel.MapAddress(State->PC)}    SP == 0x{State->SP:X}");
 				for(var i = 0; i < 31; ++i)
-					Log($"X{i} == {Kernel.MapAddress(X[i])}");
+					Log($"X{i} == {Kernel.MapAddress((&State->X0)[i])}");
 				Log("========================");
 			});
 		}
@@ -106,56 +103,34 @@ namespace Cpu64 {
 			return (wmask, tmask);
 		}
 
-		public uint ReverseBits(uint v) {
+		public static uint ReverseBits(uint v) {
 			var x = 0U;
 			for(var i = 0; i < 32; ++i)
 				x |= ((v >> i) & 1) << (31 - i);
 			return x;
 		}
 
-		public ulong ReverseBits(ulong v) {
+		public static ulong ReverseBits(ulong v) {
 			var x = 0UL;
 			for(var i = 0; i < 64; ++i)
 				x |= ((v >> i) & 1) << (63 - i);
 			return x;
 		}
 
-		public uint CountLeadingZeros(uint v) {
+		public static uint CountLeadingZeros(uint v) {
 			for(var i = 0; i < 32; ++i)
 				if(((v >> (31 - i)) & 1) == 1)
 					return (uint) i;
 			return 32;
 		}
 
-		public ulong CountLeadingZeros(ulong v) {
+		public static ulong CountLeadingZeros(ulong v) {
 			for(var i = 0; i < 64; ++i)
 				if(((v >> (63 - i)) & 1) == 1)
 					return (uint) i;
 			return 64;
 		}
 
-		public void FloatCompare(float operand1, float operand2) {
-			if(float.IsNaN(operand1) || float.IsNaN(operand2))
-				NZCV = 0b0011UL << 28;
-			else if(operand1 == operand2)
-				NZCV = 0b0110UL << 28;
-			else if(operand1 < operand2)
-				NZCV = 0b1000UL << 28;
-			else
-				NZCV = 0b0010UL << 28;
-		}
-		
-		public void FloatCompare(double operand1, double operand2) {
-			if(double.IsNaN(operand1) || double.IsNaN(operand2))
-				NZCV = 0b0011UL << 28;
-			else if(operand1 == operand2)
-				NZCV = 0b0110UL << 28;
-			else if(operand1 < operand2)
-				NZCV = 0b1000UL << 28;
-			else
-				NZCV = 0b0010UL << 28;
-		}
-		
 		public void Svc(uint svc) => Kernel.Svc((int) svc);
 
 		public ulong SR(uint op0, uint op1, uint crn, uint crm, uint op2) {
@@ -168,7 +143,7 @@ namespace Cpu64 {
 				case 0b11_011_0100_0100_001: // FPSR
 					return 0;
 				case 0b11_011_1101_0000_011: // TPIDR
-					return TlsBase;
+					return State->TlsBase;
 				case 0b11_011_1110_0000_001: // CntpctEl0
 					return 0;
 				default:
@@ -219,10 +194,10 @@ namespace Cpu64 {
 			}
 		}
 
-		protected Vector128<float> Insert<ElementT>(Vector128<float> vec, uint index, ElementT value)
+		protected static Vector128<float> Insert<ElementT>(Vector128<float> vec, uint index, ElementT value)
 			where ElementT : struct => vec.As<float, ElementT>().WithElement((int) index, value).As<ElementT, float>();
 
-		public Vector128<float> VectorCountBits(Vector128<float> vec, long elems) {
+		public static Vector128<float> VectorCountBits(Vector128<float> vec, long elems) {
 			var ret = Vector128<byte>.Zero;
 			var ivec = vec.As<float, byte>();
 			for(var i = 0; i < elems; ++i)
@@ -230,7 +205,7 @@ namespace Cpu64 {
 			return ret.As<byte, float>();
 		}
 
-		public ulong VectorSumUnsigned(Vector128<float> vec, long esize, long count) {
+		public static ulong VectorSumUnsigned(Vector128<float> vec, long esize, long count) {
 			switch(esize) {
 				case 8: {
 					var bvec = vec.As<float, byte>();
@@ -243,7 +218,7 @@ namespace Cpu64 {
 			}
 		}
 
-		public Vector128<float> VectorExtract(Vector128<float> _a, Vector128<float> _b, uint Q, uint _index) {
+		public static Vector128<float> VectorExtract(Vector128<float> _a, Vector128<float> _b, uint Q, uint _index) {
 			var index = (int) _index;
 			var a = _a.As<float, byte>();
 			var b = _b.As<float, byte>();
@@ -268,26 +243,26 @@ namespace Cpu64 {
 			return r.As<byte, float>();
 		}
 
-		public uint FloatToFixed32(float fvalue, int fbits) {
+		public static uint FloatToFixed32(float fvalue, int fbits) {
 			return unchecked((uint) (int) MathF.Round(fvalue * (1 << fbits)));
 		}
 
-		public ulong FloatToFixed64(float fvalue, int fbits) {
+		public static ulong FloatToFixed64(float fvalue, int fbits) {
 			return unchecked((ulong) (long) MathF.Round(fvalue * (1 << fbits)));
 		}
 
-		public uint FloatToFixed32(double fvalue, int fbits) {
+		public static uint FloatToFixed32(double fvalue, int fbits) {
 			return unchecked((uint) (int) Math.Round(fvalue * (1 << fbits)));
 		}
 
-		public ulong FloatToFixed64(double fvalue, int fbits) {
+		public static ulong FloatToFixed64(double fvalue, int fbits) {
 			return unchecked((ulong) (long) Math.Round(fvalue * (1 << fbits)));
 		}
 
-		public unsafe byte CompareAndSwap(uint* ptr, uint value, uint comparand) =>
+		public static unsafe byte CompareAndSwap(uint* ptr, uint value, uint comparand) =>
 			unchecked(Interlocked.CompareExchange(ref *(int*) ptr, (int) value, (int) comparand) == (int) comparand ? (byte) 0 : (byte) 1);
 
-		public unsafe byte CompareAndSwap(ulong* ptr, ulong value, ulong comparand) =>
+		public static unsafe byte CompareAndSwap(ulong* ptr, ulong value, ulong comparand) =>
 			unchecked(Interlocked.CompareExchange(ref *(long*) ptr, (long) value, (long) comparand) == (long) comparand ? (byte) 0 : (byte) 1);
 	}
 }

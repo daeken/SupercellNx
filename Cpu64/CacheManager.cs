@@ -4,9 +4,12 @@ using System.Linq;
 using System.Threading;
 
 namespace Cpu64 {
+	public unsafe delegate void BlockFunc(CpuState* state, BaseCpu cpu);
+	public unsafe delegate void LlvmBlockFunc(CpuState* state, LlvmCallbacks* callbacks);
+	
 	public class Block {
 		public readonly ulong Addr;
-		public Action<Dynarec> Func;
+		public BlockFunc Func;
 		public ulong HitCount; // WARNING: There is no lock for this so cannot be 100% relied upon
 		public bool Optimized;
 
@@ -15,9 +18,14 @@ namespace Cpu64 {
 	
 	public static class CacheManager {
 		static readonly Dictionary<ulong, Block> Blocks = new Dictionary<ulong, Block>();
-		static readonly Recompiler Recompiler = new Recompiler();
+		static readonly LlvmRecompiler Recompiler = new LlvmRecompiler();
 		
 		//static CacheManager() => StartOptimizer();
+
+		public static void Clear() {
+			lock(Blocks)
+				Blocks.Clear();
+		}
 
 		public static void StartOptimizer() => new Thread(Optimizer).Start();
 		static void Optimizer() {

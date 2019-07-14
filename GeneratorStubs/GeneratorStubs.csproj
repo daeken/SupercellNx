@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Cpu64\Cpu64.csproj" />
       <ProjectReference Include="..\SigilLite\SigilLite.csproj" />
     </ItemGroup>
 

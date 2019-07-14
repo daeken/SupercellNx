@@ -12,14 +12,15 @@ namespace Supercell {
 		public static Thread CurrentThread => _CurrentThread.Value;
 		static ulong ThreadIdIter;
 		//public readonly BaseCpu Cpu = new Interpreter(Kernel);
-		public readonly BaseCpu Cpu = new Dynarec(Kernel);
+		//public readonly BaseCpu Cpu = new Dynarec(Kernel);
+		public readonly BaseCpu Cpu = new LlvmRecompiler(Kernel);
 		//public readonly BaseCpu Cpu = new Unicore(Kernel);
 
 		public readonly ulong Id;
 
 		public readonly ulong Stack, TlsBase;
 
-		public Thread(ulong isp = 0) {
+		public unsafe Thread(ulong isp = 0) {
 			if(isp == 0)
 				_CurrentThread.Value = this;
 			lock(Threading)
@@ -33,7 +34,7 @@ namespace Supercell {
 				Stack = isp;
 				$"Stack Top: {Stack:X}".Debug();
 			}
-			TlsBase = Cpu.TlsBase = Memory.AllocateAligned(0x10000, (0x11UL << 32) + 0x10000UL * Id);
+			TlsBase = Cpu.State->TlsBase = Memory.AllocateAligned(0x10000, (0x11UL << 32) + 0x10000UL * Id);
 			$"TLS Base: {TlsBase:X}".Debug();
 		}
 
@@ -53,9 +54,9 @@ namespace Supercell {
 
 	public class SpawnedThread : Thread {
 		public readonly ulong EntryPoint;
-		public SpawnedThread(ulong ep, ulong context, ulong stack) : base(stack) {
+		public unsafe SpawnedThread(ulong ep, ulong context, ulong stack) : base(stack) {
 			EntryPoint = ep;
-			Cpu.X[0] = context;
+			Cpu.State->X0 = context;
 		}
 	}
 	

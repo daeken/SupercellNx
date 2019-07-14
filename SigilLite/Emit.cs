@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Common;
@@ -26,22 +27,11 @@ namespace SigilLite {
 		bool LastWasBranch;
 
 		Emit(TypeBuilder tb, string name, MethodAttributes attr) {
-			var returnType = typeof(void);
-			Type[] argTypes = null;
+			if(!typeof(MulticastDelegate).IsAssignableFrom(typeof(DelegateT)))
+				throw new NotSupportedException($"Non-delegate type for Emit: {typeof(DelegateT).Name}");
 			
-			var dtype = typeof(DelegateT);
-			if(dtype == typeof(Action))
-				returnType = typeof(void);
-			else if(!dtype.IsGenericType)
-				throw new NotSupportedException($"Non-generic, non-Action delegate type for Emit: {typeof(DelegateT)}");
-			else if(dtype.GetGenericTypeDefinition().FullName.Split('`')[0] == "System.Action")
-				argTypes = dtype.GetGenericArguments();
-			else if(dtype.GetGenericTypeDefinition().FullName.Split('`')[0] == "System.Func")
-				argTypes = dtype.GetGenericArguments();
-			else
-				throw new NotSupportedException($"Unknown delegate type for Emit: {typeof(DelegateT)}");
-
-			var mb = tb.DefineMethod(name, attr, returnType, argTypes);
+			var mi = typeof(DelegateT).GetMethod("Invoke");
+			var mb = tb.DefineMethod(name, attr, mi.ReturnType, mi.GetParameters().Select(x => x.ParameterType).ToArray());
 			Ilg = mb.GetILGenerator();
 		}
 
@@ -251,6 +241,8 @@ namespace SigilLite {
 		public Emit<DelegateT> LoadLocal(Local local) => Do(() => GEmit(OpCodes.Ldloc, local.ILocal.LocalIndex));
 		public Emit<DelegateT> LoadLocalAddress(Local local) => Do(() => GEmit(OpCodes.Ldloca, local.ILocal.LocalIndex));
 
+		public Emit<DelegateT> LoadObject<T>() => Do(() => GEmit(OpCodes.Ldobj, typeof(T)));
+
 		public Emit<DelegateT> MarkLabel(Label label) => Do(() => Ilg.MarkLabel(label.ILabel));
 
 		public Emit<DelegateT> Multiply() => Do(() => GEmit(OpCodes.Mul));
@@ -299,6 +291,8 @@ namespace SigilLite {
 
 		public Emit<DelegateT> StoreLocal(Local local) => Do(() => GEmit(OpCodes.Stloc, local.ILocal.LocalIndex));
 		
+		public Emit<DelegateT> StoreObject<T>() => Do(() => GEmit(OpCodes.Stobj, typeof(T)));
+
 		public Emit<DelegateT> Subtract() => Do(() => GEmit(OpCodes.Sub));
 		
 		public Emit<DelegateT> UnsignedBranchIfNotEqual(Label label) => Do(() => GEmit(OpCodes.Bne_Un, label.ILabel));

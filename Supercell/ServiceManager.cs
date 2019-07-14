@@ -16,16 +16,16 @@ namespace Supercell {
 	public class ServiceManager {
 		readonly Dictionary<int, Action> Handlers = new Dictionary<int, Action>();
 		
-		public ServiceManager() {
+		public unsafe ServiceManager() {
 			Action<object> BuildRetHandler(Type rt) {
 				Action<object> BuildSetter(Type s, int i) {
-					if(s == typeof(uint)) return ret => Thread.CurrentThread.Cpu.X[i] = (ulong) (uint) ret;
-					if(s == typeof(ulong)) return ret => Thread.CurrentThread.Cpu.X[i] = (ulong) ret;
+					if(s == typeof(uint)) return ret => (&Thread.CurrentThread.Cpu.State->X0)[i] = (ulong) (uint) ret;
+					if(s == typeof(ulong)) return ret => (&Thread.CurrentThread.Cpu.State->X0)[i] = (ulong) ret;
 					throw new NotSupportedException();
 				}
 				if(rt == typeof(void)) return _ => { };
-				if(rt == typeof(uint)) return ret => Thread.CurrentThread.Cpu.X[0] = (ulong) (uint) ret;
-				if(rt == typeof(ulong)) return ret => Thread.CurrentThread.Cpu.X[0] = (ulong) ret;
+				if(rt == typeof(uint)) return ret => (&Thread.CurrentThread.Cpu.State->X0)[0] = (ulong) (uint) ret;
+				if(rt == typeof(ulong)) return ret => (&Thread.CurrentThread.Cpu.State->X0)[0] = (ulong) ret;
 				if(rt.IsConstructedGenericType && rt.GetGenericTypeDefinition() == typeof(ValueTuple<,>)) {
 					var setters = rt.GetGenericArguments().Select(BuildSetter).ToArray();
 					return (dynamic ret) => {
@@ -75,12 +75,12 @@ namespace Supercell {
 						               .FirstOrDefault(y => y.FieldType == x.DeclaringType)?.GetValue(null);
 					if(x.ReturnType == typeof(void))
 						Handlers[attr.Svc] = () => {
-							var args = argParsers.Select((x, i) => x(Thread.CurrentThread.Cpu.X[i])).ToArray();
+							var args = argParsers.Select((x, i) => x((&Thread.CurrentThread.Cpu.State->X0)[i])).ToArray();
 							x.Invoke(instance, args);
 						};
 					else
 						Handlers[attr.Svc] = () => {
-							var args = argParsers.Select((x, i) => x(Thread.CurrentThread.Cpu.X[i])).ToArray();
+							var args = argParsers.Select((x, i) => x((&Thread.CurrentThread.Cpu.State->X0)[i])).ToArray();
 							rethandler(x.Invoke(instance, args));
 						};
 				});

@@ -29,15 +29,15 @@ namespace Cpu64 {
 				foreach(var (start, size) in Kernel.MemoryRegions)
 					Uc.Unmap(start, size);
 				var imm = (inst >> 5) & 0xFFFFU;
-				SP = Uc[Arm64Register.SP];
+				State->SP = Uc[Arm64Register.SP];
 				for(var i = 0; i < 31; ++i)
-					X[i] = this[i];
+					(&State->X0)[i] = this[i];
 				
 				Svc(imm);
 				
-				Uc[Arm64Register.SP] = SP;
+				Uc[Arm64Register.SP] = State->SP;
 				for(var i = 0; i < 31; ++i)
-					this[i] = X[i];
+					this[i] = (&State->X0)[i];
 				foreach(var (start, size) in Kernel.MemoryRegions)
 					Uc.Map(start, size, MemoryPermission.All, (IntPtr) start);
 			};
@@ -94,7 +94,7 @@ namespace Cpu64 {
 			
 			Uc[Arm64Register.SP] = sp;
 			Uc[Arm64Register.PC] = _pc;
-			Uc[Arm64Register.TPIDRRO_EL0] = TlsBase;
+			Uc[Arm64Register.TPIDRRO_EL0] = State->TlsBase;
 			Uc[Arm64Register.CPACR_EL1] = 3 << 20;
 
 			try {
