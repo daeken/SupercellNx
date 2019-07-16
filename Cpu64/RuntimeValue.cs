@@ -400,6 +400,11 @@ namespace Cpu64 {
 			Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(T), typeof(float)));
 		});
 		
+		public RuntimeValue<Vector128<float>> Frsqrte(int size, int count) {
+			Debug.Assert(typeof(T) == typeof(Vector128<float>));
+			return Recompiler.Call<Vector128<float>>(nameof(BaseCpu.VectorFrsqrte), this, size, count);
+		}
+		
 		public RuntimeValue<ElementT> GetElement<ElementT>(int element) => throw new NotImplementedException();
 		public RuntimeValue<Vector128<VT>> AsVector<VT>() where VT : struct => throw new NotImplementedException();
 		

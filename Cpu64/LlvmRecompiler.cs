@@ -73,11 +73,11 @@ namespace Cpu64 {
 	public unsafe partial class LlvmRecompiler : BaseCpu {
 		public static LLVMTypeRef LlvmType<T>() => typeof(T).ToLLVMType();
 		
-		public class LlvmLocal<T> {
+		public class LlvmLocal<T> where T : struct {
 			readonly LLVMValueRef Pointer;
-			public LlvmLocal() => Pointer = LLVM.BuildAlloca(LlvmRecompiler.Builder, LlvmType<T>(), "");
+			public LlvmLocal(string name = "") => Pointer = LLVM.BuildAlloca(Builder, LlvmType<T>(), name);
 			public LlvmRuntimeValue<T> Value {
-				get => new LlvmRuntimeValue<T>(() => LLVM.BuildLoad(LlvmRecompiler.Builder, Pointer, ""));
+				get => new LlvmRuntimeValue<T>(() => LLVM.BuildLoad(Builder, Pointer, ""));
 				set => LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer);
 			}
 
@@ -89,14 +89,23 @@ namespace Cpu64 {
 			public LlvmRegisterMap(LlvmRecompiler recompiler) => Recompiler = recompiler;
 			public LlvmRuntimeValue<ulong> this[int reg] {
 				get => new LlvmRuntimeValue<ulong>(() => {
-					var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
+					if(reg == 31) return Recompiler.Const(0UL);
+					Recompiler.RegistersUsed[reg] = true;
+					/*var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
 					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<ulong>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"X{reg}_");
+					return LLVM.BuildLoad(Builder, ptr, $"X{reg}_");*/
+					return Recompiler.RegisterLocals[reg].Value;
 				});
 				set {
-					var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
+					if(reg == 31) {
+						value.Emit();
+						return;
+					}
+					Recompiler.RegistersUsed[reg] = true;
+					/*var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
 					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<ulong>(), 0), $"X{reg}_");
-					LLVM.BuildStore(Builder, value, ptr);
+					LLVM.BuildStore(Builder, value, ptr);*/
+					Recompiler.RegisterLocals[reg].Value = value;
 				}
 			}
 		}
@@ -269,7 +278,8 @@ namespace Cpu64 {
 		Queue<ulong> BlocksNeeded;
 		bool[] RegistersUsed;
 		LlvmLocal<ulong>[] RegisterLocals;
-		LlvmLabel StoreRegistersLabel;
+		List<(LlvmLabel Before, LlvmLabel After)> LoadRegistersLabels;
+		List<(LlvmLabel Before, LlvmLabel After)> StoreRegistersLabels;
 		bool JustBranched;
 		LlvmLabel SuppressedBranch;
 		List<LlvmLabel> UsedLabels;
@@ -322,8 +332,10 @@ namespace Cpu64 {
 
 			Callbacks = (LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
 			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => {
-				Console.WriteLine("SVC!");
-				Environment.Exit(1);
+				if(Kernel == null) {
+					Console.WriteLine("SVC!");
+					Environment.Exit(1);
+				}
 				Kernel.Svc((int) svc);
 			});
 			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>((state, op0, op1, crn, crm, op2) => {
@@ -419,26 +431,31 @@ namespace Cpu64 {
 			PassManager = LLVM.CreateFunctionPassManagerForModule(Module);
 			LLVM.AddInstructionCombiningPass(PassManager);
 			LLVM.AddReassociatePass(PassManager);
-			LLVM.AddGVNPass(PassManager);
 			LLVM.AddCFGSimplificationPass(PassManager);
+			LLVM.AddGVNPass(PassManager);
+			LLVM.AddPromoteMemoryToRegisterPass(PassManager);
+			LLVM.AddSLPVectorizePass(PassManager);
+			LLVM.AddDeadStoreEliminationPass(PassManager);
+			LLVM.AddAggressiveDCEPass(PassManager);
 			LLVM.InitializeFunctionPassManager(PassManager);
 
 			Function = LLVM.AddFunction(Module, $"_{block.Addr:X}", LlvmType<Action<ulong, ulong>>());
 			LLVM.SetLinkage(Function, LLVMLinkage.LLVMExternalLinkage);
 
-			RegistersUsed = new bool[31];
-			//RegisterLocals = Enumerable.Range(0, 31).Select(_ => Ilg.DeclareLocal<ulong>()).ToArray();
-			
 			UsedLabels = new List<LlvmLabel>();
 			
 			LLVM.PositionBuilderAtEnd(Builder, LLVM.AppendBasicBlock(Function, "entrypoint"));
 
+			RegistersUsed = new bool[31];
+			RegisterLocals = Enumerable.Range(0, 31).Select(i => new LlvmLocal<ulong>($"X{i}")).ToArray();
 			var preRegisterLoad = DefineLabel("preRegisterLoad");
 			var postRegisterLoad = DefineLabel("postRegisterLoad");
+			var retLabel = DefineLabel("return");
 			Branch(preRegisterLoad);
 			Label(postRegisterLoad);
-			StoreRegistersLabel = DefineLabel("storeRegisters");
-			
+			StoreRegistersLabels = new List<(LlvmLabel, LlvmLabel)> { (DefineLabel("storeRegisters_"), retLabel) };
+			LoadRegistersLabels = new List<(LlvmLabel, LlvmLabel)> { (preRegisterLoad, postRegisterLoad) };
+
 			BlockLabels = new Dictionary<ulong, LlvmLabel>();
 			BlocksNeeded = new Queue<ulong>();
 			BlocksNeeded.Enqueue(block.Addr);
@@ -475,25 +492,22 @@ namespace Cpu64 {
 			
 			while(BlocksNeeded.TryDequeue(out var pc))
 				CompileOneBlock(pc);
-			
-			Label(preRegisterLoad);
-			for(var i = 0; i < 31; ++i) {
-				if(!RegistersUsed[i]) continue;
-				/*FieldAddress(nameof(CpuState.X0)).Emit();
-				LoadConstant(i);
-				Ilg.LoadElement<ulong>();
-				Ilg.StoreLocal(RegisterLocals[i]);*/
-			}
-			Branch(postRegisterLoad);
 
-			Label(StoreRegistersLabel);
-			for(var i = 0; i < 31; ++i) {
-				if(!RegistersUsed[i]) continue;
-				/*FieldAddress(nameof(CpuState.X0)).Emit();
-				Ilg.LoadConstant(i);
-				Ilg.LoadLocal(RegisterLocals[i]);
-				Ilg.StoreElement<ulong>();*/
+			foreach(var (before, after) in LoadRegistersLabels) {
+				Label(before);
+				for(var i = 0; i < 31; ++i)
+					if(RegistersUsed[i]) RegisterLocals[i].Value = Field<ulong>($"X{i}");
+				Branch(after);
 			}
+
+			foreach(var (before, after) in StoreRegistersLabels) {
+				Label(before);
+				for(var i = 0; i < 31; ++i)
+					if(RegistersUsed[i]) Field($"X{i}", RegisterLocals[i].Value);
+				Branch(after);
+			}
+			
+			Label(StoreRegistersLabels[0].After);
 			LLVM.BuildRetVoid(Builder);
 			
 			//LLVM.DumpValue(Function);
@@ -520,14 +534,15 @@ namespace Cpu64 {
 		
 		public LlvmRuntimeValue<ulong> CpuStateRef => new LlvmRuntimeValue<ulong>(() => LLVM.GetParam(Function, 0));
 		public LlvmRuntimeValue<ulong> CallbacksRef => new LlvmRuntimeValue<ulong>(() => LLVM.GetParam(Function, 1));
-		
-		public LlvmRuntimeValue<T> Field<T>(string name) => new LlvmRuntimePointer<T>(FieldAddress(name));
-		public void Field<T>(string name, LlvmRuntimeValue<T> value) =>
+
+		public LlvmRuntimeValue<T> Field<T>(string name) where T : struct =>
+			new LlvmRuntimePointer<T>(FieldAddress(name));
+		public void Field<T>(string name, LlvmRuntimeValue<T> value) where T : struct =>
 			new LlvmRuntimePointer<T>(FieldAddress(name)).Value = value;
 		public LlvmRuntimeValue<ulong> FieldAddress(string name) =>
 			CpuStateRef + (ulong) Marshal.OffsetOf<CpuState>(name);
 		
-		public LlvmRuntimeValue<T> Const<T>(T value) => new LlvmRuntimeValue<T>(() => {
+		public LlvmRuntimeValue<T> Const<T>(T value) where T : struct => new LlvmRuntimeValue<T>(() => {
 			unchecked {
 				switch(value) {
 					case sbyte v: return LLVM.ConstInt(LLVMTypeRef.Int8Type(), (ulong) v, false);
@@ -556,7 +571,7 @@ namespace Cpu64 {
 			}
 		});
 		
-		public LlvmLocal<T> DeclareLocal<T>() => new LlvmLocal<T>();
+		public LlvmLocal<T> DeclareLocal<T>() where T : struct => new LlvmLocal<T>();
 
 		public LlvmLabel DefineLabel(string name = "") => new LlvmLabel(() => LLVM.AppendBasicBlock(Function, name));
 		public void Label(LlvmLabel label) {
@@ -591,7 +606,7 @@ namespace Cpu64 {
 		}
 		void Branch(LlvmRuntimeValue<ulong> target) {
 			Field(nameof(CpuState.BranchTo), target);
-			Branch(StoreRegistersLabel);
+			Branch(StoreRegistersLabels[0].Before);
 			Branched = true;
 		}
 
@@ -605,7 +620,8 @@ namespace Cpu64 {
 			JustBranched = true;
 		}
 
-		public static LlvmRuntimeValue<ValueT> Ternary<CondT, ValueT>(LlvmRuntimeValue<CondT> cond, LlvmRuntimeValue<ValueT> a, LlvmRuntimeValue<ValueT> b) =>
+		public static LlvmRuntimeValue<ValueT> Ternary<CondT, ValueT>(LlvmRuntimeValue<CondT> cond, LlvmRuntimeValue<ValueT> a, LlvmRuntimeValue<ValueT> b)
+			where CondT : struct where ValueT : struct =>
 			new LlvmRuntimeValue<ValueT>(() => {
 				var if_ = Instance.DefineLabel();
 				var else_ = Instance.DefineLabel();
@@ -639,16 +655,27 @@ namespace Cpu64 {
 							LLVMTypeRef.PointerType(LLVMTypeRef.Int64Type(), 0), ""), ""), ft, ""), args, "");
 		}
 
-		void CallSvc(uint svc) => Call<LlvmCallbacks.SvcDelegate>(nameof(LlvmCallbacks.Svc), Const(svc));
+		void CallSvc(uint svc) {
+			LlvmLabel preStore = DefineLabel("preSvcStore_"), postStore = DefineLabel("postSvcStore_");
+			LlvmLabel preLoad = DefineLabel("preSvcLoad_"), postLoad = DefineLabel("postSvcLoad_");
+			StoreRegistersLabels.Add((preStore, postStore));
+			LoadRegistersLabels.Add((preLoad, postLoad));
+			Branch(preStore);
+			Label(postStore);
+			Call<LlvmCallbacks.SvcDelegate>(nameof(LlvmCallbacks.Svc), Const(svc));
+			Branch(preLoad);
+			Label(postLoad);
+		}
 
 		public static void CallLogStore(LlvmRuntimeValue<ulong> tstr, LlvmRuntimeValue<ulong> address) =>
 			Instance.Call<LlvmCallbacks.LogStoreDelegate>(nameof(LlvmCallbacks.LogStore), tstr, address);
 		public static void CallLogLoad(LlvmRuntimeValue<ulong> tstr, LlvmRuntimeValue<ulong> address) =>
 			Instance.Call<LlvmCallbacks.LogLoadDelegate>(nameof(LlvmCallbacks.LogLoad), tstr, address);
 
-		LlvmRuntimeValue<T> SignExtRuntime<T>(LlvmRuntimeValue<ulong> value, int size) => new LlvmRuntimeValue<T>(() =>
-			LLVM.BuildSExt(Builder, LLVM.BuildTrunc(Builder, value, LLVMTypeRef.IntType((uint) size), ""),
-				LlvmType<T>(), ""));
+		LlvmRuntimeValue<T> SignExtRuntime<T>(LlvmRuntimeValue<ulong> value, int size) where T : struct =>
+			new LlvmRuntimeValue<T>(() =>
+				LLVM.BuildSExt(Builder, LLVM.BuildTrunc(Builder, value, LLVMTypeRef.IntType((uint) size), ""),
+					LlvmType<T>(), ""));
 
 		LlvmRuntimeValue<uint> CallCountLeadingZeros(LlvmRuntimeValue<uint> value) =>
 			new LlvmRuntimeValue<uint>(() => Intrinsic<Func<uint, bool, uint>>("llvm.ctlz.i32", value, Const(false)));
@@ -738,7 +765,7 @@ namespace Cpu64 {
 
 		LlvmRuntimeValue<byte>
 			CallCompareAndSwap<T>(LlvmRuntimePointer<T> ptr, LlvmRuntimeValue<T> value,
-				LlvmRuntimeValue<T> comparand) => new LlvmRuntimeValue<byte>(
+				LlvmRuntimeValue<T> comparand) where T : struct => new LlvmRuntimeValue<byte>(
 			() => LLVM.BuildSelect(Builder,
 				LLVM.BuildExtractValue(Builder,
 					LLVM.BuildAtomicCmpXchg(Builder, ptr.Address, comparand, value,

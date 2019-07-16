@@ -26,14 +26,14 @@ namespace Cpu64 {
 				Blocks.Clear();
 		}
 
-		public static void StartOptimizer() => new Thread(Optimizer).Start();
+		static void StartOptimizer() => new Thread(Optimizer).Start();
 		static void Optimizer() {
 			var recompiler = new LlvmRecompiler();
 			while(true) {
 				Block candidate = null;
 				lock(Blocks)
 					foreach(var block in Blocks.Values)
-						if(!block.Optimized && block.Addr != 0x740008FD7C && block.HitCount > 1000 && (candidate == null || block.HitCount > candidate.HitCount))
+						if(!block.Optimized && block.Addr != 0x740008FD7C && block.HitCount > 2000 && (candidate == null || block.HitCount > candidate.HitCount))
 							candidate = block;
 				if(candidate == null) {
 					Thread.Sleep(100);
@@ -42,7 +42,7 @@ namespace Cpu64 {
 
 				candidate.Optimized = true;
 				recompiler.RecompileMultiple(candidate);
-				//Console.WriteLine($"Optimized 0x{candidate.Addr:X} with {candidate.HitCount} hits!");
+				Console.WriteLine($"Optimized 0x{candidate.Addr:X} with {candidate.HitCount} hits!");
 			}
 		}
 

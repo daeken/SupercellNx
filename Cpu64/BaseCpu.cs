@@ -243,6 +243,35 @@ namespace Cpu64 {
 			return r.As<byte, float>();
 		}
 
+		public static Vector128<float> VectorFrsqrte(Vector128<float> input, int bits, int elements) {
+			if(bits == 64) {
+				var vec = input.As<float, double>();
+				vec = vec.WithElement(0, FastInvsqrt(vec.GetElement(0)));
+				vec = vec.WithElement(1, FastInvsqrt(vec.GetElement(1)));
+				return vec.As<double, float>();
+			}
+			for(var i = 0; i < elements; ++i)
+				input = input.WithElement(i, FastInvsqrt(input.GetElement(i)));
+			return input;
+		}
+
+		public static float FastInvsqrt(float number) {
+			var i = *(uint*) &number;
+			i = 0x5f3759df - (i >> 1);
+			var f = *(float*) &i;
+			f *= 1.5f - 0.5f * f * f;
+			return f;
+		}
+
+		public static double FastInvsqrt(double number) {
+			var x2 = number * 0.5;
+			var i = *(long*) &number;
+			i = 0x5fe6eb50c7b537a9 - (i >> 1);
+			var y = *(double*) &i;
+			y *= 1.5 - x2 * y * y;
+			return y;
+		}
+		
 		public static uint FloatToFixed32(float fvalue, int fbits) {
 			return unchecked((uint) (int) MathF.Round(fvalue * (1 << fbits)));
 		}

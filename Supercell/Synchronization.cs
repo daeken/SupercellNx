@@ -130,7 +130,7 @@ namespace Supercell {
 			$"WaitProcessWideKeyAtomic(0x{mutexAddr:X}, 0x{semaAddr:X}, 0x{threadHandle:X})".Debug();
 			var mutex = EnsureMutex(mutexAddr);
 			var sema = EnsureSemaphore(semaAddr);
-			Debug.Assert((*(uint*) mutexAddr & ~0x40000000U) == threadHandle);
+			//Debug.Assert((*(uint*) mutexAddr & ~0x40000000U) == threadHandle);
 			if(sema.Value > 0) {
 				$"Early bailout 0x{sema.Value:X}".Debug();
 				sema.Decrement();

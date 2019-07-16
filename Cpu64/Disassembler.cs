@@ -813,6 +813,15 @@ namespace Cpu64 {
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fnmul {r}{rd}, {r}{rn}, {r}{rm}";
 			}
+			/* FRSQRTE-vector */
+			if((inst & 0xBFBFFC00U) == 0x2EA1D800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"frsqrte V{rd}.{t}, V{rn}.{t}";
+			}
 			/* FSQRT-scalar */
 			if((inst & 0xFF3FFC00U) == 0x1E21C000U) {
 				var type = (inst >> 22) & 0x3U;

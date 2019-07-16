@@ -7,7 +7,7 @@ using LLVMSharp;
 using UltimateOrb;
 
 namespace Cpu64 {
-	public class LlvmRuntimeValue<T> {
+	public class LlvmRuntimeValue<T> where T : struct {
 		readonly Func<LLVMValueRef> Generate;
 		public static LlvmRecompiler Recompiler => LlvmRecompiler.Instance;
 		public static LLVMBuilderRef Builder => LlvmRecompiler.Builder;
@@ -33,17 +33,15 @@ namespace Cpu64 {
 		}
 
 		public static LlvmRuntimeValue<T> Zero() => Zero<T>();
-		public static LlvmRuntimeValue<ZT> Zero<ZT>() {
+		public static LlvmRuntimeValue<ZT> Zero<ZT>() where ZT : struct {
 			if(typeof(ZT).IsConstructedGenericType && typeof(ZT).GetGenericTypeDefinition() == typeof(Vector128<>))
 				return new LlvmRuntimeValue<ZT>(() => {
-					var vec = LLVM.GetUndef(LlvmType<ZT>());
 					var et = typeof(ZT).GetGenericArguments()[0];
 					var zero = et == typeof(float) || et == typeof(double)
 						? LLVM.BuildFPCast(Builder, Recompiler.Const(0), et.ToLLVMType(), "")
 						: LLVM.ConstInt(et.ToLLVMType(), 0, false);
-					for(var i = 0; i < typeof(ZT).ElementCount(); ++i)
-						vec = LLVM.BuildInsertElement(Builder, vec, zero, Recompiler.Const(0), "");
-					return vec;
+					return LLVM.ConstVector(Enumerable.Range(0, typeof(ZT).ElementCount()).Select(_ => zero)
+						.ToArray());
 				});
 			return Recompiler.Const(0).Cast<ZT>();
 		}
@@ -172,7 +170,7 @@ namespace Cpu64 {
 		
 		public LlvmRuntimeValue<bool> IsZero() => this == Zero<T>();
 
-		public LlvmRuntimeValue<OT> Cast<OT>() {
+		public LlvmRuntimeValue<OT> Cast<OT>() where OT : struct {
 			if((object) this is LlvmRuntimeValue<OT> v) return v;
 			Debug.Assert(typeof(T) != typeof(OT));
 			if(typeof(OT).IsConstructedGenericType && typeof(OT).GetGenericTypeDefinition() == typeof(Vector128<>) ||
@@ -231,25 +229,44 @@ namespace Cpu64 {
 			return new LlvmRuntimeValue<T>(() => value);
 		}
 
-		public LlvmRuntimeValue<OutT> Bitcast<OutT>() =>
+		public LlvmRuntimeValue<OutT> Bitcast<OutT>() where OutT : struct =>
 			new LlvmRuntimeValue<OutT>(() => LLVM.BuildBitCast(Builder, this, LlvmType<OutT>(), ""));
 
 		public static implicit operator LlvmRuntimeValue<T>(T value) => Recompiler.Const(value);
 
 		public LlvmRuntimeValue<Vector128<float>> CreateVector() =>
 			new LlvmRuntimeValue<Vector128<float>>(() => {
-				var count = 16U / (uint) Marshal.SizeOf<T>();
-				var vtype = LLVMTypeRef.VectorType(LlvmType<T>(), count);
-				var value = LLVM.GetUndef(vtype);
-				for(var i = 0U; i < count; ++i)
-					value = LLVM.BuildInsertElement(Builder, value, this, Recompiler.Const(i), "");
+				var value = Emit();
+				var vec = LLVM.GetUndef(LlvmType<Vector128<T>>());
+				for(var i = 0; i < typeof(Vector128<T>).ElementCount(); ++i)
+					vec = LLVM.BuildInsertElement(Builder, vec, value, Recompiler.Const(i), "");
 				return typeof(T) == typeof(float)
-					? value
-					: LLVM.BuildBitCast(Builder, value, LLVMTypeRef.VectorType(LlvmType<float>(), 4), "");
+					? vec
+					: LLVM.BuildBitCast(Builder, vec, LLVMTypeRef.VectorType(LlvmType<float>(), 4), "");
 			});
 		
-		public LlvmRuntimeValue<ElementT> GetElement<ElementT>(int element) => throw new NotImplementedException();
-		public LlvmRuntimeValue<Vector128<VT>> AsVector<VT>() where VT : struct => throw new NotImplementedException();
+		public LlvmRuntimeValue<Vector128<float>> Frsqrte(int size, int count) => new LlvmRuntimeValue<Vector128<float>>(() => {
+			Debug.Assert(typeof(T) == typeof(Vector128<float>));
+			if(size == 64) {
+				var ivec = Cast<Vector128<double>>().Store();
+				var vec = LLVM.GetUndef(LlvmType<Vector128<double>>());
+				for(var i = 0; i < 2; ++i)
+					vec = LLVM.BuildInsertElement(Builder, vec,
+						Recompiler.Const(1.0) / ivec.Element<double>((uint) i).Sqrt(), Recompiler.Const(i), "");
+				return vec;
+			} else {
+				var ivec = Store();
+				var vec = LLVM.GetUndef(LlvmType<Vector128<float>>());
+				for(var i = 0; i < 4; ++i) {
+					if(i < count)
+						vec = LLVM.BuildInsertElement(Builder, vec,
+							Recompiler.Const(1.0f) / ivec.Element<float>((uint) i).Sqrt(), Recompiler.Const(i), "");
+					else
+						vec = LLVM.BuildInsertElement(Builder, vec, Recompiler.Const(0.0f), Recompiler.Const(i), "");
+				}
+				return vec;
+			}
+		});
 
 		public LlvmRuntimeValue<T> Insert<ElementT>(uint index, LlvmRuntimeValue<ElementT> value) where ElementT : struct {
 			if(!typeof(T).IsConstructedGenericType || typeof(T).GetGenericTypeDefinition() != typeof(Vector128<>))
@@ -275,7 +292,7 @@ namespace Cpu64 {
 		public override int GetHashCode() => throw new NotImplementedException();
 	}
 
-	public unsafe class LlvmRuntimePointer<T> {
+	public unsafe class LlvmRuntimePointer<T> where T : struct {
 		public static LLVMTypeRef LlvmType<TT>() => typeof(TT).ToLLVMType();
 		public readonly LlvmRuntimeValue<ulong> Address;
 

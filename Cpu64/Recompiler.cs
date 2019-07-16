@@ -325,7 +325,7 @@ namespace Cpu64 {
 			}
 		}
 
-		static void CallVoid(string methodName, params object[] args) {
+		public static void CallVoid(string methodName, params object[] args) {
 			var methods = typeof(BaseCpu)
 				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Concat(
@@ -346,7 +346,7 @@ namespace Cpu64 {
 			Ilg.Call(mi);
 		}
 
-		static RuntimeValue<T> Call<T>(string methodName, params object[] args) {
+		public static RuntimeValue<T> Call<T>(string methodName, params object[] args) {
 			var methods = typeof(BaseCpu)
 				.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
 				.Concat(

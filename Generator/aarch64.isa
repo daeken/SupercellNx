@@ -1214,6 +1214,21 @@
         0b01 (= (vec-d rd) (-! (* (vec-d rn) (vec-d rm))))
         (unimplemented)))
 
+(def FRSQRTE-vector
+    "0 Q 1 01110 1 s 10000 11101 10 nnnnn ddddd"
+    "frsqrte V$rd.$t, V$rn.$t"
+    (names (Q Q) (size s) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00 "2S"
+        0b01 "4S"
+        0b11 "2D"
+        (unimplemented)))
+    (= (vec rd) (match (: size Q)
+        0b00 (vec-frsqrte (vec rn) 32 2)
+        0b01 (vec-frsqrte (vec rn) 32 4)
+        0b11 (vec-frsqrte (vec rn) 64 2)
+        (unimplemented))))
+
 (def FSQRT-scalar
     "0 0 0 11110 tt 1 0000 11 10000 nnnnn ddddd"
     "fsqrt $r$rd, $r$rn"

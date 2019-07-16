@@ -1812,6 +1812,16 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FRSQRTE-vector */
+				if((inst & 0xBFBFFC00U) == 0x2EA1D800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x20, 0x2))), 0x1 => (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x20, 0x4))), 0x3 => (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x40, 0x2))), _ => throw new NotImplementedException() });
+					return true;
+				}
 				/* FSQRT-scalar */
 				if((inst & 0xFF3FFC00U) == 0x1E21C000U) {
 					var type = (inst >> 22) & 0x3U;
