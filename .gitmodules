@@ -1,4 +1,4 @@
 [submodule "IpcGenerator/SwIPC"]
 	path = IpcGenerator/SwIPC
-	url = https://github.com/reswitched/SwIPC.git
+	url = https://github.com/daeken/SwIPC.git
 	branch = master
