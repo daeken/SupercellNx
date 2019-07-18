@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdbStub", "GdbStub\GdbStub.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExeDiff", "ExeDiff\ExeDiff.csproj", "{2B67A747-2B03-43A9-9F77-89BEF13471B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcGenerator", "IpcGenerator\IpcGenerator.csproj", "{47018DA3-5267-40C1-940C-17E1FA42F4A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,5 +71,9 @@ Global
 		{2B67A747-2B03-43A9-9F77-89BEF13471B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B67A747-2B03-43A9-9F77-89BEF13471B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B67A747-2B03-43A9-9F77-89BEF13471B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47018DA3-5267-40C1-940C-17E1FA42F4A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47018DA3-5267-40C1-940C-17E1FA42F4A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47018DA3-5267-40C1-940C-17E1FA42F4A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47018DA3-5267-40C1-940C-17E1FA42F4A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

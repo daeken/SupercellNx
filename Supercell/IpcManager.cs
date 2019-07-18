@@ -332,13 +332,13 @@ namespace Supercell {
 		public IpcCommandAttribute(uint id) => Id = id;
 	}
 
-	[AttributeUsage(AttributeTargets.Parameter)]
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field)]
 	public class BytesAttribute : Attribute {
 		public readonly uint Count;
 		public BytesAttribute(uint count) => Count = count;
 	}
 
-	[AttributeUsage(AttributeTargets.Parameter)]
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field)]
 	public class BufferAttribute : Attribute {
 		public readonly uint Type;
 		public BufferAttribute(uint type) => Type = type;
