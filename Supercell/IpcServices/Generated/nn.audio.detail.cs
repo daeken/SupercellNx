@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe struct AudioRendererUpdateDataHeader {
@@ -69,7 +70,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual void Unknown3() => throw new NotImplementedException();
 	}
 	
-	[IpcService("audin:u")]
+	[IpcService("audin:d")]
 	public unsafe partial class IAudioInManager : _Base_IAudioInManager {}
 	public unsafe class _Base_IAudioInManager : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
@@ -80,9 +81,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 1: { // OpenAudioIn
-					OpenAudioIn(im.GetBytes(0, 0x8), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x5, 0), out var _0, im.GetBuffer<byte>(0x6, 0), out var _2);
-					om.SetBytes(0, _0);
-					om.Move(0, _2.Handle);
+					OpenAudioIn(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x5, 0), out var _0, out var _1, out var _2, out var _3, out var _4, im.GetBuffer<byte>(0x6, 0));
+					om.SetData(0, _0);
+					om.SetData(4, _1);
+					om.SetData(8, _2);
+					om.SetData(12, _3);
+					om.Move(0, _4.Handle);
 					break;
 				}
 				case 2: { // Unknown2
@@ -91,9 +95,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // OpenAudioInAuto
-					OpenAudioInAuto(im.GetBytes(0, 0x8), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x21, 0), out var _0, im.GetBuffer<byte>(0x22, 0), out var _2);
-					om.SetBytes(0, _0);
-					om.Move(0, _2.Handle);
+					OpenAudioInAuto(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1, out var _2, out var _3, out var _4, im.GetBuffer<byte>(0x22, 0));
+					om.SetData(0, _0);
+					om.SetData(4, _1);
+					om.SetData(8, _2);
+					om.SetData(12, _3);
+					om.Move(0, _4.Handle);
 					break;
 				}
 				case 4: { // ListAudioInsAuto
@@ -106,11 +113,11 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void ListAudioIns(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void OpenAudioIn(byte[] _0, ulong _1, ulong _2, KObject _3, Buffer<byte> _4, out byte[] _5, Buffer<byte> _6, out Nn.Audio.Detail.IAudioIn _7) => throw new NotImplementedException();
+		public virtual void ListAudioIns(out uint count, Buffer<byte> names) => throw new NotImplementedException();
+		public virtual void OpenAudioIn(ulong _0, ulong pid_copy, ulong _2, KObject _3, Buffer<byte> name0, out uint sample_rate, out uint channel_count, out uint pcm_format, out uint _8, out Nn.Audio.Detail.IAudioIn _9, Buffer<byte> name1) => throw new NotImplementedException();
 		public virtual void Unknown2(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void OpenAudioInAuto(byte[] _0, ulong _1, ulong _2, KObject _3, Buffer<byte> _4, out byte[] _5, Buffer<byte> _6, out Nn.Audio.Detail.IAudioIn _7) => throw new NotImplementedException();
-		public virtual void ListAudioInsAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void OpenAudioInAuto(ulong _0, ulong pid_copy, ulong _2, KObject _3, Buffer<byte> _4, out uint sample_rate, out uint channel_count, out uint pcm_format, out uint _8, out Nn.Audio.Detail.IAudioIn _9, Buffer<byte> name) => throw new NotImplementedException();
+		public virtual void ListAudioInsAuto(out uint count, Buffer<byte> names) => throw new NotImplementedException();
 	}
 	
 	[IpcService("audin:a")]
@@ -151,12 +158,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe class _Base_IAudioInManagerForDebugger : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // Unknown0
-					Unknown0(im.GetData<ulong>(0));
+				case 0: { // RequestSuspendAudioInsForDebug
+					RequestSuspendAudioInsForDebug(im.GetData<ulong>(0));
 					break;
 				}
-				case 1: { // Unknown1
-					Unknown1(im.GetData<ulong>(0));
+				case 1: { // RequestResumeAudioInsForDebug
+					RequestResumeAudioInsForDebug(im.GetData<ulong>(0));
 					break;
 				}
 				default:
@@ -164,8 +171,8 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void Unknown0(ulong _0) => throw new NotImplementedException();
-		public virtual void Unknown1(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestSuspendAudioInsForDebug(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestResumeAudioInsForDebug(ulong _0) => throw new NotImplementedException();
 	}
 	
 	[IpcService("audout:u")]
@@ -179,9 +186,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 1: { // OpenAudioOut
-					OpenAudioOut(im.GetBytes(0, 0x8), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x5, 0), out var _0, im.GetBuffer<byte>(0x6, 0), out var _2);
-					om.SetBytes(0, _0);
-					om.Move(0, _2.Handle);
+					OpenAudioOut(im.GetData<uint>(0), im.GetData<ushort>(4), im.GetData<ushort>(6), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x5, 0), out var _0, out var _1, out var _2, out var _3, out var _4, im.GetBuffer<byte>(0x6, 0));
+					om.SetData(0, _0);
+					om.SetData(4, _1);
+					om.SetData(8, _2);
+					om.SetData(12, _3);
+					om.Move(0, _4.Handle);
 					break;
 				}
 				case 2: { // ListAudioOutsAuto
@@ -190,9 +200,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // OpenAudioOutAuto
-					OpenAudioOutAuto(im.GetBytes(0, 0x8), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x21, 0), out var _0, im.GetBuffer<byte>(0x22, 0), out var _2);
-					om.SetBytes(0, _0);
-					om.Move(0, _2.Handle);
+					OpenAudioOutAuto(im.GetData<uint>(0), im.GetData<ushort>(4), im.GetData<ushort>(6), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1, out var _2, out var _3, out var _4, im.GetBuffer<byte>(0x22, 0));
+					om.SetData(0, _0);
+					om.SetData(4, _1);
+					om.SetData(8, _2);
+					om.SetData(12, _3);
+					om.Move(0, _4.Handle);
 					break;
 				}
 				default:
@@ -200,10 +213,10 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void ListAudioOuts(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void OpenAudioOut(byte[] _0, ulong _1, ulong _2, KObject _3, Buffer<byte> _4, out byte[] _5, Buffer<byte> _6, out Nn.Audio.Detail.IAudioOut _7) => throw new NotImplementedException();
-		public virtual void ListAudioOutsAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void OpenAudioOutAuto(byte[] _0, ulong _1, ulong _2, KObject _3, Buffer<byte> _4, out byte[] _5, Buffer<byte> _6, out Nn.Audio.Detail.IAudioOut _7) => throw new NotImplementedException();
+		public virtual void ListAudioOuts(out uint count, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void OpenAudioOut(uint sample_rate0, ushort unused, ushort channel_count0, ulong _3, ulong _4, KObject _5, Buffer<byte> name_in, out uint sample_rate1, out uint channel_count1, out uint pcm_format, out uint _10, out Nn.Audio.Detail.IAudioOut _11, Buffer<byte> name_out) => throw new NotImplementedException();
+		public virtual void ListAudioOutsAuto(out uint count, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void OpenAudioOutAuto(uint sample_rate0, ushort unused, ushort channel_count0, ulong _3, ulong _4, KObject _5, Buffer<byte> _6, out uint sample_rate1, out uint channel_count1, out uint pcm_format, out uint _10, out Nn.Audio.Detail.IAudioOut _11, Buffer<byte> name_out) => throw new NotImplementedException();
 	}
 	
 	[IpcService("audout:a")]
@@ -250,20 +263,17 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual void SetAudioOutsProcessRecordVolume(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 	}
 	
-	[IpcService("audin:d")]
 	[IpcService("audout:d")]
-	[IpcService("audren:d")]
-	[IpcService("audrec:d")]
 	public unsafe partial class IAudioOutManagerForDebugger : _Base_IAudioOutManagerForDebugger {}
 	public unsafe class _Base_IAudioOutManagerForDebugger : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // RequestSuspendForDebug
-					RequestSuspendForDebug(im.GetData<ulong>(0));
+				case 0: { // RequestSuspendAudioOutsForDebug
+					RequestSuspendAudioOutsForDebug(im.GetData<ulong>(0));
 					break;
 				}
-				case 1: { // RequestResumeForDebug
-					RequestResumeForDebug(im.GetData<ulong>(0));
+				case 1: { // RequestResumeAudioOutsForDebug
+					RequestResumeAudioOutsForDebug(im.GetData<ulong>(0));
 					break;
 				}
 				default:
@@ -271,22 +281,22 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void RequestSuspendForDebug(ulong _0) => throw new NotImplementedException();
-		public virtual void RequestResumeForDebug(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestSuspendAudioOutsForDebug(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestResumeAudioOutsForDebug(ulong _0) => throw new NotImplementedException();
 	}
 	
-	[IpcService("audren:u")]
+	[IpcService("audrec:u")]
 	public unsafe partial class IAudioRendererManager : _Base_IAudioRendererManager {}
 	public unsafe class _Base_IAudioRendererManager : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // OpenAudioRenderer
-					var ret = OpenAudioRenderer(im.GetBytes(0, 0x34), im.GetData<ulong>(56), im.GetData<ulong>(64), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), Kernel.Get<KObject>(im.GetCopy(1)));
+					var ret = OpenAudioRenderer((Nn.Audio.Detail.AudioRendererParameterInternal*) im.GetDataPointer(0), im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)), Kernel.Get<KObject>(im.GetCopy(1)));
 					om.Move(0, ret.Handle);
 					break;
 				}
-				case 1: { // GetAudioRendererWorkBufferSize
-					var ret = GetAudioRendererWorkBufferSize(im.GetBytes(0, 0x34));
+				case 1: { // GetWorkBufferSize
+					var ret = GetWorkBufferSize((Nn.Audio.Detail.AudioRendererParameterInternal*) im.GetDataPointer(0));
 					om.SetData(0, ret);
 					break;
 				}
@@ -296,12 +306,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // OpenAudioRendererAuto
-					var ret = OpenAudioRendererAuto(im.GetBytes(0, 0x34), im.GetData<ulong>(56), im.GetData<ulong>(64), im.GetData<ulong>(72), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)));
+					var ret = OpenAudioRendererAuto((Nn.Audio.Detail.AudioRendererParameterInternal*) im.GetDataPointer(0), im.GetData<ulong>(0), im.GetData<ulong>(8), im.GetData<ulong>(16), im.Pid, Kernel.Get<KObject>(im.GetCopy(0)));
 					om.Move(0, ret.Handle);
 					break;
 				}
 				case 4: { // GetAudioDeviceServiceWithRevisionInfo
-					var ret = GetAudioDeviceServiceWithRevisionInfo(im.GetData<uint>(0), im.GetData<ulong>(8));
+					var ret = GetAudioDeviceServiceWithRevisionInfo(im.GetData<ulong>(0), im.GetData<uint>(8));
 					om.Move(0, ret.Handle);
 					break;
 				}
@@ -310,11 +320,11 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual Nn.Audio.Detail.IAudioRenderer OpenAudioRenderer(byte[] _0, ulong _1, ulong _2, ulong _3, KObject _4, KObject _5) => throw new NotImplementedException();
-		public virtual ulong GetAudioRendererWorkBufferSize(byte[] _0) => throw new NotImplementedException();
+		public virtual Nn.Audio.Detail.IAudioRenderer OpenAudioRenderer(Nn.Audio.Detail.AudioRendererParameterInternal* _0, ulong _1, ulong _2, ulong _3, KObject _4, KObject _5) => throw new NotImplementedException();
+		public virtual ulong GetWorkBufferSize(Nn.Audio.Detail.AudioRendererParameterInternal* _0) => throw new NotImplementedException();
 		public virtual Nn.Audio.Detail.IAudioDevice GetAudioDeviceService(ulong _0) => throw new NotImplementedException();
-		public virtual Nn.Audio.Detail.IAudioRenderer OpenAudioRendererAuto(byte[] _0, ulong _1, ulong _2, ulong _3, ulong _4, KObject _5) => throw new NotImplementedException();
-		public virtual Nn.Audio.Detail.IAudioDevice GetAudioDeviceServiceWithRevisionInfo(uint _0, ulong _1) => throw new NotImplementedException();
+		public virtual Nn.Audio.Detail.IAudioRenderer OpenAudioRendererAuto(Nn.Audio.Detail.AudioRendererParameterInternal* _0, ulong _1, ulong _2, ulong _3, ulong _4, KObject _5) => throw new NotImplementedException();
+		public virtual Nn.Audio.Detail.IAudioDevice GetAudioDeviceServiceWithRevisionInfo(ulong _0, uint _1) => throw new NotImplementedException();
 	}
 	
 	[IpcService("audren:a")]
@@ -376,12 +386,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe class _Base_IAudioRendererManagerForDebugger : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // Unknown0
-					Unknown0(im.GetData<ulong>(0));
+				case 0: { // RequestSuspendForDebug
+					RequestSuspendForDebug(im.GetData<ulong>(0));
 					break;
 				}
-				case 1: { // Unknown1
-					Unknown1(im.GetData<ulong>(0));
+				case 1: { // RequestResumeForDebug
+					RequestResumeForDebug(im.GetData<ulong>(0));
 					break;
 				}
 				default:
@@ -389,8 +399,8 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void Unknown0(ulong _0) => throw new NotImplementedException();
-		public virtual void Unknown1(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestSuspendForDebug(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestResumeForDebug(ulong _0) => throw new NotImplementedException();
 	}
 	
 	[IpcService("codecctl")]
@@ -476,7 +486,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual byte IsCodecDeviceRequested() => throw new NotImplementedException();
 	}
 	
-	[IpcService("audrec:u")]
+	[IpcService("audren:u")]
 	public unsafe partial class IFinalOutputRecorderManager : _Base_IFinalOutputRecorderManager {}
 	public unsafe class _Base_IFinalOutputRecorderManager : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
@@ -522,12 +532,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe class _Base_IFinalOutputRecorderManagerForDebugger : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // Unknown0
-					Unknown0(im.GetData<ulong>(0));
+				case 0: { // RequestSuspendForDebug
+					RequestSuspendForDebug(im.GetData<ulong>(0));
 					break;
 				}
-				case 1: { // Unknown1
-					Unknown1(im.GetData<ulong>(0));
+				case 1: { // RequestResumeForDebug
+					RequestResumeForDebug(im.GetData<ulong>(0));
 					break;
 				}
 				default:
@@ -535,67 +545,67 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void Unknown0(ulong _0) => throw new NotImplementedException();
-		public virtual void Unknown1(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestSuspendForDebug(ulong _0) => throw new NotImplementedException();
+		public virtual void RequestResumeForDebug(ulong _0) => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class IAudioDevice : _Base_IAudioDevice {}
 	public unsafe class _Base_IAudioDevice : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // ListAudioDeviceName
-					ListAudioDeviceName(out var _0, im.GetBuffer<byte>(0x6, 0));
+				case 0: { // Unknown0
+					Unknown0(out var _0, im.GetBuffer<byte>(0x6, 0));
 					om.SetData(0, _0);
 					break;
 				}
-				case 1: { // SetAudioDeviceOutputVolume
-					SetAudioDeviceOutputVolume(im.GetData<uint>(0), im.GetBuffer<byte>(0x5, 0));
+				case 1: { // Unknown1
+					Unknown1(im.GetData<uint>(0), im.GetBuffer<byte>(0x5, 0));
 					break;
 				}
-				case 2: { // GetAudioDeviceOutputVolume
-					var ret = GetAudioDeviceOutputVolume(im.GetBuffer<byte>(0x5, 0));
+				case 2: { // Unknown2
+					var ret = Unknown2(im.GetBuffer<byte>(0x5, 0));
 					om.SetData(0, ret);
 					break;
 				}
-				case 3: { // GetActiveAudioDeviceName
-					GetActiveAudioDeviceName(im.GetBuffer<byte>(0x6, 0));
+				case 3: { // Unknown3
+					Unknown3(im.GetBuffer<byte>(0x6, 0));
 					break;
 				}
-				case 4: { // QueryAudioDeviceSystemEvent
-					var ret = QueryAudioDeviceSystemEvent();
+				case 4: { // Unknown4
+					var ret = Unknown4();
 					om.Copy(0, ret.Handle);
 					break;
 				}
-				case 5: { // GetActiveChannelCount
-					var ret = GetActiveChannelCount();
+				case 5: { // Unknown5
+					var ret = Unknown5();
 					om.SetData(0, ret);
 					break;
 				}
-				case 6: { // ListAudioDeviceNameAuto
-					ListAudioDeviceNameAuto(out var _0, im.GetBuffer<byte>(0x22, 0));
+				case 6: { // Unknown6
+					Unknown6(out var _0, im.GetBuffer<byte>(0x22, 0));
 					om.SetData(0, _0);
 					break;
 				}
-				case 7: { // SetAudioDeviceOutputVolumeAuto
-					SetAudioDeviceOutputVolumeAuto(im.GetData<uint>(0), im.GetBuffer<byte>(0x21, 0));
+				case 7: { // Unknown7
+					Unknown7(im.GetData<uint>(0), im.GetBuffer<byte>(0x21, 0));
 					break;
 				}
-				case 8: { // GetAudioDeviceOutputVolumeAuto
-					var ret = GetAudioDeviceOutputVolumeAuto(im.GetBuffer<byte>(0x21, 0));
+				case 8: { // Unknown8
+					var ret = Unknown8(im.GetBuffer<byte>(0x21, 0));
 					om.SetData(0, ret);
 					break;
 				}
-				case 10: { // GetActiveAudioDeviceNameAuto
-					GetActiveAudioDeviceNameAuto(im.GetBuffer<byte>(0x22, 0));
+				case 10: { // Unknown10
+					Unknown10(im.GetBuffer<byte>(0x22, 0));
 					break;
 				}
-				case 11: { // QueryAudioDeviceInputEvent
-					var ret = QueryAudioDeviceInputEvent();
+				case 11: { // Unknown11
+					var ret = Unknown11();
 					om.Copy(0, ret.Handle);
 					break;
 				}
-				case 12: { // QueryAudioDeviceOutputEvent
-					var ret = QueryAudioDeviceOutputEvent();
+				case 12: { // Unknown12
+					var ret = Unknown12();
 					om.Copy(0, ret.Handle);
 					break;
 				}
@@ -604,18 +614,18 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void ListAudioDeviceName(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void SetAudioDeviceOutputVolume(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual uint GetAudioDeviceOutputVolume(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void GetActiveAudioDeviceName(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual KObject QueryAudioDeviceSystemEvent() => throw new NotImplementedException();
-		public virtual uint GetActiveChannelCount() => throw new NotImplementedException();
-		public virtual void ListAudioDeviceNameAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void SetAudioDeviceOutputVolumeAuto(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual uint GetAudioDeviceOutputVolumeAuto(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void GetActiveAudioDeviceNameAuto(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual KObject QueryAudioDeviceInputEvent() => throw new NotImplementedException();
-		public virtual KObject QueryAudioDeviceOutputEvent() => throw new NotImplementedException();
+		public virtual void Unknown0(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void Unknown1(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual uint Unknown2(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void Unknown3(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual KObject Unknown4() => throw new NotImplementedException();
+		public virtual uint Unknown5() => throw new NotImplementedException();
+		public virtual void Unknown6(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void Unknown7(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual uint Unknown8(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void Unknown10(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual KObject Unknown11() => throw new NotImplementedException();
+		public virtual KObject Unknown12() => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class IAudioIn : _Base_IAudioIn {}
@@ -636,7 +646,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // AppendAudioInBuffer
-					AppendAudioInBuffer(im.GetData<ulong>(0), im.GetBuffer<byte>(0x5, 0));
+					AppendAudioInBuffer(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x5, 0));
 					break;
 				}
 				case 4: { // RegisterBufferEvent
@@ -645,7 +655,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 5: { // GetReleasedAudioInBuffer
-					GetReleasedAudioInBuffer(out var _0, im.GetBuffer<byte>(0x6, 0));
+					GetReleasedAudioInBuffer(out var _0, im.GetBuffer<Nn.Audio.AudioInBuffer>(0x6, 0));
 					om.SetData(0, _0);
 					break;
 				}
@@ -655,20 +665,20 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 7: { // AppendAudioInBufferWithUserEvent
-					AppendAudioInBufferWithUserEvent(im.GetData<ulong>(0), Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x5, 0));
+					AppendAudioInBufferWithUserEvent(im.GetData<ulong>(0), Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x5, 0));
 					break;
 				}
 				case 8: { // AppendAudioInBufferAuto
-					AppendAudioInBufferAuto(im.GetData<ulong>(0), im.GetBuffer<byte>(0x21, 0));
+					AppendAudioInBufferAuto(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x21, 0));
 					break;
 				}
 				case 9: { // GetReleasedAudioInBufferAuto
-					GetReleasedAudioInBufferAuto(out var _0, im.GetBuffer<byte>(0x22, 0));
+					GetReleasedAudioInBufferAuto(out var _0, im.GetBuffer<Nn.Audio.AudioInBuffer>(0x22, 0));
 					om.SetData(0, _0);
 					break;
 				}
 				case 10: { // AppendAudioInBufferWithUserEventAuto
-					AppendAudioInBufferWithUserEventAuto(im.GetData<ulong>(0), Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x21, 0));
+					AppendAudioInBufferWithUserEventAuto(im.GetData<ulong>(0), Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x21, 0));
 					break;
 				}
 				case 11: { // GetAudioInBufferCount
@@ -693,16 +703,16 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual uint GetAudioInState() => throw new NotImplementedException();
 		public virtual void StartAudioIn() => throw new NotImplementedException();
 		public virtual void StopAudioIn() => throw new NotImplementedException();
-		public virtual void AppendAudioInBuffer(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void AppendAudioInBuffer(ulong tag, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
 		public virtual KObject RegisterBufferEvent() => throw new NotImplementedException();
-		public virtual void GetReleasedAudioInBuffer(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual byte ContainsAudioInBuffer(ulong _0) => throw new NotImplementedException();
-		public virtual void AppendAudioInBufferWithUserEvent(ulong _0, KObject _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void AppendAudioInBufferAuto(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void GetReleasedAudioInBufferAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void AppendAudioInBufferWithUserEventAuto(ulong _0, KObject _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void GetReleasedAudioInBuffer(out uint count, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
+		public virtual byte ContainsAudioInBuffer(ulong tag) => throw new NotImplementedException();
+		public virtual void AppendAudioInBufferWithUserEvent(ulong tag, KObject _1, Buffer<Nn.Audio.AudioInBuffer> _2) => throw new NotImplementedException();
+		public virtual void AppendAudioInBufferAuto(ulong tag, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
+		public virtual void GetReleasedAudioInBufferAuto(out uint count, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
+		public virtual void AppendAudioInBufferWithUserEventAuto(ulong tag, KObject _1, Buffer<Nn.Audio.AudioInBuffer> _2) => throw new NotImplementedException();
 		public virtual uint GetAudioInBufferCount() => throw new NotImplementedException();
-		public virtual void SetAudioInDeviceGain(uint _0) => throw new NotImplementedException();
+		public virtual void SetAudioInDeviceGain(uint gain) => throw new NotImplementedException();
 		public virtual uint GetAudioInDeviceGain() => throw new NotImplementedException();
 	}
 	
@@ -724,7 +734,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // AppendAudioOutBuffer
-					AppendAudioOutBuffer(im.GetData<ulong>(0), im.GetBuffer<byte>(0x5, 0));
+					AppendAudioOutBuffer(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioOutBuffer>(0x5, 0));
 					break;
 				}
 				case 4: { // RegisterBufferEvent
@@ -733,7 +743,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 5: { // GetReleasedAudioOutBuffer
-					GetReleasedAudioOutBuffer(out var _0, im.GetBuffer<byte>(0x6, 0));
+					GetReleasedAudioOutBuffer(out var _0, im.GetBuffer<Nn.Audio.AudioOutBuffer>(0x6, 0));
 					om.SetData(0, _0);
 					break;
 				}
@@ -743,11 +753,11 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 7: { // AppendAudioOutBufferAuto
-					AppendAudioOutBufferAuto(im.GetData<ulong>(0), im.GetBuffer<byte>(0x21, 0));
+					AppendAudioOutBufferAuto(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioOutBuffer>(0x21, 0));
 					break;
 				}
 				case 8: { // GetReleasedAudioOutBufferAuto
-					GetReleasedAudioOutBufferAuto(out var _0, im.GetBuffer<byte>(0x22, 0));
+					GetReleasedAudioOutBufferAuto(out var _0, im.GetBuffer<Nn.Audio.AudioOutBuffer>(0x22, 0));
 					om.SetData(0, _0);
 					break;
 				}
@@ -774,12 +784,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual uint GetAudioOutState() => throw new NotImplementedException();
 		public virtual void StartAudioOut() => throw new NotImplementedException();
 		public virtual void StopAudioOut() => throw new NotImplementedException();
-		public virtual void AppendAudioOutBuffer(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void AppendAudioOutBuffer(ulong tag, Buffer<Nn.Audio.AudioOutBuffer> _1) => throw new NotImplementedException();
 		public virtual KObject RegisterBufferEvent() => throw new NotImplementedException();
-		public virtual void GetReleasedAudioOutBuffer(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual byte ContainsAudioOutBuffer(ulong _0) => throw new NotImplementedException();
-		public virtual void AppendAudioOutBufferAuto(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void GetReleasedAudioOutBufferAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void GetReleasedAudioOutBuffer(out uint count, Buffer<Nn.Audio.AudioOutBuffer> _1) => throw new NotImplementedException();
+		public virtual byte ContainsAudioOutBuffer(ulong tag) => throw new NotImplementedException();
+		public virtual void AppendAudioOutBufferAuto(ulong tag, Buffer<Nn.Audio.AudioOutBuffer> _1) => throw new NotImplementedException();
+		public virtual void GetReleasedAudioOutBufferAuto(out uint count, Buffer<Nn.Audio.AudioOutBuffer> _1) => throw new NotImplementedException();
 		public virtual uint GetAudioOutBufferCount() => throw new NotImplementedException();
 		public virtual ulong GetAudioOutPlayedSampleCount() => throw new NotImplementedException();
 		public virtual byte FlushAudioOutBuffers() => throw new NotImplementedException();
@@ -789,36 +799,36 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe class _Base_IAudioRenderer : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // GetAudioRendererSampleRate
-					var ret = GetAudioRendererSampleRate();
+				case 0: { // GetSampleRate
+					var ret = GetSampleRate();
 					om.SetData(0, ret);
 					break;
 				}
-				case 1: { // GetAudioRendererSampleCount
-					var ret = GetAudioRendererSampleCount();
+				case 1: { // GetSampleCount
+					var ret = GetSampleCount();
 					om.SetData(0, ret);
 					break;
 				}
-				case 2: { // GetAudioRendererMixBufferCount
-					var ret = GetAudioRendererMixBufferCount();
+				case 2: { // GetMixBufferCount
+					var ret = GetMixBufferCount();
 					om.SetData(0, ret);
 					break;
 				}
-				case 3: { // GetAudioRendererState
-					var ret = GetAudioRendererState();
+				case 3: { // GetState
+					var ret = GetState();
 					om.SetData(0, ret);
 					break;
 				}
 				case 4: { // RequestUpdateAudioRenderer
-					RequestUpdateAudioRenderer(im.GetBuffer<byte>(0x5, 0), im.GetBuffer<byte>(0x6, 0), im.GetBuffer<byte>(0x6, 1));
+					RequestUpdateAudioRenderer(im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x5, 0), im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x6, 0), im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x6, 1));
 					break;
 				}
-				case 5: { // StartAudioRenderer
-					StartAudioRenderer();
+				case 5: { // Start
+					Start();
 					break;
 				}
-				case 6: { // StopAudioRenderer
-					StopAudioRenderer();
+				case 6: { // Stop
+					Stop();
 					break;
 				}
 				case 7: { // QuerySystemEvent
@@ -836,7 +846,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 10: { // RequestUpdateAudioRendererAuto
-					RequestUpdateAudioRendererAuto(im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x22, 0), im.GetBuffer<byte>(0x22, 1));
+					RequestUpdateAudioRendererAuto(im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x21, 0), im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x22, 0), im.GetBuffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader>(0x22, 1));
 					break;
 				}
 				case 11: { // ExecuteAudioRendererRendering
@@ -848,17 +858,17 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual uint GetAudioRendererSampleRate() => throw new NotImplementedException();
-		public virtual uint GetAudioRendererSampleCount() => throw new NotImplementedException();
-		public virtual uint GetAudioRendererMixBufferCount() => throw new NotImplementedException();
-		public virtual uint GetAudioRendererState() => throw new NotImplementedException();
-		public virtual void RequestUpdateAudioRenderer(Buffer<byte> _0, Buffer<byte> _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void StartAudioRenderer() => throw new NotImplementedException();
-		public virtual void StopAudioRenderer() => throw new NotImplementedException();
+		public virtual uint GetSampleRate() => throw new NotImplementedException();
+		public virtual uint GetSampleCount() => throw new NotImplementedException();
+		public virtual uint GetMixBufferCount() => throw new NotImplementedException();
+		public virtual uint GetState() => throw new NotImplementedException();
+		public virtual void RequestUpdateAudioRenderer(Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _0, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _1, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _2) => throw new NotImplementedException();
+		public virtual void Start() => throw new NotImplementedException();
+		public virtual void Stop() => throw new NotImplementedException();
 		public virtual KObject QuerySystemEvent() => throw new NotImplementedException();
-		public virtual void SetAudioRendererRenderingTimeLimit(uint _0) => throw new NotImplementedException();
+		public virtual void SetAudioRendererRenderingTimeLimit(uint limit) => throw new NotImplementedException();
 		public virtual uint GetAudioRendererRenderingTimeLimit() => throw new NotImplementedException();
-		public virtual void RequestUpdateAudioRendererAuto(Buffer<byte> _0, Buffer<byte> _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void RequestUpdateAudioRendererAuto(Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _0, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _1, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _2) => throw new NotImplementedException();
 		public virtual void ExecuteAudioRendererRendering() => throw new NotImplementedException();
 	}
 	
@@ -880,7 +890,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 3: { // AppendFinalOutputRecorderBuffer
-					AppendFinalOutputRecorderBuffer(im.GetData<ulong>(0), im.GetBuffer<byte>(0x5, 0));
+					AppendFinalOutputRecorderBuffer(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x5, 0));
 					break;
 				}
 				case 4: { // RegisterBufferEvent
@@ -889,7 +899,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 5: { // GetReleasedFinalOutputRecorderBuffer
-					GetReleasedFinalOutputRecorderBuffer(out var _0, out var _1, im.GetBuffer<byte>(0x6, 0));
+					GetReleasedFinalOutputRecorderBuffer(out var _0, out var _1, im.GetBuffer<Nn.Audio.AudioInBuffer>(0x6, 0));
 					om.SetData(0, _0);
 					om.SetData(8, _1);
 					break;
@@ -905,11 +915,11 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					break;
 				}
 				case 8: { // AppendFinalOutputRecorderBufferAuto
-					AppendFinalOutputRecorderBufferAuto(im.GetData<ulong>(0), im.GetBuffer<byte>(0x21, 0));
+					AppendFinalOutputRecorderBufferAuto(im.GetData<ulong>(0), im.GetBuffer<Nn.Audio.AudioInBuffer>(0x21, 0));
 					break;
 				}
 				case 9: { // GetReleasedFinalOutputRecorderBufferAuto
-					GetReleasedFinalOutputRecorderBufferAuto(out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
+					GetReleasedFinalOutputRecorderBufferAuto(out var _0, out var _1, im.GetBuffer<Nn.Audio.AudioInBuffer>(0x22, 0));
 					om.SetData(0, _0);
 					om.SetData(8, _1);
 					break;
@@ -922,12 +932,12 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual uint GetFinalOutputRecorderState() => throw new NotImplementedException();
 		public virtual void StartFinalOutputRecorder() => throw new NotImplementedException();
 		public virtual void StopFinalOutputRecorder() => throw new NotImplementedException();
-		public virtual void AppendFinalOutputRecorderBuffer(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void AppendFinalOutputRecorderBuffer(ulong _0, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
 		public virtual KObject RegisterBufferEvent() => throw new NotImplementedException();
-		public virtual void GetReleasedFinalOutputRecorderBuffer(out uint _0, out ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void GetReleasedFinalOutputRecorderBuffer(out uint _0, out ulong _1, Buffer<Nn.Audio.AudioInBuffer> _2) => throw new NotImplementedException();
 		public virtual byte ContainsFinalOutputRecorderBuffer(ulong _0) => throw new NotImplementedException();
 		public virtual ulong Unknown7(ulong _0) => throw new NotImplementedException();
-		public virtual void AppendFinalOutputRecorderBufferAuto(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void GetReleasedFinalOutputRecorderBufferAuto(out uint _0, out ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void AppendFinalOutputRecorderBufferAuto(ulong _0, Buffer<Nn.Audio.AudioInBuffer> _1) => throw new NotImplementedException();
+		public virtual void GetReleasedFinalOutputRecorderBufferAuto(out uint _0, out ulong _1, Buffer<Nn.Audio.AudioInBuffer> _2) => throw new NotImplementedException();
 	}
 }

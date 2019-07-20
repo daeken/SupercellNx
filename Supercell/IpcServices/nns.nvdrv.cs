@@ -12,7 +12,7 @@ using static Supercell.Globals;
 #pragma warning disable 649
 
 // ReSharper disable CheckNamespace
-namespace Supercell.IpcServices.nns.nvdrv {
+namespace Supercell.IpcServices.Nns.Nvdrv {
 	enum NvStatus {
 		NotAvailableInProduction = 196614, 
 		Success                  = 0, 
@@ -483,17 +483,12 @@ namespace Supercell.IpcServices.nns.nvdrv {
 			output.Value = args;
 		}
 	}
-	
-	[IpcService("nvdrv")]
-	[IpcService("nvdrv:a")]
-	[IpcService("nvdrv:s")]
-	[IpcService("nvdrv:t")]
-	public class INvDrvServices : IpcInterface {
+
+	public unsafe partial class INvDrvServices {
 		static uint CurFd;
 		static readonly Dictionary<uint, NvDevice> Fds = new Dictionary<uint, NvDevice>();
 
-		[IpcCommand(0)]
-		void Open([Buffer(0x5)] Buffer<byte> pathBuffer, out uint fd, out uint error_code) {
+		public override void Open(Buffer<byte> pathBuffer, out uint fd, out uint error_code) {
 			lock(Fds) {
 				var cfd = fd = CurFd++;
 				void Add(NvDevice device) => Fds[cfd] = device;
@@ -518,51 +513,31 @@ namespace Supercell.IpcServices.nns.nvdrv {
 			}
 		}
 
-		[IpcCommand(1)]
-		void Ioctl(uint fd, uint cmd, [Buffer(0x21)] Buffer<byte> input, out uint error_code,
-			[Buffer(0x22)] Buffer<byte> output) {
+		public override void Ioctl(uint fd, uint cmd, Buffer<byte> input, out uint error_code, Buffer<byte> output) =>
 			error_code = Fds[fd].Ioctl(cmd, input, output);
-		}
-
-		[IpcCommand(2)]
-		void Close(uint fd, out uint error_code) {
+		
+		public override uint _Close(uint fd) {
 			Fds.Remove(fd);
-			error_code = 0;
+			return 0;
 		}
 
-		[IpcCommand(3)]
-		void Initialize(uint transfer_memory_size, [Move] KObject current_process, [Move] KObject transfer_memory,
-			out uint error_code) => error_code = 0;
+		public override uint Initialize(uint transfer_memory_size, KObject current_process, KObject transfer_memory) => 0;
 
-		[IpcCommand(4)]
-		void QueryEvent(uint fd, uint event_id, out uint error_code, [Move] out KObject evt) {
+		public override void QueryEvent(uint fd, uint event_id, out uint error_code, out KObject evt) {
 			error_code = 0;
 			evt = Fds[fd].GetEvent(event_id);
 		}
 		
-		[IpcCommand(5)]
-		void MapSharedMem(uint fd, uint nvmap_handle, [Move] KObject unknown0, out uint unknown1) => throw new NotImplementedException();
-		[IpcCommand(6)]
-		void GetStatus([Bytes(0x24)] out byte[] unknown0) => throw new NotImplementedException();
-		[IpcCommand(7)]
-		void ForceSetClientPID(ulong pid, out uint error_code) => throw new NotImplementedException();
-
-		[IpcCommand(8)]
-		void SetClientPID(ulong unknown0, [Pid] ulong pid, out uint error_code) {
-			error_code = 0;
-		}
+		public override uint MapSharedMem(uint fd, uint nvmap_handle, KObject _2) => throw new NotImplementedException();
+		public override object GetStatus() => throw new NotImplementedException();
+		public override uint ForceSetClientPID(ulong pid) => throw new NotImplementedException();
 		
-		[IpcCommand(9)]
-		void DumpGraphicsMemoryInfo() => throw new NotImplementedException();
-		[IpcCommand(10)]
-		void Unknown10(uint unknown0, [Move] KObject unknown1, out uint unknown2) => throw new NotImplementedException();
-		[IpcCommand(11)]
-		void Ioctl2(uint unknown0, uint unknown1, [Buffer(0x21)] Buffer<byte> unknown2, [Buffer(0x21)] Buffer<byte> unknown3, out uint unknown4, [Buffer(0x22)] Buffer<byte> unknown5) => throw new NotImplementedException();
-		[IpcCommand(12)]
-		void Ioctl3(uint unknown0, uint unknown1, [Buffer(0x21)] Buffer<byte> unknown2, out uint unknown3, [Buffer(0x22)] Buffer<byte> unknown4, [Buffer(0x22)] Buffer<byte> unknown5) => throw new NotImplementedException();
-
-		[IpcCommand(13)]
-		void Unknown13(ulong unknown0) {
-		}
+		public override uint SetClientPID(ulong _0, ulong _1) => 0;
+		
+		public override void DumpGraphicsMemoryInfo() => throw new NotImplementedException();
+		public override uint Unknown10(uint _0, KObject _1) => throw new NotImplementedException();
+		public override void Ioctl2(uint _0, uint _1, Buffer<byte> _2, Buffer<byte> _3, out uint _4, Buffer<byte> _5) => throw new NotImplementedException();
+		public override void Ioctl3(uint _0, uint _1, Buffer<byte> _2, out uint _3, Buffer<byte> _4, Buffer<byte> _5) => throw new NotImplementedException();
+		public override void Unknown13(object _0) {}
 	}
 }

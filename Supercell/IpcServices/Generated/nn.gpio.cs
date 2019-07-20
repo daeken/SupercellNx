@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Gpio {
 	[IpcService("gpio")]
@@ -7,49 +8,37 @@ namespace Supercell.IpcServices.Nn.Gpio {
 	public unsafe class _Base_IManager : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // OpenSessionForDev
-					var ret = OpenSessionForDev(im.GetData<uint>(0));
+				case 0: { // Unknown0
+					var ret = Unknown0(im.GetData<uint>(0));
 					om.Move(0, ret.Handle);
 					break;
 				}
-				case 1: { // OpenSession
-					var ret = OpenSession(im.GetData<uint>(0));
+				case 1: { // GetPadSession
+					var ret = GetPadSession(im.GetData<uint>(0));
 					om.Move(0, ret.Handle);
 					break;
 				}
-				case 2: { // OpenSessionForTest
-					var ret = OpenSessionForTest(im.GetData<uint>(0));
+				case 2: { // Unknown2
+					var ret = Unknown2(im.GetData<uint>(0));
 					om.Move(0, ret.Handle);
 					break;
 				}
-				case 3: { // IsWakeEventActive
-					var ret = IsWakeEventActive(im.GetData<uint>(0));
+				case 3: { // Unknown3
+					var ret = Unknown3(im.GetData<uint>(0));
 					om.SetData(0, ret);
 					break;
 				}
-				case 4: { // GetWakeEventActiveFlagSet
-					GetWakeEventActiveFlagSet(out var _0);
+				case 4: { // Unknown4
+					Unknown4(out var _0);
 					om.SetBytes(0, _0);
 					break;
 				}
-				case 5: { // SetWakeEventActiveFlagSetForDebug
-					SetWakeEventActiveFlagSetForDebug(im.GetData<byte>(0), im.GetData<uint>(4));
+				case 5: { // Unknown5
+					Unknown5(im.GetData<byte>(0), im.GetData<uint>(4));
 					break;
 				}
-				case 6: { // SetWakePinDebugMode
-					SetWakePinDebugMode(im.GetData<uint>(0));
-					break;
-				}
-				case 7: { // OpenSession2
-					var ret = OpenSession2(null);
-					break;
-				}
-				case 8: { // IsWakeEventActive2
-					var ret = IsWakeEventActive2(null);
-					break;
-				}
-				case 9: { // SetWakeEventActiveFlagSetForDebug2
-					var ret = SetWakeEventActiveFlagSetForDebug2(null);
+				case 6: { // Unknown6
+					Unknown6(im.GetData<uint>(0));
 					break;
 				}
 				default:
@@ -57,16 +46,13 @@ namespace Supercell.IpcServices.Nn.Gpio {
 			}
 		}
 		
-		public virtual Nn.Gpio.IPadSession OpenSessionForDev(uint _0) => throw new NotImplementedException();
-		public virtual Nn.Gpio.IPadSession OpenSession(uint _0) => throw new NotImplementedException();
-		public virtual Nn.Gpio.IPadSession OpenSessionForTest(uint _0) => throw new NotImplementedException();
-		public virtual byte IsWakeEventActive(uint _0) => throw new NotImplementedException();
-		public virtual void GetWakeEventActiveFlagSet(out byte[] _0) => throw new NotImplementedException();
-		public virtual void SetWakeEventActiveFlagSetForDebug(byte _0, uint _1) => throw new NotImplementedException();
-		public virtual void SetWakePinDebugMode(uint _0) => throw new NotImplementedException();
-		public virtual object OpenSession2(object _0) => throw new NotImplementedException();
-		public virtual object IsWakeEventActive2(object _0) => throw new NotImplementedException();
-		public virtual object SetWakeEventActiveFlagSetForDebug2(object _0) => throw new NotImplementedException();
+		public virtual Nn.Gpio.IPadSession Unknown0(uint _0) => throw new NotImplementedException();
+		public virtual Nn.Gpio.IPadSession GetPadSession(uint _0) => throw new NotImplementedException();
+		public virtual Nn.Gpio.IPadSession Unknown2(uint _0) => throw new NotImplementedException();
+		public virtual byte Unknown3(uint _0) => throw new NotImplementedException();
+		public virtual void Unknown4(out byte[] _0) => throw new NotImplementedException();
+		public virtual void Unknown5(byte _0, uint _1) => throw new NotImplementedException();
+		public virtual void Unknown6(uint _0) => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class IPadSession : _Base_IPadSession {}

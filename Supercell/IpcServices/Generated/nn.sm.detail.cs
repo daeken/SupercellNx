@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Sm.Detail {
 	[IpcService("sm:m")]
@@ -30,7 +31,7 @@ namespace Supercell.IpcServices.Nn.Sm.Detail {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // Initialize
-					Initialize(im.GetData<ulong>(0), im.Pid);
+					Initialize(im.Pid, im.GetData<ulong>(0));
 					break;
 				}
 				case 1: { // GetService
@@ -52,9 +53,9 @@ namespace Supercell.IpcServices.Nn.Sm.Detail {
 			}
 		}
 		
-		public virtual void Initialize(ulong _0, ulong _1) => throw new NotImplementedException();
-		public virtual IpcInterface GetService(byte[] _0) => throw new NotImplementedException();
-		public virtual IpcInterface RegisterService(byte[] _0, byte _1, uint _2) => throw new NotImplementedException();
-		public virtual void UnregisterService(byte[] _0) => throw new NotImplementedException();
+		public virtual void Initialize(ulong _0, ulong reserved) => throw new NotImplementedException();
+		public virtual IpcInterface GetService(byte[] name) => throw new NotImplementedException();
+		public virtual IpcInterface RegisterService(byte[] name, byte _1, uint maxHandles) => throw new NotImplementedException();
+		public virtual void UnregisterService(byte[] name) => throw new NotImplementedException();
 	}
 }

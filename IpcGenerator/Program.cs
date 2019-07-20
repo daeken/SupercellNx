@@ -189,12 +189,17 @@ namespace IpcGenerator {
 			Name = arr[0]?.Value<string>();
 			Type = IpcType.Parse(arr[1].Value<JArray>());
 		}
+
+		public IpcParameter(string name, IpcType type) {
+			Name = name;
+			Type = type;
+		}
 	}
 	
 	public class IpcCommand {
 		public readonly int CommandId;
 		public readonly string Name;
-		public readonly IReadOnlyList<IpcParameter> Inputs, Outputs;
+		public IReadOnlyList<IpcParameter> Inputs, Outputs;
 		public readonly uint LastVersion, VersionAdded, VersionRemoved;
 
 		static uint ParseVersion(string version, uint @default = 0) {
@@ -304,7 +309,23 @@ namespace IpcGenerator {
 						other.x.VersionAdded > command.VersionAdded ||
 						(other.j < i && other.x.LastVersion == command.LastVersion &&
 						 other.x.VersionRemoved == command.VersionRemoved &&
-						 other.x.VersionAdded == command.VersionAdded))).ToList());
+						 other.x.VersionAdded == command.VersionAdded))).Select(RemoveDuplicateArgs).ToList());
+
+		static IpcCommand RemoveDuplicateArgs(IpcCommand command) {
+			var present = new HashSet<string>();
+			var dupes = new HashSet<string>();
+			foreach(var param in command.Inputs.Concat(command.Outputs))
+				if(present.Contains(param.Name))
+					dupes.Add(param.Name);
+				else
+					present.Add(param.Name);
+			var per = dupes.Where(x => x != null).Select(x => (x, 0)).ToDictionary();
+			var all = command.Inputs.Concat(command.Outputs).Select(x =>
+				new IpcParameter(x.Name != null && per.ContainsKey(x.Name) ? $"{x.Name}{per[x.Name]++}" : x.Name, x.Type)).ToList();
+			command.Inputs = all.GetRange(0, command.Inputs.Count);
+			command.Outputs = all.GetRange(command.Inputs.Count, command.Outputs.Count);
+			return command;
+		}
 
 		static void Build(string ns, IReadOnlyDictionary<string, IpcType> types, IReadOnlyDictionary<string, IpcInterface> ifaces) {
 			string GenType(IpcType type, string modifiers = null, bool inStruct = false) {
@@ -312,11 +333,15 @@ namespace IpcGenerator {
 				switch(type) {
 					case IpcIntType(var size, var signed):
 						if(signed)
-							return modifiers + (size switch { 8 => "sbyte", 16 => "short", 32 => "int", 64 => "long", _ =>
-								throw new NotImplementedException() });
+							return modifiers + (size switch {
+								8 => "sbyte", 16 => "short", 32 => "int", 64 => "long", 128 => "Int128", _ =>
+								throw new NotImplementedException()
+							});
 						else
-							return modifiers + (size switch { 8 => "byte", 16 => "ushort", 32 => "uint", 64 => "ulong", _ =>
-								throw new NotImplementedException() });
+							return modifiers + (size switch {
+								8 => "byte", 16 => "ushort", 32 => "uint", 64 => "ulong", 128 => "UInt128", _ =>
+								throw new NotImplementedException()
+							});
 					case IpcFloatType(var size): return modifiers + (size == 64 ? "double" : "float");
 					case IpcBoolType _: return modifiers + "bool";
 					case IpcBufferType(IpcBytesType _, _): return $"Buffer<byte>";
@@ -353,6 +378,7 @@ namespace IpcGenerator {
 			var cb = new CodeBuilder();
 			sw.WriteLine("#pragma warning disable 169, 465");
 			sw.WriteLine("using System;");
+			sw.WriteLine("using UltimateOrb;");
 			sw.WriteLine("using static Supercell.Globals;");
 			sw.WriteLine($"namespace Supercell.IpcServices.{Rename(ns)} {{");
 			cb++;
@@ -483,6 +509,10 @@ namespace IpcGenerator {
 						}
 						var vname = isRet ? "ret" : $"_{outI++}";
 						switch(type) {
+							case IpcBoolType _:
+								outputHandlers.Add($"om.SetData({outputOffset}, {vname});");
+								outputOffset += 4;
+								break;
 							case IpcBufferType(_, var ttype):
 								if(!bufferNums.ContainsKey(ttype))
 									bufferNums[ttype] = 0;
@@ -493,6 +523,13 @@ namespace IpcGenerator {
 								Debug.Assert(size != -1);
 								outputHandlers.Add($"om.SetBytes({outputOffset}, {vname});");
 								outputOffset += size;
+								break;
+							case IpcEnumType et:
+								if(!(et.UnderlyingType is IpcIntType(var esize, _)))
+									throw new NotImplementedException();
+								Align(esize / 8);
+								outputHandlers.Add($"om.SetData({outputOffset}, {vname});");
+								outputOffset += esize / 8;
 								break;
 							case IpcStructType _:
 								Align(type.Alignment == -1 ? 8 : type.Alignment);

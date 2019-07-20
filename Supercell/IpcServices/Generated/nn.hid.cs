@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Hid {
 	[IpcService("hid:dbg")]
@@ -335,6 +336,10 @@ namespace Supercell.IpcServices.Nn.Hid {
 					ActivateKeyboard(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
+				case 32: { // Unknown32
+					Unknown32(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid);
+					break;
+				}
 				case 40: { // AcquireXpadIdEventHandle
 					var ret = AcquireXpadIdEventHandle(im.GetData<ulong>(0));
 					om.Copy(0, ret.Handle);
@@ -407,7 +412,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 69: { // EnableSixAxisSensorFusion
-					EnableSixAxisSensorFusion(im.GetData<byte>(0), im.GetData<uint>(4), im.GetData<ulong>(8), im.Pid);
+					EnableSixAxisSensorFusion(im.GetData<bool>(0), im.GetData<uint>(4), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 70: { // SetSixAxisSensorFusionParameters
@@ -469,16 +474,22 @@ namespace Supercell.IpcServices.Nn.Hid {
 					om.SetData(0, ret);
 					break;
 				}
+				case 83: { // Unknown83
+					var ret = Unknown83(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid);
+					om.SetData(0, ret);
+					break;
+				}
 				case 91: { // ActivateGesture
-					ActivateGesture(im.GetData<uint>(0), im.GetData<ulong>(8), im.Pid);
+					ActivateGesture(im.GetData<int>(0), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 100: { // SetSupportedNpadStyleSet
-					SetSupportedNpadStyleSet(null, im.GetData<ulong>(0), im.Pid);
+					SetSupportedNpadStyleSet(im.GetData<uint>(0), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 101: { // GetSupportedNpadStyleSet
 					var ret = GetSupportedNpadStyleSet(im.GetData<ulong>(0), im.Pid);
+					om.SetData(0, ret);
 					break;
 				}
 				case 102: { // SetSupportedNpadIdType
@@ -502,17 +513,12 @@ namespace Supercell.IpcServices.Nn.Hid {
 					DisconnectNpad(im.GetData<uint>(0), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
-				case 108: { // GetPlayerLedPattern
-					var ret = GetPlayerLedPattern(im.GetData<uint>(0));
-					om.SetData(0, ret);
-					break;
-				}
-				case 109: { // ActivateNpadWithRevision
-					var ret = ActivateNpadWithRevision(null);
+				case 108: { // ActivateNpadWithRevision
+					ActivateNpadWithRevision(im.GetData<uint>(0), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 120: { // SetNpadJoyHoldType
-					SetNpadJoyHoldType(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid);
+					SetNpadJoyHoldType(im.GetData<ulong>(0), im.GetData<long>(8), im.Pid);
 					break;
 				}
 				case 121: { // GetNpadJoyHoldType
@@ -525,7 +531,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 123: { // SetNpadJoyAssignmentModeSingle
-					SetNpadJoyAssignmentModeSingle(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetData<ulong>(16), im.Pid);
+					SetNpadJoyAssignmentModeSingle(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetData<long>(16), im.Pid);
 					break;
 				}
 				case 124: { // SetNpadJoyAssignmentModeDual
@@ -545,7 +551,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 128: { // SetNpadHandheldActivationMode
-					SetNpadHandheldActivationMode(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid);
+					SetNpadHandheldActivationMode(im.GetData<ulong>(0), im.GetData<long>(8), im.Pid);
 					break;
 				}
 				case 129: { // GetNpadHandheldActivationMode
@@ -563,11 +569,13 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 132: { // EnableUnintendedHomeButtonInputProtection
-					EnableUnintendedHomeButtonInputProtection(im.GetData<byte>(0), im.GetData<uint>(4), im.GetData<ulong>(8), im.Pid);
+					EnableUnintendedHomeButtonInputProtection(im.GetData<bool>(0), im.GetData<uint>(4), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 133: { // SetNpadJoyAssignmentModeSingleWithDestination
-					var ret = SetNpadJoyAssignmentModeSingleWithDestination(null);
+					SetNpadJoyAssignmentModeSingleWithDestination(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetData<ulong>(16), im.Pid, out var _0, out var _1);
+					om.SetData(0, _0);
+					om.SetData(4, _1);
 					break;
 				}
 				case 200: { // GetVibrationDeviceInfo
@@ -589,7 +597,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 204: { // PermitVibration
-					PermitVibration(im.GetData<byte>(0));
+					PermitVibration(im.GetData<bool>(0));
 					break;
 				}
 				case 205: { // IsVibrationPermitted
@@ -631,31 +639,36 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 303: { // ActivateSevenSixAxisSensor
-					var ret = ActivateSevenSixAxisSensor(null);
+					ActivateSevenSixAxisSensor(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
 				case 304: { // StartSevenSixAxisSensor
-					var ret = StartSevenSixAxisSensor(null);
+					StartSevenSixAxisSensor(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
 				case 305: { // StopSevenSixAxisSensor
-					var ret = StopSevenSixAxisSensor(null);
+					StopSevenSixAxisSensor(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
 				case 306: { // InitializeSevenSixAxisSensor
-					var ret = InitializeSevenSixAxisSensor(null);
+					InitializeSevenSixAxisSensor(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetData<uint>(16), im.GetData<ulong>(24), im.GetData<ulong>(32), im.Pid);
 					break;
 				}
 				case 307: { // FinalizeSevenSixAxisSensor
-					var ret = FinalizeSevenSixAxisSensor(null);
+					FinalizeSevenSixAxisSensor(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
 				case 308: { // SetSevenSixAxisSensorFusionStrength
-					var ret = SetSevenSixAxisSensorFusionStrength(null);
+					SetSevenSixAxisSensorFusionStrength(im.GetData<float>(0), im.GetData<ulong>(8), im.Pid);
 					break;
 				}
 				case 309: { // GetSevenSixAxisSensorFusionStrength
-					var ret = GetSevenSixAxisSensorFusionStrength(null);
+					var ret = GetSevenSixAxisSensorFusionStrength(im.GetData<ulong>(0), im.Pid);
+					om.SetData(0, ret);
+					break;
+				}
+				case 310: { // Unknown310
+					Unknown310(im.GetData<ulong>(0), im.Pid);
 					break;
 				}
 				case 400: { // IsUsbFullKeyControllerEnabled
@@ -664,7 +677,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 401: { // EnableUsbFullKeyController
-					EnableUsbFullKeyController(im.GetData<byte>(0));
+					EnableUsbFullKeyController(im.GetData<bool>(0));
 					break;
 				}
 				case 402: { // IsUsbFullKeyControllerConnected
@@ -680,7 +693,7 @@ namespace Supercell.IpcServices.Nn.Hid {
 				case 404: { // HasLeftRightBattery
 					HasLeftRightBattery(im.GetData<uint>(0), out var _0, out var _1);
 					om.SetData(0, _0);
-					om.SetData(1, _1);
+					om.SetData(4, _1);
 					break;
 				}
 				case 405: { // GetNpadInterfaceType
@@ -695,71 +708,114 @@ namespace Supercell.IpcServices.Nn.Hid {
 					break;
 				}
 				case 500: { // GetPalmaConnectionHandle
-					var ret = GetPalmaConnectionHandle(null);
+					var ret = GetPalmaConnectionHandle(im.GetData<uint>(0), im.GetData<ulong>(8), im.Pid);
+					om.SetData(0, ret);
 					break;
 				}
 				case 501: { // InitializePalma
-					var ret = InitializePalma(null);
+					InitializePalma(im.GetData<ulong>(0));
 					break;
 				}
 				case 502: { // AcquirePalmaOperationCompleteEvent
-					var ret = AcquirePalmaOperationCompleteEvent(null);
+					var ret = AcquirePalmaOperationCompleteEvent(im.GetData<ulong>(0));
+					om.Copy(0, ret.Handle);
 					break;
 				}
 				case 503: { // GetPalmaOperationInfo
-					var ret = GetPalmaOperationInfo(null);
+					GetPalmaOperationInfo(im.GetData<ulong>(0), out var _0, im.GetBuffer<byte>(0x6, 0));
+					om.SetData(0, _0);
 					break;
 				}
 				case 504: { // PlayPalmaActivity
-					var ret = PlayPalmaActivity(null);
+					PlayPalmaActivity(im.GetData<ulong>(0), im.GetData<ulong>(8));
 					break;
 				}
 				case 505: { // SetPalmaFrModeType
-					var ret = SetPalmaFrModeType(null);
+					SetPalmaFrModeType(im.GetData<ulong>(0), im.GetData<ulong>(8));
 					break;
 				}
 				case 506: { // ReadPalmaStep
-					var ret = ReadPalmaStep(null);
+					ReadPalmaStep(im.GetData<ulong>(0));
 					break;
 				}
 				case 507: { // EnablePalmaStep
-					var ret = EnablePalmaStep(null);
+					EnablePalmaStep(im.GetData<bool>(0), im.GetData<ulong>(8));
 					break;
 				}
-				case 508: { // SuspendPalmaStep
-					var ret = SuspendPalmaStep(null);
+				case 508: { // ResetPalmaStep
+					ResetPalmaStep(im.GetData<ulong>(0));
 					break;
 				}
-				case 509: { // ResetPalmaStep
-					var ret = ResetPalmaStep(null);
+				case 509: { // ReadPalmaApplicationSection
+					ReadPalmaApplicationSection(im.GetData<ulong>(0), im.GetData<ulong>(8), im.GetData<ulong>(16));
 					break;
 				}
-				case 510: { // ReadPalmaApplicationSection
-					var ret = ReadPalmaApplicationSection(null);
+				case 510: { // WritePalmaApplicationSection
+					WritePalmaApplicationSection(im.GetData<ulong>(0), im.GetData<ulong>(8), im.GetBuffer<byte>(0x19, 0), im.GetData<ulong>(16));
 					break;
 				}
-				case 511: { // WritePalmaApplicationSection
-					var ret = WritePalmaApplicationSection(null);
+				case 511: { // ReadPalmaUniqueCode
+					ReadPalmaUniqueCode(im.GetData<ulong>(0));
 					break;
 				}
-				case 512: { // ReadPalmaUniqueCode
-					var ret = ReadPalmaUniqueCode(null);
+				case 512: { // SetPalmaUniqueCodeInvalid
+					SetPalmaUniqueCodeInvalid(im.GetData<ulong>(0));
 					break;
 				}
-				case 513: { // SetPalmaUniqueCodeInvalid
-					var ret = SetPalmaUniqueCodeInvalid(null);
+				case 513: { // WritePalmaActivityEntry
+					WritePalmaActivityEntry(im.GetData<ulong>(0), im.GetData<ulong>(8), im.GetData<ulong>(16), im.GetData<ulong>(24), im.GetData<ulong>(32));
 					break;
 				}
-				case 520: { // Unknown520
-					var ret = Unknown520(null);
+				case 514: { // WritePalmaRgbLedPatternEntry
+					WritePalmaRgbLedPatternEntry(im.GetData<ulong>(0), im.GetBuffer<byte>(0x5, 0), im.GetData<ulong>(8));
 					break;
 				}
-				case 521: { // Unknown521
-					var ret = Unknown521(null);
+				case 515: { // WritePalmaWaveEntry
+					WritePalmaWaveEntry(im.GetData<ulong>(0), im.GetData<ulong>(8), Kernel.Get<KObject>(im.GetCopy(0)), im.GetData<ulong>(16), im.GetData<ulong>(24), im.GetData<ulong>(32));
+					break;
+				}
+				case 516: { // SetPalmaDataBaseIdentificationVersion
+					SetPalmaDataBaseIdentificationVersion(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetData<int>(16));
+					break;
+				}
+				case 517: { // GetPalmaDataBaseIdentificationVersion
+					GetPalmaDataBaseIdentificationVersion(im.GetData<ulong>(0));
+					break;
+				}
+				case 518: { // SuspendPalmaFeature
+					SuspendPalmaFeature(im.GetData<ulong>(0), im.GetData<ulong>(8));
+					break;
+				}
+				case 519: { // GetPalmaOperationResult
+					GetPalmaOperationResult(im.GetData<ulong>(0));
+					break;
+				}
+				case 520: { // ReadPalmaPlayLog
+					ReadPalmaPlayLog(im.GetData<ulong>(0), im.GetData<ushort>(8));
+					break;
+				}
+				case 521: { // ResetPalmaPlayLog
+					ResetPalmaPlayLog(im.GetData<ulong>(0), im.GetData<ushort>(8));
+					break;
+				}
+				case 522: { // SetIsPalmaAllConnectable
+					SetIsPalmaAllConnectable(im.GetData<ulong>(0), im.GetData<bool>(8), im.Pid);
+					break;
+				}
+				case 523: { // SetIsPalmaPairedConnectable
+					SetIsPalmaPairedConnectable(im.GetData<ulong>(0), im.GetData<bool>(8), im.Pid);
+					break;
+				}
+				case 524: { // PairPalma
+					PairPalma(im.GetData<ulong>(0));
+					break;
+				}
+				case 525: { // SetPalmaBoostMode
+					SetPalmaBoostMode(im.GetData<bool>(0));
 					break;
 				}
 				case 1000: { // SetNpadCommunicationMode
-					SetNpadCommunicationMode(im.GetData<ulong>(0), im.GetData<ulong>(8), im.Pid);
+					SetNpadCommunicationMode(im.GetData<ulong>(0), im.GetData<long>(8), im.Pid);
 					break;
 				}
 				case 1001: { // GetNpadCommunicationMode
@@ -777,13 +833,14 @@ namespace Supercell.IpcServices.Nn.Hid {
 		public virtual void ActivateTouchScreen(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void ActivateMouse(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void ActivateKeyboard(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void Unknown32(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual KObject AcquireXpadIdEventHandle(ulong _0) => throw new NotImplementedException();
 		public virtual void ReleaseXpadIdEventHandle(ulong _0) => throw new NotImplementedException();
 		public virtual void ActivateXpad(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void GetXpadIds(out ulong _0, Buffer<uint> _1) => throw new NotImplementedException();
+		public virtual void GetXpadIds(out long _0, Buffer<uint> _1) => throw new NotImplementedException();
 		public virtual void ActivateJoyXpad(uint _0) => throw new NotImplementedException();
 		public virtual KObject GetJoyXpadLifoHandle(uint _0) => throw new NotImplementedException();
-		public virtual void GetJoyXpadIds(out ulong _0, Buffer<uint> _1) => throw new NotImplementedException();
+		public virtual void GetJoyXpadIds(out long _0, Buffer<uint> _1) => throw new NotImplementedException();
 		public virtual void ActivateSixAxisSensor(uint _0) => throw new NotImplementedException();
 		public virtual void DeactivateSixAxisSensor(uint _0) => throw new NotImplementedException();
 		public virtual KObject GetSixAxisSensorLifoHandle(uint _0) => throw new NotImplementedException();
@@ -792,8 +849,8 @@ namespace Supercell.IpcServices.Nn.Hid {
 		public virtual KObject GetJoySixAxisSensorLifoHandle(uint _0) => throw new NotImplementedException();
 		public virtual void StartSixAxisSensor(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual void StopSixAxisSensor(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual byte IsSixAxisSensorFusionEnabled(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void EnableSixAxisSensorFusion(byte _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
+		public virtual bool IsSixAxisSensorFusionEnabled(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void EnableSixAxisSensorFusion(bool _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual void SetSixAxisSensorFusionParameters(uint _0, float _1, float _2, ulong _3, ulong _4) => throw new NotImplementedException();
 		public virtual void GetSixAxisSensorFusionParameters(uint _0, ulong _1, ulong _2, out float _3, out float _4) => throw new NotImplementedException();
 		public virtual void ResetSixAxisSensorFusionParameters(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
@@ -806,37 +863,37 @@ namespace Supercell.IpcServices.Nn.Hid {
 		public virtual void SetGyroscopeZeroDriftMode(uint _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual uint GetGyroscopeZeroDriftMode(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual void ResetGyroscopeZeroDriftMode(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual byte IsSixAxisSensorAtRest(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void ActivateGesture(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void SetSupportedNpadStyleSet(object _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual object GetSupportedNpadStyleSet(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual bool IsSixAxisSensorAtRest(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual bool Unknown83(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void ActivateGesture(int _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void SetSupportedNpadStyleSet(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual uint GetSupportedNpadStyleSet(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void SetSupportedNpadIdType(ulong _0, ulong _1, Buffer<uint> _2) => throw new NotImplementedException();
 		public virtual void ActivateNpad(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void DeactivateNpad(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual KObject AcquireNpadStyleSetUpdateEventHandle(uint _0, ulong _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual void DisconnectNpad(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual ulong GetPlayerLedPattern(uint _0) => throw new NotImplementedException();
-		public virtual object ActivateNpadWithRevision(object _0) => throw new NotImplementedException();
-		public virtual void SetNpadJoyHoldType(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual ulong GetNpadJoyHoldType(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void ActivateNpadWithRevision(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void SetNpadJoyHoldType(ulong _0, long _1, ulong _2) => throw new NotImplementedException();
+		public virtual long GetNpadJoyHoldType(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void SetNpadJoyAssignmentModeSingleByDefault(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void SetNpadJoyAssignmentModeSingle(uint _0, ulong _1, ulong _2, ulong _3) => throw new NotImplementedException();
+		public virtual void SetNpadJoyAssignmentModeSingle(uint _0, ulong _1, long _2, ulong _3) => throw new NotImplementedException();
 		public virtual void SetNpadJoyAssignmentModeDual(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual void MergeSingleJoyAsDualJoy(uint _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual void StartLrAssignmentMode(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void StopLrAssignmentMode(ulong _0, ulong _1) => throw new NotImplementedException();
-		public virtual void SetNpadHandheldActivationMode(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual ulong GetNpadHandheldActivationMode(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void SetNpadHandheldActivationMode(ulong _0, long _1, ulong _2) => throw new NotImplementedException();
+		public virtual long GetNpadHandheldActivationMode(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void SwapNpadAssignment(uint _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
-		public virtual byte IsUnintendedHomeButtonInputProtectionEnabled(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual void EnableUnintendedHomeButtonInputProtection(byte _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
-		public virtual object SetNpadJoyAssignmentModeSingleWithDestination(object _0) => throw new NotImplementedException();
+		public virtual bool IsUnintendedHomeButtonInputProtectionEnabled(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void EnableUnintendedHomeButtonInputProtection(bool _0, uint _1, ulong _2, ulong _3) => throw new NotImplementedException();
+		public virtual void SetNpadJoyAssignmentModeSingleWithDestination(uint _0, ulong _1, ulong _2, ulong _3, out bool _4, out uint _5) => throw new NotImplementedException();
 		public virtual void GetVibrationDeviceInfo(uint _0, out byte[] _1) => throw new NotImplementedException();
 		public virtual void SendVibrationValue(uint _0, object _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual object GetActualVibrationValue(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual Nn.Hid.IActiveVibrationDeviceList CreateActiveVibrationDeviceList() => throw new NotImplementedException();
-		public virtual void PermitVibration(byte _0) => throw new NotImplementedException();
-		public virtual byte IsVibrationPermitted() => throw new NotImplementedException();
+		public virtual void PermitVibration(bool _0) => throw new NotImplementedException();
+		public virtual bool IsVibrationPermitted() => throw new NotImplementedException();
 		public virtual void SendVibrationValues(ulong _0, Buffer<uint> _1, Buffer<byte> _2) => throw new NotImplementedException();
 		public virtual void SendVibrationGcErmCommand(uint _0, ulong _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual ulong GetActualVibrationGcErmCommand(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
@@ -845,38 +902,49 @@ namespace Supercell.IpcServices.Nn.Hid {
 		public virtual void ActivateConsoleSixAxisSensor(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void StartConsoleSixAxisSensor(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
 		public virtual void StopConsoleSixAxisSensor(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual object ActivateSevenSixAxisSensor(object _0) => throw new NotImplementedException();
-		public virtual object StartSevenSixAxisSensor(object _0) => throw new NotImplementedException();
-		public virtual object StopSevenSixAxisSensor(object _0) => throw new NotImplementedException();
-		public virtual object InitializeSevenSixAxisSensor(object _0) => throw new NotImplementedException();
-		public virtual object FinalizeSevenSixAxisSensor(object _0) => throw new NotImplementedException();
-		public virtual object SetSevenSixAxisSensorFusionStrength(object _0) => throw new NotImplementedException();
-		public virtual object GetSevenSixAxisSensorFusionStrength(object _0) => throw new NotImplementedException();
-		public virtual byte IsUsbFullKeyControllerEnabled() => throw new NotImplementedException();
-		public virtual void EnableUsbFullKeyController(byte _0) => throw new NotImplementedException();
-		public virtual byte IsUsbFullKeyControllerConnected(uint _0) => throw new NotImplementedException();
-		public virtual byte HasBattery(uint _0) => throw new NotImplementedException();
-		public virtual void HasLeftRightBattery(uint _0, out byte _1, out byte _2) => throw new NotImplementedException();
+		public virtual void ActivateSevenSixAxisSensor(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void StartSevenSixAxisSensor(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void StopSevenSixAxisSensor(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void InitializeSevenSixAxisSensor(uint _0, ulong _1, uint _2, ulong _3, ulong _4, ulong _5) => throw new NotImplementedException();
+		public virtual void FinalizeSevenSixAxisSensor(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void SetSevenSixAxisSensorFusionStrength(float _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual float GetSevenSixAxisSensorFusionStrength(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void Unknown310(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual bool IsUsbFullKeyControllerEnabled() => throw new NotImplementedException();
+		public virtual void EnableUsbFullKeyController(bool _0) => throw new NotImplementedException();
+		public virtual bool IsUsbFullKeyControllerConnected(uint _0) => throw new NotImplementedException();
+		public virtual bool HasBattery(uint _0) => throw new NotImplementedException();
+		public virtual void HasLeftRightBattery(uint _0, out bool _1, out bool _2) => throw new NotImplementedException();
 		public virtual byte GetNpadInterfaceType(uint _0) => throw new NotImplementedException();
 		public virtual void GetNpadLeftRightInterfaceType(uint _0, out byte _1, out byte _2) => throw new NotImplementedException();
-		public virtual object GetPalmaConnectionHandle(object _0) => throw new NotImplementedException();
-		public virtual object InitializePalma(object _0) => throw new NotImplementedException();
-		public virtual object AcquirePalmaOperationCompleteEvent(object _0) => throw new NotImplementedException();
-		public virtual object GetPalmaOperationInfo(object _0) => throw new NotImplementedException();
-		public virtual object PlayPalmaActivity(object _0) => throw new NotImplementedException();
-		public virtual object SetPalmaFrModeType(object _0) => throw new NotImplementedException();
-		public virtual object ReadPalmaStep(object _0) => throw new NotImplementedException();
-		public virtual object EnablePalmaStep(object _0) => throw new NotImplementedException();
-		public virtual object SuspendPalmaStep(object _0) => throw new NotImplementedException();
-		public virtual object ResetPalmaStep(object _0) => throw new NotImplementedException();
-		public virtual object ReadPalmaApplicationSection(object _0) => throw new NotImplementedException();
-		public virtual object WritePalmaApplicationSection(object _0) => throw new NotImplementedException();
-		public virtual object ReadPalmaUniqueCode(object _0) => throw new NotImplementedException();
-		public virtual object SetPalmaUniqueCodeInvalid(object _0) => throw new NotImplementedException();
-		public virtual object Unknown520(object _0) => throw new NotImplementedException();
-		public virtual object Unknown521(object _0) => throw new NotImplementedException();
-		public virtual void SetNpadCommunicationMode(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
-		public virtual ulong GetNpadCommunicationMode() => throw new NotImplementedException();
+		public virtual ulong GetPalmaConnectionHandle(uint _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void InitializePalma(ulong _0) => throw new NotImplementedException();
+		public virtual KObject AcquirePalmaOperationCompleteEvent(ulong _0) => throw new NotImplementedException();
+		public virtual void GetPalmaOperationInfo(ulong _0, out ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void PlayPalmaActivity(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void SetPalmaFrModeType(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void ReadPalmaStep(ulong _0) => throw new NotImplementedException();
+		public virtual void EnablePalmaStep(bool _0, ulong _1) => throw new NotImplementedException();
+		public virtual void ResetPalmaStep(ulong _0) => throw new NotImplementedException();
+		public virtual void ReadPalmaApplicationSection(ulong _0, ulong _1, ulong _2) => throw new NotImplementedException();
+		public virtual void WritePalmaApplicationSection(ulong _0, ulong _1, Buffer<byte> _2, ulong _3) => throw new NotImplementedException();
+		public virtual void ReadPalmaUniqueCode(ulong _0) => throw new NotImplementedException();
+		public virtual void SetPalmaUniqueCodeInvalid(ulong _0) => throw new NotImplementedException();
+		public virtual void WritePalmaActivityEntry(ulong _0, ulong _1, ulong _2, ulong _3, ulong _4) => throw new NotImplementedException();
+		public virtual void WritePalmaRgbLedPatternEntry(ulong _0, Buffer<byte> _1, ulong _2) => throw new NotImplementedException();
+		public virtual void WritePalmaWaveEntry(ulong _0, ulong _1, KObject _2, ulong _3, ulong _4, ulong _5) => throw new NotImplementedException();
+		public virtual void SetPalmaDataBaseIdentificationVersion(uint _0, ulong _1, int _2) => throw new NotImplementedException();
+		public virtual void GetPalmaDataBaseIdentificationVersion(ulong _0) => throw new NotImplementedException();
+		public virtual void SuspendPalmaFeature(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual void GetPalmaOperationResult(ulong _0) => throw new NotImplementedException();
+		public virtual void ReadPalmaPlayLog(ulong _0, ushort _1) => throw new NotImplementedException();
+		public virtual void ResetPalmaPlayLog(ulong _0, ushort _1) => throw new NotImplementedException();
+		public virtual void SetIsPalmaAllConnectable(ulong _0, bool _1, ulong _2) => throw new NotImplementedException();
+		public virtual void SetIsPalmaPairedConnectable(ulong _0, bool _1, ulong _2) => throw new NotImplementedException();
+		public virtual void PairPalma(ulong _0) => throw new NotImplementedException();
+		public virtual void SetPalmaBoostMode(bool _0) => throw new NotImplementedException();
+		public virtual void SetNpadCommunicationMode(ulong _0, long _1, ulong _2) => throw new NotImplementedException();
+		public virtual long GetNpadCommunicationMode() => throw new NotImplementedException();
 	}
 	
 	[IpcService("hid:sys")]

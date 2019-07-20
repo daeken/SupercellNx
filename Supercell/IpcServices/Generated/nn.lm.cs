@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Lm {
 	[IpcService("lm:get")]
@@ -34,8 +35,8 @@ namespace Supercell.IpcServices.Nn.Lm {
 	public unsafe class _Base_ILogService : IpcInterface {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // OpenLogger
-					var ret = OpenLogger(im.GetData<ulong>(0), im.Pid);
+				case 0: { // Initialize
+					var ret = Initialize(im.GetData<ulong>(0), im.Pid);
 					om.Move(0, ret.Handle);
 					break;
 				}
@@ -44,7 +45,7 @@ namespace Supercell.IpcServices.Nn.Lm {
 			}
 		}
 		
-		public virtual Nn.Lm.ILogger OpenLogger(ulong _0, ulong _1) => throw new NotImplementedException();
+		public virtual Nn.Lm.ILogger Initialize(ulong _0, ulong _1) => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class ILogger : _Base_ILogger {}

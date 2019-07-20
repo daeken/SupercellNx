@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 	public enum FileSystemType : uint {
@@ -48,7 +49,7 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // OpenFileSystem
-					var ret = OpenFileSystem(null, im.GetBuffer<byte>(0x19, 0));
+					var ret = OpenFileSystem(im.GetData<Nn.Fssrv.Sf.FileSystemType>(0), im.GetBuffer<byte>(0x19, 0));
 					om.Move(0, ret.Handle);
 					break;
 				}
@@ -62,12 +63,12 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 					break;
 				}
 				case 7: { // OpenFileSystemWithPatch
-					var ret = OpenFileSystemWithPatch(im.GetData<uint>(0), im.GetData<ulong>(8));
+					var ret = OpenFileSystemWithPatch(im.GetData<Nn.Fssrv.Sf.FileSystemType>(0), im.GetData<ulong>(8));
 					om.Move(0, ret.Handle);
 					break;
 				}
 				case 8: { // OpenFileSystemWithId
-					var ret = OpenFileSystemWithId(im.GetData<uint>(0), im.GetData<ulong>(8), im.GetBuffer<byte>(0x19, 0));
+					var ret = OpenFileSystemWithId(im.GetData<Nn.Fssrv.Sf.FileSystemType>(0), im.GetData<ulong>(8), im.GetBuffer<byte>(0x19, 0));
 					om.Move(0, ret.Handle);
 					break;
 				}
@@ -77,12 +78,12 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 					break;
 				}
 				case 11: { // OpenBisFileSystem
-					var ret = OpenBisFileSystem(im.GetData<uint>(0), im.GetBuffer<byte>(0x19, 0));
+					var ret = OpenBisFileSystem(im.GetData<Nn.Fssrv.Sf.Partition>(0), im.GetBuffer<byte>(0x19, 0));
 					om.Move(0, ret.Handle);
 					break;
 				}
 				case 12: { // OpenBisStorage
-					var ret = OpenBisStorage(im.GetData<uint>(0));
+					var ret = OpenBisStorage(im.GetData<Nn.Fssrv.Sf.Partition>(0));
 					om.Move(0, ret.Handle);
 					break;
 				}
@@ -448,20 +449,20 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 			}
 		}
 		
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystem(object _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystem(Nn.Fssrv.Sf.FileSystemType filesystem_type, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void SetCurrentProcess(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IFileSystem OpenDataFileSystemByCurrentProcess() => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystemWithPatch(uint _0, ulong _1) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystemWithId(uint _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenDataFileSystemByApplicationId(ulong _0) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenBisFileSystem(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IStorage OpenBisStorage(uint _0) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystemWithPatch(Nn.Fssrv.Sf.FileSystemType filesystem_type, ulong id) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenFileSystemWithId(Nn.Fssrv.Sf.FileSystemType filesystem_type, ulong tid, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenDataFileSystemByApplicationId(ulong u64) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenBisFileSystem(Nn.Fssrv.Sf.Partition partitionId, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IStorage OpenBisStorage(Nn.Fssrv.Sf.Partition partitionId) => throw new NotImplementedException();
 		public virtual void InvalidateBisCache() => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IFileSystem OpenHostFileSystem(Buffer<byte> _0) => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IFileSystem OpenSdCardFileSystem() => throw new NotImplementedException();
 		public virtual void FormatSdCardFileSystem() => throw new NotImplementedException();
-		public virtual void DeleteSaveDataFileSystem(ulong _0) => throw new NotImplementedException();
-		public virtual void CreateSaveDataFileSystem(byte[] _0, byte[] _1, byte[] _2) => throw new NotImplementedException();
+		public virtual void DeleteSaveDataFileSystem(ulong tid) => throw new NotImplementedException();
+		public virtual void CreateSaveDataFileSystem(byte[] save_struct, byte[] ave_create_struct, byte[] _2) => throw new NotImplementedException();
 		public virtual void CreateSaveDataFileSystemBySystemSaveDataId(byte[] _0, byte[] _1) => throw new NotImplementedException();
 		public virtual void RegisterSaveDataFileSystemAtomicDeletion(Buffer<byte> _0) => throw new NotImplementedException();
 		public virtual void DeleteSaveDataFileSystemBySaveDataSpaceId(byte _0, ulong _1) => throw new NotImplementedException();
@@ -473,9 +474,9 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		public virtual void ExtendSaveDataFileSystem(byte _0, ulong _1, ulong _2, ulong _3) => throw new NotImplementedException();
 		public virtual object DeleteCacheStorage(object _0) => throw new NotImplementedException();
 		public virtual object GetCacheStorageSize(object _0) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenSaveDataFileSystem(byte _0, byte[] _1) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenSaveDataFileSystemBySystemSaveDataId(byte _0, byte[] _1) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenReadOnlySaveDataFileSystem(byte _0, byte[] _1) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenSaveDataFileSystem(byte save_data_space_id, byte[] save_struct) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenSaveDataFileSystemBySystemSaveDataId(byte save_data_space_id, byte[] save_struct) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenReadOnlySaveDataFileSystem(byte save_data_space_id, byte[] save_struct) => throw new NotImplementedException();
 		public virtual void ReadSaveDataFileSystemExtraDataBySaveDataSpaceId(byte _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
 		public virtual void ReadSaveDataFileSystemExtraData(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void WriteSaveDataFileSystemExtraData(byte _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
@@ -489,27 +490,27 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		public virtual Nn.Fssrv.Sf.ISaveDataTransferManager OpenSaveDataTransferManager() => throw new NotImplementedException();
 		public virtual object OpenSaveDataTransferManagerVersion2(object _0) => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IFileSystem OpenImageDirectoryFileSystem(uint _0) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenContentStorageFileSystem(uint _0) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenContentStorageFileSystem(uint content_storage_id) => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IStorage OpenDataStorageByCurrentProcess() => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IStorage OpenDataStorageByProgramId(ulong _0) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IStorage OpenDataStorageByDataId(byte _0, ulong _1) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IStorage OpenDataStorageByProgramId(ulong tid) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IStorage OpenDataStorageByDataId(byte storage_id, ulong tid) => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IStorage OpenPatchDataStorageByCurrentProcess() => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IDeviceOperator OpenDeviceOperator() => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IEventNotifier OpenSdCardDetectionEventNotifier() => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IEventNotifier OpenGameCardDetectionEventNotifier() => throw new NotImplementedException();
 		public virtual object OpenSystemDataUpdateEventNotifier(object _0) => throw new NotImplementedException();
 		public virtual object NotifySystemDataUpdateEvent(object _0) => throw new NotImplementedException();
-		public virtual void SetCurrentPosixTime(ulong _0) => throw new NotImplementedException();
+		public virtual void SetCurrentPosixTime(ulong time) => throw new NotImplementedException();
 		public virtual ulong QuerySaveDataTotalSize(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void VerifySaveDataFileSystem(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void CorruptSaveDataFileSystem(ulong _0) => throw new NotImplementedException();
 		public virtual void CreatePaddingFile(ulong _0) => throw new NotImplementedException();
 		public virtual void DeleteAllPaddingFiles() => throw new NotImplementedException();
-		public virtual void GetRightsId(byte _0, ulong _1, out byte[] _2) => throw new NotImplementedException();
+		public virtual void GetRightsId(byte _0, ulong _1, out byte[] rights) => throw new NotImplementedException();
 		public virtual void RegisterExternalKey(byte[] _0, byte[] _1) => throw new NotImplementedException();
 		public virtual void UnregisterAllExternalKey() => throw new NotImplementedException();
-		public virtual void GetRightsIdByPath(Buffer<byte> _0, out byte[] _1) => throw new NotImplementedException();
-		public virtual void GetRightsIdAndKeyGenerationByPath(Buffer<byte> _0, out byte _1, out byte[] _2) => throw new NotImplementedException();
+		public virtual void GetRightsIdByPath(Buffer<byte> _0, out byte[] rights) => throw new NotImplementedException();
+		public virtual void GetRightsIdAndKeyGenerationByPath(Buffer<byte> _0, out byte _1, out byte[] rights) => throw new NotImplementedException();
 		public virtual void SetCurrentPosixTimeWithTimeDifference(uint _0, ulong _1) => throw new NotImplementedException();
 		public virtual ulong GetFreeSpaceSizeForSaveData(byte _0) => throw new NotImplementedException();
 		public virtual void VerifySaveDataFileSystemBySaveDataSpaceId(byte _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
@@ -524,14 +525,14 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		public virtual object IsAccessFailureDetected(object _0) => throw new NotImplementedException();
 		public virtual object ResolveAccessFailure(object _0) => throw new NotImplementedException();
 		public virtual object AbandonAccessFailure(object _0) => throw new NotImplementedException();
-		public virtual void GetAndClearFileSystemProxyErrorInfo(out byte[] _0) => throw new NotImplementedException();
+		public virtual void GetAndClearFileSystemProxyErrorInfo(out byte[] error_info) => throw new NotImplementedException();
 		public virtual void SetBisRootForHost(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void SetSaveDataSize(ulong _0, ulong _1) => throw new NotImplementedException();
 		public virtual void SetSaveDataRootPath(Buffer<byte> _0) => throw new NotImplementedException();
 		public virtual void DisableAutoSaveDataCreation() => throw new NotImplementedException();
-		public virtual void SetGlobalAccessLogMode(uint _0) => throw new NotImplementedException();
+		public virtual void SetGlobalAccessLogMode(uint mode) => throw new NotImplementedException();
 		public virtual uint GetGlobalAccessLogMode() => throw new NotImplementedException();
-		public virtual void OutputAccessLogToSdCard(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void OutputAccessLogToSdCard(Buffer<byte> log_text) => throw new NotImplementedException();
 		public virtual void RegisterUpdatePartition() => throw new NotImplementedException();
 		public virtual Nn.Fssrv.Sf.IFileSystem OpenRegisteredUpdatePartition() => throw new NotImplementedException();
 		public virtual void GetAndClearMemoryReportInfo(out byte[] _0) => throw new NotImplementedException();
@@ -563,7 +564,7 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 			}
 		}
 		
-		public virtual Nn.Fssrv.Sf.IFileSystem OpenCodeFileSystem(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFileSystem OpenCodeFileSystem(ulong Tid, Buffer<byte> content_path) => throw new NotImplementedException();
 		public virtual byte IsArchivedProgram(ulong _0) => throw new NotImplementedException();
 		public virtual void SetCurrentProcess(ulong _0, ulong _1) => throw new NotImplementedException();
 	}
@@ -782,11 +783,11 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		
 		public virtual byte IsSdCardInserted() => throw new NotImplementedException();
 		public virtual ulong GetSdCardSpeedMode() => throw new NotImplementedException();
-		public virtual void GetSdCardCid(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void GetSdCardCid(ulong _0, Buffer<byte> cid) => throw new NotImplementedException();
 		public virtual ulong GetSdCardUserAreaSize() => throw new NotImplementedException();
 		public virtual ulong GetSdCardProtectedAreaSize() => throw new NotImplementedException();
 		public virtual void GetAndClearSdCardErrorInfo(ulong _0, out byte[] _1, out ulong _2, Buffer<byte> _3) => throw new NotImplementedException();
-		public virtual void GetMmcCid(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void GetMmcCid(ulong _0, Buffer<byte> cid) => throw new NotImplementedException();
 		public virtual ulong GetMmcSpeedMode() => throw new NotImplementedException();
 		public virtual void EraseMmc(uint _0) => throw new NotImplementedException();
 		public virtual ulong GetMmcPartitionSize(uint _0) => throw new NotImplementedException();
@@ -798,23 +799,23 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 		public virtual byte IsGameCardInserted() => throw new NotImplementedException();
 		public virtual void EraseGameCard(uint _0, ulong _1) => throw new NotImplementedException();
 		public virtual uint GetGameCardHandle() => throw new NotImplementedException();
-		public virtual void GetGameCardUpdatePartitionInfo(uint _0, out uint _1, out ulong _2) => throw new NotImplementedException();
+		public virtual void GetGameCardUpdatePartitionInfo(uint _0, out uint version, out ulong tid) => throw new NotImplementedException();
 		public virtual void FinalizeGameCardDriver() => throw new NotImplementedException();
 		public virtual byte GetGameCardAttribute(uint _0) => throw new NotImplementedException();
-		public virtual void GetGameCardDeviceCertificate(uint _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void GetGameCardDeviceCertificate(uint _0, ulong _1, Buffer<byte> certificate) => throw new NotImplementedException();
 		public virtual void GetGameCardAsicInfo(ulong _0, ulong _1, Buffer<byte> _2, Buffer<byte> _3) => throw new NotImplementedException();
 		public virtual void GetGameCardIdSet(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void WriteToGameCard(ulong _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void SetVerifyWriteEnalbleFlag(byte _0) => throw new NotImplementedException();
-		public virtual void GetGameCardImageHash(uint _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void GetGameCardErrorInfo(ulong _0, ulong _1, Buffer<byte> _2, Buffer<byte> _3) => throw new NotImplementedException();
+		public virtual void SetVerifyWriteEnalbleFlag(byte flag) => throw new NotImplementedException();
+		public virtual void GetGameCardImageHash(uint _0, ulong _1, Buffer<byte> image_hash) => throw new NotImplementedException();
+		public virtual void GetGameCardErrorInfo(ulong _0, ulong _1, Buffer<byte> _2, Buffer<byte> error_info) => throw new NotImplementedException();
 		public virtual void EraseAndWriteParamDirectly(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void ReadParamDirectly(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public virtual void ForceEraseGameCard() => throw new NotImplementedException();
-		public virtual void GetGameCardErrorInfo2(out byte[] _0) => throw new NotImplementedException();
-		public virtual void GetGameCardErrorReportInfo(out byte[] _0) => throw new NotImplementedException();
-		public virtual void GetGameCardDeviceId(ulong _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void SetSpeedEmulationMode(uint _0) => throw new NotImplementedException();
+		public virtual void GetGameCardErrorInfo2(out byte[] error_info) => throw new NotImplementedException();
+		public virtual void GetGameCardErrorReportInfo(out byte[] error_report_info) => throw new NotImplementedException();
+		public virtual void GetGameCardDeviceId(ulong _0, Buffer<byte> device_id) => throw new NotImplementedException();
+		public virtual void SetSpeedEmulationMode(uint emu_mode) => throw new NotImplementedException();
 		public virtual uint GetSpeedEmulationMode() => throw new NotImplementedException();
 		public virtual object SuspendSdmmcControl(object _0) => throw new NotImplementedException();
 		public virtual object ResumeSdmmcControl(object _0) => throw new NotImplementedException();
@@ -896,10 +897,10 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 			}
 		}
 		
-		public virtual void Read(uint _0, ulong _1, ulong _2, out ulong _3, Buffer<byte> _4) => throw new NotImplementedException();
-		public virtual void Write(uint _0, ulong _1, ulong _2, Buffer<byte> _3) => throw new NotImplementedException();
+		public virtual void Read(uint _0, ulong offset, ulong size, out ulong out_size, Buffer<byte> out_buf) => throw new NotImplementedException();
+		public virtual void Write(uint _0, ulong offset, ulong size, Buffer<byte> in_buf) => throw new NotImplementedException();
 		public virtual void Flush() => throw new NotImplementedException();
-		public virtual void SetSize(ulong _0) => throw new NotImplementedException();
+		public virtual void SetSize(ulong size) => throw new NotImplementedException();
 		public virtual ulong GetSize() => throw new NotImplementedException();
 		public virtual void OperateRange(uint _0, ulong _1, ulong _2, out byte[] _3) => throw new NotImplementedException();
 	}
@@ -983,22 +984,22 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 			}
 		}
 		
-		public virtual void CreateFile(uint _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void DeleteFile(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void CreateDirectory(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void DeleteDirectory(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void DeleteDirectoryRecursively(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void RenameFile(Buffer<byte> _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void RenameDirectory(Buffer<byte> _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual uint GetEntryType(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IFile OpenFile(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual Nn.Fssrv.Sf.IDirectory OpenDirectory(uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void CreateFile(uint mode, ulong size, Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void DeleteFile(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void CreateDirectory(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void DeleteDirectory(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void DeleteDirectoryRecursively(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void RenameFile(Buffer<byte> old_path, Buffer<byte> new_path) => throw new NotImplementedException();
+		public virtual void RenameDirectory(Buffer<byte> old_path, Buffer<byte> new_path) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.DirectoryEntryType GetEntryType(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IFile OpenFile(uint mode, Buffer<byte> path) => throw new NotImplementedException();
+		public virtual Nn.Fssrv.Sf.IDirectory OpenDirectory(uint filter_flags, Buffer<byte> path) => throw new NotImplementedException();
 		public virtual void Commit() => throw new NotImplementedException();
-		public virtual ulong GetFreeSpaceSize(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual ulong GetTotalSpaceSize(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void CleanDirectoryRecursively(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void GetFileTimeStampRaw(Buffer<byte> _0, out byte[] _1) => throw new NotImplementedException();
-		public virtual void QueryEntry(uint _0, Buffer<byte> _1, Buffer<byte> _2, Buffer<byte> _3) => throw new NotImplementedException();
+		public virtual ulong GetFreeSpaceSize(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual ulong GetTotalSpaceSize(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void CleanDirectoryRecursively(Buffer<byte> path) => throw new NotImplementedException();
+		public virtual void GetFileTimeStampRaw(Buffer<byte> path, out byte[] timestamp) => throw new NotImplementedException();
+		public virtual void QueryEntry(uint _0, Buffer<byte> path, Buffer<byte> _2, Buffer<byte> _3) => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class ISaveDataExporter : _Base_ISaveDataExporter {}
@@ -1152,10 +1153,10 @@ namespace Supercell.IpcServices.Nn.Fssrv.Sf {
 			}
 		}
 		
-		public virtual void Read(ulong _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
-		public virtual void Write(ulong _0, ulong _1, Buffer<byte> _2) => throw new NotImplementedException();
+		public virtual void Read(ulong offset, ulong length, Buffer<byte> data) => throw new NotImplementedException();
+		public virtual void Write(ulong offset, ulong length, Buffer<byte> data) => throw new NotImplementedException();
 		public virtual void Flush() => throw new NotImplementedException();
-		public virtual void SetSize(ulong _0) => throw new NotImplementedException();
+		public virtual void SetSize(ulong size) => throw new NotImplementedException();
 		public virtual ulong GetSize() => throw new NotImplementedException();
 		public virtual void OperateRange(uint _0, ulong _1, ulong _2, out byte[] _3) => throw new NotImplementedException();
 	}

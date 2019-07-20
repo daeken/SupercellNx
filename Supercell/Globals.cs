@@ -1,7 +1,9 @@
+using System.Runtime.InteropServices;
 using Supercell.Gpu;
 
 namespace Supercell {
 	public static class Globals {
+		public static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 		public static readonly Logging Logger = new Logging();
 		public static readonly GpuCore GpuInstance = new GpuCore();
 		public static readonly MemoryManager Memory = new MemoryManager();

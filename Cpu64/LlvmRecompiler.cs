@@ -313,7 +313,7 @@ namespace Cpu64 {
 			throw new LlvmException($"Assertion failed in `{func}` ({file}:{line}):  {message}");
 
 		public LlvmRecompiler(IKernel kernel = null) : base(kernel) {
-			var mod = dlopen("/Users/cody/projects/SupercellNx/App/bin/Debug/netcoreapp3.0/runtimes/osx/native/libLLVM.dylib", 1);
+			/*var mod = dlopen("/Users/cody/projects/SupercellNx/App/bin/Debug/netcoreapp3.0/runtimes/osx/native/libLLVM.dylib", 1);
 			Debug.Assert(mod != 0);
 			var init = dlsym(unchecked((long) mod), "LLVMInitializeX86Target");
 			Debug.Assert(init != 0);
@@ -321,7 +321,7 @@ namespace Cpu64 {
 			mprotect(tgt & ~0xFFFUL, 0x1000, 0x7);
 			BailoutDel bailout = Bailout;
 			GCHandle.Alloc(bailout);
-			*(ulong*) tgt = (ulong) Marshal.GetFunctionPointerForDelegate(bailout);
+			*(ulong*) tgt = (ulong) Marshal.GetFunctionPointerForDelegate(bailout);*/
 			
 			XR = new LlvmRegisterMap(this);
 			VR = new LlvmVectorMap(this);

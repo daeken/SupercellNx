@@ -41,12 +41,42 @@ namespace Supercell {
 		static extern void munmap(ulong addr, ulong len);
 		[DllImport("libc")]
 		static extern void mprotect(ulong addr, ulong len, int prot);
+
+		[DllImport("kernel32")]
+		static extern ulong VirtualAlloc(ulong addr, ulong len, uint allocationType, uint protect);
+		[DllImport("kernel32")]
+		static extern void VirtualFree(ulong addr, ulong len, uint freeType);
+
+		[StructLayout(LayoutKind.Explicit)]
+		public struct SYSTEM_INFO_UNION {
+			[FieldOffset(0)] public uint OemId;
+			[FieldOffset(0)] public ushort ProcessorArchitecture;
+			[FieldOffset(2)] public ushort Reserved;
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct SYSTEM_INFO {
+			public SYSTEM_INFO_UNION CpuInfo;
+			public uint PageSize;
+			public uint MinimumApplicationAddress;
+			public uint MaximumApplicationAddress;
+			public uint ActiveProcessorMask;
+			public uint NumberOfProcessors;
+			public uint ProcessorType;
+			public uint AllocationGranularity;
+			public ushort ProcessorLevel;
+			public ushort ProcessorRevision;
+		}
+		
+		[DllImport("kernel32.dll", SetLastError=false)]
+		static extern void GetSystemInfo(out SYSTEM_INFO Info);
 		
 		public readonly SortedList<ulong, (ulong Addr, ulong Size)> Regions = new SortedList<ulong, (ulong Addr, ulong Size)>();
 
 		public ulong HeapAddress;
 		public uint HeapSize;
 
+		public ulong PageSize, PageMask;
 		public ulong StackBase;
 		public ulong StackSize;
 		public const ulong EachStackSize = 8UL * 1024 * 1024;
@@ -54,6 +84,13 @@ namespace Supercell {
 		readonly Queue<ulong> AvailableStacks = new Queue<ulong>();
 
 		public MemoryManager() {
+			if(IsWindows) {
+				GetSystemInfo(out var info);
+				PageSize = info.PageSize;
+			} else
+				PageSize = 0x1000;
+			PageMask = PageSize - 1;
+			
 			// 1GB of stack space total should be enough, right?
 			// This certainly won't bite us in the ass later
 			StackSize = 1UL * 1024 * 1024 * 1024;
@@ -73,12 +110,14 @@ namespace Supercell {
 		}
 
 		public ulong AllocateAligned(ulong size, ulong preferred = 0UL, bool reserve = false) {
-			if((size & 0xFFF) != 0)
-				size = (size & ~0xFFFUL) + 0x1000UL;
+			if((size & PageMask) != 0)
+				size = (size & ~PageMask) + PageSize;
 
 			const bool required = true;
-			var addr = mmap(preferred, size, 1 | 2, 0x1000 | 0x0001 | (required ? 0x0010 : 0), 0, 0);
-			Debug.Assert(!required || addr != unchecked((ulong) -1L));
+			var addr = IsWindows
+				? VirtualAlloc(preferred, size, 0x1000 | 0x2000, 0x04) // MEM_COMMIT | MEM_RESERVE
+				: mmap(preferred, size, 1 | 2, 0x1000 | 0x0001 | (required ? 0x0010 : 0), 0, 0);
+			Debug.Assert(!required || (addr != 0 && addr != unchecked((ulong) -1L)));
 			if(!reserve)
 				Regions.Add(addr, (addr, size));
 			return addr;
@@ -129,7 +168,7 @@ namespace Supercell {
 			var dstptr = (byte*) dst;
 			for(var i = 0UL; i < size; i++)
 				*dstptr++ = *srcptr++;
-			mprotect(src, size, 0);
+			//mprotect(src, size, 0);
 			return 0;
 		}
 
@@ -166,7 +205,9 @@ namespace Supercell {
 		public uint MapSharedMemory(uint handle, ulong addr, ulong size, uint perm) {
 			$"MapSharedMemory(0x{handle:X}, 0x{addr:X}, 0x{size:X}, 0x{perm:X})".Debug();
 			var shmem = Kernel.Get<KSharedMemory>(handle);
-			var raddr = mmap(addr, size, 1 | 2, 0x1000 | 0x0001 | 0x0010, 0, 0);
+			var raddr = IsWindows
+				? VirtualAlloc(addr, size, 0x1000 | 0x2000, 0x04)
+				: mmap(addr, size, 1 | 2, 0x1000 | 0x0001 | 0x0010, 0, 0);
 			Debug.Assert(addr == raddr);
 			shmem.Address = addr;
 			Regions.Add(addr, (addr, size));

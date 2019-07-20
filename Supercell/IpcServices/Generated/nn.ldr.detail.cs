@@ -1,5 +1,6 @@
 #pragma warning disable 169, 465
 using System;
+using UltimateOrb;
 using static Supercell.Globals;
 namespace Supercell.IpcServices.Nn.Ldr.Detail {
 	[IpcService("ldr:dmnt")]
@@ -106,7 +107,7 @@ namespace Supercell.IpcServices.Nn.Ldr.Detail {
 		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // AddProcessToLaunchQueue
-					AddProcessToLaunchQueue(null, im.GetBuffer<byte>(0x9, 0));
+					AddProcessToLaunchQueue(im.GetBuffer<byte>(0x9, 0), im.GetData<uint>(0), im.GetData<ulong>(8));
 					break;
 				}
 				case 1: { // ClearLaunchQueue
@@ -118,7 +119,7 @@ namespace Supercell.IpcServices.Nn.Ldr.Detail {
 			}
 		}
 		
-		public virtual void AddProcessToLaunchQueue(object _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void AddProcessToLaunchQueue(Buffer<byte> _0, uint size, ulong appID) => throw new NotImplementedException();
 		public virtual void ClearLaunchQueue() => throw new NotImplementedException();
 	}
 }
