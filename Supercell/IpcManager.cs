@@ -69,7 +69,10 @@ namespace Supercell {
 			CommandId = GetData<uint>(0);
 		}
 
-		T GetData<T>(uint offset) => new Span<T>(Buffer + SfciOffset + 8 + offset, Marshal.SizeOf<T>())[0];
+		public T GetData<T>(uint offset) => new Span<T>(Buffer + SfciOffset + 8 + offset, Marshal.SizeOf<T>())[0];
+		public byte[] GetBytes(uint offset, uint size) =>
+			new Span<byte>(Buffer + SfciOffset + 8 + offset, (int) size).ToArray();
+		public void* GetDataPointer(uint offset) => Buffer + SfciOffset + 8 + offset;
 
 		public static Func<IncomingMessage, object> DataGetter(Type T, uint offset) {
 			switch(Activator.CreateInstance(T)) {
@@ -135,6 +138,12 @@ namespace Supercell {
 			}
 			return null;
 		}
+		
+		public uint GetMove(uint offset) {
+			var buf = (uint*) Buffer;
+			return IsDomainObject ? buf[(SfciOffset >> 2) + 4 + offset] : buf[(MoveOffset >> 2) + offset];
+		}
+		public uint GetCopy(uint offset) => ((uint*) Buffer)[(CopyOffset >> 2) + offset];
 	}
 
 	public unsafe class OutgoingMessage {
@@ -196,7 +205,10 @@ namespace Supercell {
 		
 		public void SetData<T>(uint offset, T value) => 
 			new Span<T>(Buffer + SfcoOffset + 8 + offset + (offset < 8 ? 0 : RealDataOffset), Marshal.SizeOf<T>())[0] = value;
-
+		public void* GetDataPointer(uint offset) => Buffer + SfcoOffset + 8 + offset + (offset < 8 ? 0 : RealDataOffset);
+		public void SetBytes(uint offset, byte[] data) =>
+			data.CopyTo(new Span<byte>(GetDataPointer(offset), data.Length));
+		
 		public static Action<OutgoingMessage, object> DataSetter(Type T, uint offset) {
 			switch(Activator.CreateInstance(T)) {
 				case bool _: return (om, v) => om.SetData(offset, (byte) ((bool) v ? 1 : 0));

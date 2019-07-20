@@ -47,7 +47,7 @@ namespace IpcGenerator {
 				case "handle": return new IpcHandleType(json);
 				case "KObject": return new IpcHandleType(new JArray("handle", new JArray("copy")));
 				case "object": return new IpcObjectType(json);
-				case "pid": return new IpcPid();
+				case "pid": return new IpcPidType();
 
 				case "array": case "buffer": return new IpcBufferType(json);
 				case "bytes": return new IpcBytesType(json);
@@ -139,7 +139,7 @@ namespace IpcGenerator {
 		public void Deconstruct(out string iface) => iface = Interface;
 	}
 
-	public class IpcPid : IpcType {
+	public class IpcPidType : IpcType {
 	}
 
 	public class IpcBufferType : IpcType {
@@ -193,16 +193,24 @@ namespace IpcGenerator {
 	
 	public class IpcCommand {
 		public readonly int CommandId;
+		public readonly string Name;
 		public readonly IReadOnlyList<IpcParameter> Inputs, Outputs;
-		public readonly string LastVersion, VersionAdded, VersionRemoved;
+		public readonly uint LastVersion, VersionAdded, VersionRemoved;
 
+		static uint ParseVersion(string version, uint @default = 0) {
+			if(version == null) return @default;
+			var elems = version.Split('.').Select(int.Parse).ToList();
+			return (uint) ((elems[0] << 16) | (elems[1] << 8) | elems[2]);
+		}
+		
 		public IpcCommand(JObject obj) {
 			CommandId = obj["cmdId"].Value<int>();
+			Name = obj["name"].Value<string>();
 			Inputs = obj["inputs"].Select(x => new IpcParameter(x.Value<JArray>())).ToList();
 			Outputs = obj["outputs"].Select(x => new IpcParameter(x.Value<JArray>())).ToList();
-			LastVersion = obj["lastVersion"]?.Value<string>();
-			VersionAdded = obj["versionAdded"]?.Value<string>();
-			VersionRemoved = obj["versionRemoved"]?.Value<string>();
+			LastVersion = ParseVersion(obj["lastVersion"]?.Value<string>(), uint.MaxValue);
+			VersionAdded = ParseVersion(obj["versionAdded"]?.Value<string>());
+			VersionRemoved = ParseVersion(obj["versionRemoved"]?.Value<string>(), uint.MaxValue);
 		}
 	}
 	
@@ -213,9 +221,14 @@ namespace IpcGenerator {
 
 		public IpcInterface(string name, IReadOnlyDictionary<string, IReadOnlyList<string>> svcs, JObject obj) {
 			Name = name;
-			if(svcs.TryGetValue(name, out var svcNames))
-				Services = svcNames;
+			Services = svcs.TryGetValue(name, out var svcNames) ? svcNames : new List<string>();
 			Commands = obj["cmds"].Select(x => new IpcCommand(x.Value<JObject>())).ToList();
+		}
+
+		public IpcInterface(string name, IReadOnlyList<string> services, IReadOnlyList<IpcCommand> commands) {
+			Name = name;
+			Services = services;
+			Commands = commands;
 		}
 	}
 
@@ -281,13 +294,21 @@ namespace IpcGenerator {
 			Directory.CreateDirectory(Root);
 			IpcDefinitions.Namespaces.ForEach(kv => Build(kv.Key, kv.Value.Typedefs, kv.Value.Interfaces));
 		}
-		
-		static void Build(string ns, IReadOnlyDictionary<string, IpcType> types, IReadOnlyDictionary<string, IpcInterface> ifaces) {
-			bool CustomType(IpcType type) => type is IpcStructType || type is IpcEnumType;
 
+		static IpcInterface RemoveDuplicates(IpcInterface iface) =>
+			new IpcInterface(iface.Name, iface.Services, iface.Commands.Where((command, i) =>
+				!iface.Commands.Select((x, j) => (x, j)).Where(x =>
+						x.x != command && (x.x.Name == command.Name || x.x.CommandId == command.CommandId))
+					.Any(other =>
+						other.x.LastVersion > command.LastVersion || other.x.VersionRemoved > command.VersionRemoved ||
+						other.x.VersionAdded > command.VersionAdded ||
+						(other.j < i && other.x.LastVersion == command.LastVersion &&
+						 other.x.VersionRemoved == command.VersionRemoved &&
+						 other.x.VersionAdded == command.VersionAdded))).ToList());
+
+		static void Build(string ns, IReadOnlyDictionary<string, IpcType> types, IReadOnlyDictionary<string, IpcInterface> ifaces) {
 			string GenType(IpcType type, string modifiers = null, bool inStruct = false) {
 				if(modifiers != null) modifiers += " ";
-				if(CustomType(type)) return Rename(type.Name);
 				switch(type) {
 					case IpcIntType(var size, var signed):
 						if(signed)
@@ -296,34 +317,61 @@ namespace IpcGenerator {
 						else
 							return modifiers + (size switch { 8 => "byte", 16 => "ushort", 32 => "uint", 64 => "ulong", _ =>
 								throw new NotImplementedException() });
+					case IpcFloatType(var size): return modifiers + (size == 64 ? "double" : "float");
 					case IpcBoolType _: return modifiers + "bool";
-					case IpcBufferType(var btype, _) when inStruct: return $"{modifiers}{GenType(btype)}[]";
-					case IpcBufferType(var btype, var ttype): return $"[Buffer(0x{ttype:X})] {modifiers}Buffer<{GenType(btype)}>";
-					case IpcBytesType(var size): return size == -1 ? $"{modifiers}byte[]" : $"[Bytes(0x{size:X})] {modifiers}byte[]";
+					case IpcBufferType(IpcBytesType _, _): return $"Buffer<byte>";
+					case IpcBufferType(IpcUnknownType _, _): return $"Buffer<byte>";
+					case IpcBufferType(var btype, _): return $"Buffer<{GenType(btype).TrimEnd('*')}>";
+					case IpcBytesType(_) when inStruct: throw new NotSupportedException();
+					case IpcBytesType(_): return $"{modifiers}byte[]";
+					case IpcHandleType(HandleStyle.Copy, var htype): return $"{modifiers}{(htype == null ? "KObject" : GenType(htype))}";
+					case IpcHandleType(HandleStyle.Move, var htype): return $"{modifiers}{(htype == null ? "IpcInterface" : GenType(htype))}";
+					case IpcObjectType(var iface): return modifiers + (iface == "unknown" ? "IpcInterface" : Rename(iface));
+					case IpcPidType _: return modifiers + "ulong";
+					case IpcEnumType et: return modifiers + Rename(et.Name);
+					case IpcStructType et when inStruct: return modifiers + Rename(et.Name);
+					case IpcStructType et: return modifiers + Rename(et.Name) + "*";
+					case IpcUnknownType _: return modifiers + "object";
 					default: throw new NotImplementedException(type.ToPrettyString());
 				}
 			}
 
-			string Rename(string name) => string.Join(".",
-				string.Join("",
-						name.Replace("::", ".").Split('_').Select(x => x.Substring(0, 1).ToUpper() + x.Substring(1)))
-					.Split('.').Select(x => x.Substring(0, 1).ToUpper() + x.Substring(1)));
-			
+			string Rename(string name) {
+				if(name.ToLower() == "close") return "_Close";
+				return string.Join(".",
+					string.Join("",
+							name.Replace("::", ".").Split('_')
+								.Select(x => x.Substring(0, 1).ToUpper() + x.Substring(1)))
+						.Split('.').Select(x => x.Substring(0, 1).ToUpper() + x.Substring(1)));
+			}
+
 			if(ns == "")
 				ns = "Bare";
 			//$"Building {ns} -- {types.Count} typedefs, {ifaces.Count} interfaces".Debug();
 			using var fp = File.OpenWrite(Path.Combine(Root, $"{ns.Replace("::", ".")}.cs"));
 			using var sw = new StreamWriter(fp);
 			var cb = new CodeBuilder();
+			sw.WriteLine("#pragma warning disable 169, 465");
+			sw.WriteLine("using System;");
+			sw.WriteLine("using static Supercell.Globals;");
 			sw.WriteLine($"namespace Supercell.IpcServices.{Rename(ns)} {{");
 			cb++;
 			foreach(var (name, type) in types) {
 				switch(type) {
 					case IpcStructType def: {
-						cb += $"public struct {Rename(name)} {{";
+						cb += $"public unsafe struct {Rename(name)} {{";
 						cb++;
-						foreach(var (fname, ftype) in def.Fields)
-							cb += $"{GenType(ftype, "public", true)} {Rename(fname)};";
+						foreach(var (fname, ftype) in def.Fields) {
+							if(ftype is IpcBytesType bytes) {
+								if(bytes.Size == -1)
+									cb += $"public byte _{Rename(fname)};";
+								else
+									cb += $"public fixed byte {Rename(fname)}[{bytes.Size}];";
+							} else if(ftype is IpcBufferType btype) {
+								
+							} else
+								cb += $"{GenType(ftype, "public", true)} {Rename(fname)};";
+						}
 						cb--;
 						cb += "}";
 						break;
@@ -343,6 +391,179 @@ namespace IpcGenerator {
 
 				cb += "";
 			}
+
+			foreach(var (name, _iface) in ifaces.OrderBy(x => x.Value.Services.Count != 0 ? 0 : 1).ThenBy(x => x.Key)) {
+				var iface = RemoveDuplicates(_iface);
+				foreach(var sname in iface.Services)
+					cb += $"[IpcService({sname.ToPrettyString()})]";
+				cb += $"public unsafe partial class {Rename(name)} : _Base_{Rename(name)} {{}}";
+				cb += $"public unsafe class _Base_{Rename(name)} : IpcInterface {{";
+				cb++;
+				cb += "public void Dispatch(IncomingMessage im, OutgoingMessage om) {";
+				cb++;
+				cb += "switch(im.CommandId) {";
+				cb++;
+				
+				foreach(var command in iface.Commands) {
+					cb += $"case {command.CommandId}: {{ // {Rename(command.Name)}";
+					cb++;
+
+					var hasRet = command.Outputs.Count == 1 &&
+					             !(command.Outputs[0].Type is IpcBufferType || command.Outputs[0].Type is IpcBytesType);
+					var args = new List<string>();
+					var outI = 0;
+					var inputOffset = 0;
+					var moveInOffset = 0;
+					var copyInOffset = 0;
+					var outputOffset = 0;
+					var moveOutOffset = 0;
+					var copyOutOffset = 0;
+					var outputHandlers = new List<string>();
+					var bufferNums = new Dictionary<int, int>();
+
+					string GenInputArg(IpcType type) {
+						void Align(int align) {
+							while(inputOffset % align != 0)
+								inputOffset++;
+						}
+						switch(type) {
+							case IpcBoolType _: {
+								var ret = $"im.GetData<bool>({inputOffset})";
+								inputOffset += 4;
+								return ret;
+							}
+							case IpcBufferType(var btype, var ttype):
+								if(!bufferNums.ContainsKey(ttype))
+									bufferNums[ttype] = 0;
+								var cbo = bufferNums[ttype];
+								bufferNums[ttype]++;
+								return $"im.Get{GenType(type)}(0x{ttype:X}, {cbo})";
+							case IpcBytesType(var size): {
+								var ret = $"im.GetBytes({inputOffset}, 0x{size:X})";
+								inputOffset += size;
+								return ret;
+							}
+							case IpcEnumType et: {
+								if(!(et.UnderlyingType is IpcIntType(var size, _)))
+									throw new NotImplementedException();
+								Align(size / 8);
+								var ret = $"im.GetData<{GenType(et)}>({inputOffset})";
+								inputOffset += size / 8;
+								return ret;
+							}
+							case IpcFloatType(var size): {
+								Align(size / 8);
+								var ret = $"im.GetData<{GenType(type)}>({inputOffset})";
+								inputOffset += size / 8;
+								return ret;
+							}
+							case IpcHandleType(var style, var htype):
+								return style == HandleStyle.Copy
+									? $"Kernel.Get<{(htype == null ? "KObject" : GenType(htype))}>(im.GetCopy({copyInOffset++}))"
+									: $"Kernel.Get<{(htype == null ? "KObject" : GenType(htype))}>(im.GetMove({moveInOffset++}))";
+							case IpcIntType(var size, var signed): {
+								Align(type.Alignment == -1 ? size / 8 : type.Alignment);
+								var ret = $"im.GetData<{GenType(type)}>({inputOffset})";
+								inputOffset += size / 8;
+								return ret;
+							}
+							case IpcObjectType(var iname):
+								return $"Kernel.Get<{Rename(iname)}>(im.GetMove({moveInOffset++}))";
+							case IpcPidType _: return "im.Pid";
+							case IpcStructType st: return $"({GenType(st)}) im.GetDataPointer({inputOffset})"; // TODO: Inc offset
+							case IpcUnknownType _: return "null";
+							default: throw new NotImplementedException($"Unknown type for GenInputArg: {type}");
+						}
+					}
+
+					string GenOutputArg(IpcType type, bool isRet = false) {
+						void Align(int align) {
+							while(outputOffset % align != 0)
+								outputOffset++;
+						}
+						var vname = isRet ? "ret" : $"_{outI++}";
+						switch(type) {
+							case IpcBufferType(_, var ttype):
+								if(!bufferNums.ContainsKey(ttype))
+									bufferNums[ttype] = 0;
+								var cbo = bufferNums[ttype];
+								bufferNums[ttype]++;
+								return $"im.Get{GenType(type)}(0x{ttype:X}, {cbo})";
+							case IpcBytesType(var size):
+								Debug.Assert(size != -1);
+								outputHandlers.Add($"om.SetBytes({outputOffset}, {vname});");
+								outputOffset += size;
+								break;
+							case IpcStructType _:
+								Align(type.Alignment == -1 ? 8 : type.Alignment);
+								return $"({GenType(type)}) om.GetDataPointer({outputOffset})"; // TODO: Inc offset
+							case IpcFloatType(var size):
+								Align(type.Alignment == -1 ? size / 8 : type.Alignment);
+								outputHandlers.Add($"om.SetData({outputOffset}, {vname});");
+								outputOffset += size / 8;
+								break;
+							case IpcIntType(var size, _):
+								Align(type.Alignment == -1 ? size / 8 : type.Alignment);
+								outputHandlers.Add($"om.SetData({outputOffset}, {vname});");
+								outputOffset += size / 8;
+								break;
+							case IpcHandleType(var style, _):
+								if(style == HandleStyle.Copy)
+									outputHandlers.Add($"om.Copy({copyOutOffset++}, {vname}.Handle);");
+								else
+									outputHandlers.Add($"om.Move({moveOutOffset++}, {vname}.Handle);");
+								break;
+							case IpcObjectType(_):
+								outputHandlers.Add($"om.Move({moveOutOffset++}, {vname}.Handle);");
+								break;
+							case IpcUnknownType _: break;
+							default: throw new NotImplementedException($"Unknown type for GenOutputArg: {type}");
+						}
+						return $"out var {vname}";
+					}
+					foreach(var elem in command.Inputs)
+						if(GenInputArg(elem.Type) is var arg)
+							args.Add(arg);
+					if(!hasRet) {
+						foreach(var elem in command.Outputs)
+							if(GenOutputArg(elem.Type) is var arg)
+								args.Add(arg);
+					} else
+						GenOutputArg(command.Outputs[0].Type, true);
+
+					cb += $"{(hasRet ? "var ret = " : "")}{Rename(command.Name)}({string.Join(", ", args)});";
+					foreach(var line in outputHandlers)
+						cb += line;
+					cb += "break;";
+					cb--;
+					cb += "}";
+				}
+				
+				cb += "default:";
+				cb++;
+				cb += $"throw new NotImplementedException($\"Unhandled command ID to {Rename(name)}: {{im.CommandId}}\");";
+				cb--;
+
+				cb--;
+				cb += "}";
+				cb--;
+				cb += "}";
+				cb += "";
+				foreach(var command in iface.Commands) {
+					var rettype = command.Outputs.Count == 1 &&
+					              !(command.Outputs[0].Type is IpcBufferType || command.Outputs[0].Type is IpcBytesType)
+						? GenType(command.Outputs[0].Type)
+						: "void";
+					var args = command.Inputs.Select((x, i) => $"{GenType(x.Type)} {x.Name ?? $"_{i}"}");
+					if(rettype == "void")
+						args = args.Concat(command.Outputs.Select((x, i) => $"{GenType(x.Type, x.Type is IpcStructType ? "" : "out")} {(x.Name == null && x.Type is IpcPidType ? "pid" : x.Name ?? $"_{command.Inputs.Count + i}")}"));
+					cb += $"public virtual {rettype} {Rename(command.Name)}({string.Join(", ", args)}) => throw new NotImplementedException();";
+				}
+				cb--;
+				cb += "}";
+				cb += "";
+			}
+			
 			sw.WriteLine(cb.Code.TrimEnd());
 			sw.WriteLine("}");
 		}
