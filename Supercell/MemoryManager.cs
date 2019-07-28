@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Common;
 using static Supercell.Globals;
@@ -68,10 +69,24 @@ namespace Supercell {
 			public ushort ProcessorRevision;
 		}
 		
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MEMORY_BASIC_INFORMATION {
+			public ulong BaseAddress;
+			public ulong AllocationBase;
+			public uint AllocationProtect;
+			public ulong RegionSize;
+			public uint State;
+			public uint Protect;
+			public uint Type;
+		}
+
 		[DllImport("kernel32.dll", SetLastError=false)]
 		static extern void GetSystemInfo(out SYSTEM_INFO Info);
+		[DllImport("kernel32.dll")]
+		static extern int VirtualQueryEx(IntPtr hProcess, ulong lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 		
 		public readonly SortedList<ulong, (ulong Addr, ulong Size)> Regions = new SortedList<ulong, (ulong Addr, ulong Size)>();
+		public readonly SortedList<ulong, ulong> Reserved = new SortedList<ulong, ulong>();
 
 		public ulong HeapAddress;
 		public uint HeapSize;
@@ -110,6 +125,14 @@ namespace Supercell {
 		}
 
 		public ulong AllocateAligned(ulong size, ulong preferred = 0UL, bool reserve = false) {
+			if(IsWindows && (preferred & 0xFFFF) != 0) {
+				var ret = VirtualQueryEx(Process.GetCurrentProcess().Handle, preferred, out var info,
+					(uint) Marshal.SizeOf<MEMORY_BASIC_INFORMATION>());
+				Debug.Assert(ret != 0);
+				if(info.State == 0x10000) // MEM_FREE
+					AllocateAligned((size & ~0xFFFFUL) + 0x10000, preferred & ~0xFFFFUL, reserve: true);
+			}
+			
 			if((size & PageMask) != 0)
 				size = (size & ~PageMask) + PageSize;
 
@@ -117,8 +140,14 @@ namespace Supercell {
 			var addr = IsWindows
 				? VirtualAlloc(preferred, size, 0x1000 | 0x2000, 0x04) // MEM_COMMIT | MEM_RESERVE
 				: mmap(preferred, size, 1 | 2, 0x1000 | 0x0001 | (required ? 0x0010 : 0), 0, 0);
-			Debug.Assert(!required || (addr != 0 && addr != unchecked((ulong) -1L)));
-			if(!reserve)
+			if(addr == 0 && Reserved.Any(x => x.Key <= preferred && x.Value >= preferred + size))
+				addr = preferred;
+			else
+				Debug.Assert(!required || addr == preferred || (addr != 0 && addr != unchecked((ulong) -1L)));
+
+			if(reserve)
+				Reserved.Add(addr, addr + size);
+			else
 				Regions.Add(addr, (addr, size));
 			return addr;
 		}
@@ -205,12 +234,8 @@ namespace Supercell {
 		public uint MapSharedMemory(uint handle, ulong addr, ulong size, uint perm) {
 			$"MapSharedMemory(0x{handle:X}, 0x{addr:X}, 0x{size:X}, 0x{perm:X})".Debug();
 			var shmem = Kernel.Get<KSharedMemory>(handle);
-			var raddr = IsWindows
-				? VirtualAlloc(addr, size, 0x1000 | 0x2000, 0x04)
-				: mmap(addr, size, 1 | 2, 0x1000 | 0x0001 | 0x0010, 0, 0);
-			Debug.Assert(addr == raddr);
+			AllocateAligned(size, addr);
 			shmem.Address = addr;
-			Regions.Add(addr, (addr, size));
 			return 0;
 		}
 

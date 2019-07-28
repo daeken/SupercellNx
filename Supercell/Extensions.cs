@@ -4,7 +4,9 @@ using static Supercell.Globals;
 
 namespace Supercell {
 	public static class Extensions {
+		[System.Diagnostics.Conditional("DEBUG")]
 		public static void Debug(this string message) => Logger.Log(message);
+		[System.Diagnostics.Conditional("DEBUG")]
 		public static void Debug<T>(this T obj) => Logger.Log(obj.ToPrettyString());
 		
 		const string Printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-[]{}`~!@#$%^&*()-=\\|;:'\",./<>?";
