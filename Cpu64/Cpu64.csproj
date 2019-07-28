@@ -7,7 +7,7 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <DefineConstants>TRACE;FULLSIGIL</DefineConstants>
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

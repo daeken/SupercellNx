@@ -6,30 +6,35 @@ namespace Supercell.IpcServices.Nn.Migration.User {
 	[IpcService("mig:usr")]
 	public unsafe partial class IService : _Base_IService {}
 	public unsafe class _Base_IService : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 10: { // TryGetLastMigrationInfo
 					var ret = TryGetLastMigrationInfo();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 100: { // CreateServer
 					var ret = CreateServer(null, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x19, 0));
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 101: { // ResumeServer
 					var ret = ResumeServer(null, Kernel.Get<KObject>(im.GetCopy(0)));
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 200: { // CreateClient
 					var ret = CreateClient(null, Kernel.Get<KObject>(im.GetCopy(0)), im.GetBuffer<byte>(0x19, 0));
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 201: { // ResumeClient
 					var ret = ResumeClient(null, Kernel.Get<KObject>(im.GetCopy(0)));
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				default:
@@ -46,22 +51,26 @@ namespace Supercell.IpcServices.Nn.Migration.User {
 	
 	public unsafe partial class IAsyncContext : _Base_IAsyncContext {}
 	public unsafe class _Base_IAsyncContext : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // GetSystemEvent
 					var ret = GetSystemEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // Cancel
 					var ret = Cancel(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // HasDone
 					var ret = HasDone(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 3: { // GetResult
 					var ret = GetResult(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -77,93 +86,113 @@ namespace Supercell.IpcServices.Nn.Migration.User {
 	
 	public unsafe partial class IClient : _Base_IClient {}
 	public unsafe class _Base_IClient : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // GetClientProfile
 					GetClientProfile(im.GetBuffer<byte>(0x1A, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 10: { // CreateLoginSession
 					var ret = CreateLoginSession();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 11: { // GetNetworkServiceAccountId
 					var ret = GetNetworkServiceAccountId();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 12: { // GetUserNickname
 					var ret = GetUserNickname();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 13: { // GetUserProfileImage
 					GetUserProfileImage(out var _0, im.GetBuffer<byte>(0x6, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 100: { // PrepareAsync
 					var ret = PrepareAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 101: { // GetConnectionRequirement
 					var ret = GetConnectionRequirement();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 200: { // ScanServersAsync
 					var ret = ScanServersAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 201: { // ListServers
 					ListServers(out var _0, im.GetBuffer<byte>(0x6, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 210: { // ConnectByServerIdAsync
 					var ret = ConnectByServerIdAsync(null);
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 300: { // GetStorageShortfall
 					var ret = GetStorageShortfall();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 301: { // GetTotalTransferInfo
 					var ret = GetTotalTransferInfo();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 302: { // GetImmigrantUid
 					var ret = GetImmigrantUid();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 310: { // GetCurrentTransferInfo
 					var ret = GetCurrentTransferInfo();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 311: { // GetCurrentRelatedApplications
 					GetCurrentRelatedApplications(out var _0, im.GetBuffer<byte>(0x6, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 320: { // TransferNextAsync
 					var ret = TransferNextAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 350: { // SuspendAsync
 					var ret = SuspendAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 400: { // CompleteAsync
 					var ret = CompleteAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 500: { // Abort
 					Abort();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 999: { // DebugSynchronizeStateInFinalizationAsync
 					var ret = DebugSynchronizeStateInFinalizationAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				default:
@@ -189,62 +218,73 @@ namespace Supercell.IpcServices.Nn.Migration.User {
 		public virtual Nn.Migration.Detail.IAsyncContext TransferNextAsync() => throw new NotImplementedException();
 		public virtual Nn.Migration.Detail.IAsyncContext SuspendAsync() => throw new NotImplementedException();
 		public virtual Nn.Migration.Detail.IAsyncContext CompleteAsync() => throw new NotImplementedException();
-		public virtual void Abort() => throw new NotImplementedException();
+		public virtual void Abort() => "Stub hit for Nn.Migration.User.IClient.Abort [500]".Debug();
 		public virtual Nn.Migration.Detail.IAsyncContext DebugSynchronizeStateInFinalizationAsync() => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class IServer : _Base_IServer {}
 	public unsafe class _Base_IServer : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // GetUid
 					var ret = GetUid();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // GetServerProfile
 					GetServerProfile(im.GetBuffer<byte>(0x1A, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 100: { // PrepareAsync
 					var ret = PrepareAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 101: { // GetConnectionRequirement
 					var ret = GetConnectionRequirement();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 200: { // WaitConnectionAsync
 					var ret = WaitConnectionAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 201: { // GetClientProfile
 					GetClientProfile(im.GetBuffer<byte>(0x1A, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 202: { // AcceptConnectionAsync
 					var ret = AcceptConnectionAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 203: { // DeclineConnectionAsync
 					var ret = DeclineConnectionAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 300: { // ProcessTransferAsync
 					var ret = ProcessTransferAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 400: { // CompleteAsync
 					var ret = CompleteAsync();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 500: { // Abort
 					Abort();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -262,6 +302,6 @@ namespace Supercell.IpcServices.Nn.Migration.User {
 		public virtual Nn.Migration.Detail.IAsyncContext DeclineConnectionAsync() => throw new NotImplementedException();
 		public virtual Nn.Migration.Detail.IAsyncContext ProcessTransferAsync() => throw new NotImplementedException();
 		public virtual Nn.Migration.Detail.IAsyncContext CompleteAsync() => throw new NotImplementedException();
-		public virtual void Abort() => throw new NotImplementedException();
+		public virtual void Abort() => "Stub hit for Nn.Migration.User.IServer.Abort [500]".Debug();
 	}
 }

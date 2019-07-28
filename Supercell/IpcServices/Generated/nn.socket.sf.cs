@@ -7,195 +7,226 @@ namespace Supercell.IpcServices.Nn.Socket.Sf {
 	[IpcService("bsd:s")]
 	public unsafe partial class IClient : _Base_IClient {}
 	public unsafe class _Base_IClient : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // RegisterClient
-					var ret = RegisterClient((Nn.Socket.BsdBufferConfig*) im.GetDataPointer(0), im.GetData<ulong>(0), im.GetData<ulong>(8), Kernel.Get<KObject>(im.GetCopy(0)), im.Pid);
-					om.SetData(0, ret);
+					var ret = RegisterClient((Nn.Socket.BsdBufferConfig*) im.GetDataPointer(8), im.GetData<ulong>(8), im.GetData<ulong>(16), Kernel.Get<KObject>(im.GetCopy(0)), im.Pid);
+					om.Initialize(0, 0, 4);
+					om.SetData(8, ret);
 					break;
 				}
 				case 1: { // StartMonitoring
-					StartMonitoring(im.GetData<ulong>(0), im.Pid);
+					StartMonitoring(im.GetData<ulong>(8), im.Pid);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // Socket
-					Socket(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Socket(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 3: { // SocketExempt
-					SocketExempt(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					SocketExempt(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 4: { // Open
-					Open(im.GetData<uint>(0), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Open(im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 5: { // Select
-					Select(im.GetData<uint>(0), (Nn.Socket.Timeout*) im.GetDataPointer(4), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), im.GetBuffer<byte>(0x21, 2), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<byte>(0x22, 1), im.GetBuffer<byte>(0x22, 2));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Select(im.GetData<uint>(8), (Nn.Socket.Timeout*) im.GetDataPointer(12), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), im.GetBuffer<byte>(0x21, 2), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<byte>(0x22, 1), im.GetBuffer<byte>(0x22, 2));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 6: { // Poll
-					Poll(im.GetData<uint>(0), im.GetData<uint>(4), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Poll(im.GetData<uint>(8), im.GetData<uint>(12), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 7: { // Sysctl
 					Sysctl(im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), out var _0, out var _1, out var _2, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 8: { // Recv
-					Recv(im.GetData<uint>(0), im.GetData<uint>(4), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Recv(im.GetData<uint>(8), im.GetData<uint>(12), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 9: { // RecvFrom
-					RecvFrom(im.GetData<uint>(0), im.GetData<uint>(4), out var _0, out var _1, out var _2, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 1));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					RecvFrom(im.GetData<uint>(8), im.GetData<uint>(12), out var _0, out var _1, out var _2, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 1));
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 10: { // Send
-					Send(im.GetData<uint>(0), im.GetData<uint>(4), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Send(im.GetData<uint>(8), im.GetData<uint>(12), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 11: { // SendTo
-					SendTo(im.GetData<uint>(0), im.GetData<uint>(4), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 1), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					SendTo(im.GetData<uint>(8), im.GetData<uint>(12), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 1), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 12: { // Accept
-					Accept(im.GetData<uint>(0), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					Accept(im.GetData<uint>(8), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 13: { // Bind
-					Bind(im.GetData<uint>(0), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Bind(im.GetData<uint>(8), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 14: { // Connect
-					Connect(im.GetData<uint>(0), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Connect(im.GetData<uint>(8), im.GetBuffer<Nn.Socket.Sockaddr>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 15: { // GetPeerName
-					GetPeerName(im.GetData<uint>(0), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					GetPeerName(im.GetData<uint>(8), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 16: { // GetSockName
-					GetSockName(im.GetData<uint>(0), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					GetSockName(im.GetData<uint>(8), out var _0, out var _1, out var _2, im.GetBuffer<Nn.Socket.Sockaddr>(0x22, 0));
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 17: { // GetSockOpt
-					GetSockOpt(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), out var _0, out var _1, out var _2, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
-					om.SetData(8, _2);
+					GetSockOpt(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), out var _0, out var _1, out var _2, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 12);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
+					om.SetData(16, _2);
 					break;
 				}
 				case 18: { // Listen
-					Listen(im.GetData<uint>(0), im.GetData<uint>(4), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Listen(im.GetData<uint>(8), im.GetData<uint>(12), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 19: { // Ioctl
-					Ioctl(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), im.GetBuffer<byte>(0x21, 2), im.GetBuffer<byte>(0x21, 3), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<byte>(0x22, 1), im.GetBuffer<byte>(0x22, 2), im.GetBuffer<byte>(0x22, 3));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Ioctl(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), im.GetBuffer<byte>(0x21, 2), im.GetBuffer<byte>(0x21, 3), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0), im.GetBuffer<byte>(0x22, 1), im.GetBuffer<byte>(0x22, 2), im.GetBuffer<byte>(0x22, 3));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 20: { // Fcntl
-					Fcntl(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Fcntl(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 21: { // SetSockOpt
-					SetSockOpt(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					SetSockOpt(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 22: { // Shutdown
-					Shutdown(im.GetData<uint>(0), im.GetData<uint>(4), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Shutdown(im.GetData<uint>(8), im.GetData<uint>(12), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 23: { // ShutdownAllSockets
-					ShutdownAllSockets(im.GetData<uint>(0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					ShutdownAllSockets(im.GetData<uint>(8), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 24: { // Write
-					Write(im.GetData<uint>(0), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Write(im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 25: { // Read
-					Read(im.GetData<uint>(0), out var _0, out var _1, im.GetBuffer<sbyte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					Read(im.GetData<uint>(8), out var _0, out var _1, im.GetBuffer<sbyte>(0x22, 0));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 26: { // _Close
-					_Close(im.GetData<uint>(0), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					_Close(im.GetData<uint>(8), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 27: { // DuplicateSocket
-					DuplicateSocket(im.GetData<uint>(0), im.GetData<ulong>(8), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					DuplicateSocket(im.GetData<uint>(8), im.GetData<ulong>(16), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 28: { // GetResourceStatistics
-					GetResourceStatistics(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<ulong>(8), im.Pid, out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					GetResourceStatistics(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<ulong>(16), im.Pid, out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 29: { // RecvMMsg
-					RecvMMsg(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), im.GetData<UInt128>(16), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					RecvMMsg(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), im.GetData<UInt128>(32), out var _0, out var _1, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				case 30: { // SendMMsg
-					SendMMsg(im.GetData<uint>(0), im.GetData<uint>(4), im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), out var _0, out var _1);
-					om.SetData(0, _0);
-					om.SetData(4, _1);
+					SendMMsg(im.GetData<uint>(8), im.GetData<uint>(12), im.GetData<uint>(16), im.GetBuffer<byte>(0x21, 0), im.GetBuffer<byte>(0x21, 1), out var _0, out var _1);
+					om.Initialize(0, 0, 8);
+					om.SetData(8, _0);
+					om.SetData(12, _1);
 					break;
 				}
 				default:
@@ -204,7 +235,7 @@ namespace Supercell.IpcServices.Nn.Socket.Sf {
 		}
 		
 		public virtual uint RegisterClient(Nn.Socket.BsdBufferConfig* config, ulong pid, ulong transferMemorySize, KObject _3, ulong _4) => throw new NotImplementedException();
-		public virtual void StartMonitoring(ulong pid, ulong _1) => throw new NotImplementedException();
+		public virtual void StartMonitoring(ulong pid, ulong _1) => "Stub hit for Nn.Socket.Sf.IClient.StartMonitoring [1]".Debug();
 		public virtual void Socket(uint domain, uint type, uint protocol, out int ret, out uint bsd_errno) => throw new NotImplementedException();
 		public virtual void SocketExempt(uint _0, uint _1, uint _2, out int ret, out uint bsd_errno) => throw new NotImplementedException();
 		public virtual void Open(uint _0, Buffer<byte> _1, out int ret, out uint bsd_errno) => throw new NotImplementedException();

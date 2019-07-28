@@ -189,9 +189,10 @@ namespace Supercell {
 
 		public void Move(uint offset, uint handle) {
 			var buf = (uint*) Buffer;
-			if(IsDomainObject)
+			if(IsDomainObject) {
+				$"Sending back domain object 0x{handle:X}".Debug();
 				buf[(SfcoOffset >> 2) + 4 + offset] = handle;
-			else
+			} else
 				buf[3 + CopyCount + offset] = handle;
 		}
 
@@ -230,6 +231,11 @@ namespace Supercell {
 			((byte[]) v).CopyTo(new Span<byte>(
 				om.Buffer + om.SfcoOffset + 8 + offset + (offset < 8 ? 0 : om.RealDataOffset), (int) size));
 	}
+
+	public class IpcException : Exception {
+		public uint Code;
+		public IpcException(uint code) => Code = code;
+	}
 	
 	public abstract class IpcInterface : KObject {
 		public bool IsDomainObject;
@@ -242,8 +248,10 @@ namespace Supercell {
 		readonly Dictionary<uint, Action<IpcInterface, IncomingMessage, OutgoingMessage>> Commands;
 		protected IpcInterface() => Commands = Ipc.AllCommands[GetType()];
 
-		public uint CreateHandle(KObject obj) {
+		public uint CreateHandle(KObject obj, bool copy = false) {
 			if(obj == null) return 0xDEADBEEF;
+			$"Creating handle for object with real handle 0x{obj.Handle:X}".Debug();
+			if(copy) return obj.Handle;
 			if(DomainOwner != null) return DomainOwner.CreateHandle(obj);
 			if(!IsDomainObject) return obj.Handle;
 			if(DomainHandleMap.TryGetValue(obj.Handle, out var dmap)) return dmap;
@@ -254,10 +262,15 @@ namespace Supercell {
 			return handle;
 		}
 
+		public abstract void _Dispatch(IncomingMessage incoming, OutgoingMessage outgoing);
+
 		void Dispatch(IncomingMessage incoming, OutgoingMessage outgoing) {
-			if(!Commands.TryGetValue(incoming.CommandId, out var cb))
-				throw new NotImplementedException($"Unknown message command for service {this}: {incoming.CommandId}");
-			cb(this, incoming, outgoing);
+			try {
+				_Dispatch(incoming, outgoing);
+			} catch(IpcException ie) {
+				outgoing.Initialize(0, 0, 0);
+				outgoing.ErrCode = ie.Code;
+			}
 		}
 
 		public unsafe uint SyncMessage(ulong bufferAddr, uint bufferSize, out bool closeHandle) {

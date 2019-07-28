@@ -6,210 +6,261 @@ namespace Supercell.IpcServices.Nn.Dmnt {
 	[IpcService("dmnt:-")]
 	public unsafe partial class IInterface : _Base_IInterface {}
 	public unsafe class _Base_IInterface : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // BreakDebugProcess
 					var ret = BreakDebugProcess(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // TerminateDebugProcess
 					var ret = TerminateDebugProcess(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // CloseHandle
 					var ret = CloseHandle(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 3: { // LoadImage
 					var ret = LoadImage(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 4: { // GetProcessId
 					var ret = GetProcessId(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 5: { // GetProcessHandle
 					var ret = GetProcessHandle(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 6: { // WaitSynchronization
 					var ret = WaitSynchronization(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 7: { // GetDebugEvent
 					var ret = GetDebugEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 8: { // GetProcessModuleInfo
 					var ret = GetProcessModuleInfo(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 9: { // GetProcessList
 					var ret = GetProcessList(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 10: { // GetThreadList
 					var ret = GetThreadList(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 11: { // GetDebugThreadContext
 					var ret = GetDebugThreadContext(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 12: { // ContinueDebugEvent
 					var ret = ContinueDebugEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 13: { // ReadDebugProcessMemory
 					var ret = ReadDebugProcessMemory(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 14: { // WriteDebugProcessMemory
 					var ret = WriteDebugProcessMemory(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 15: { // SetDebugThreadContext
 					var ret = SetDebugThreadContext(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 16: { // GetDebugThreadParam
 					var ret = GetDebugThreadParam(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 17: { // InitializeThreadInfo
 					var ret = InitializeThreadInfo(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 18: { // SetHardwareBreakPoint
 					var ret = SetHardwareBreakPoint(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 19: { // QueryDebugProcessMemory
 					var ret = QueryDebugProcessMemory(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 20: { // GetProcessMemoryDetails
 					var ret = GetProcessMemoryDetails(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 21: { // AttachByProgramId
 					var ret = AttachByProgramId(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 22: { // AttachOnLaunch
 					var ret = AttachOnLaunch(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 23: { // GetDebugMonitorProcessId
 					var ret = GetDebugMonitorProcessId(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 25: { // GetJitDebugProcessList
 					var ret = GetJitDebugProcessList(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 26: { // CreateCoreDump
 					var ret = CreateCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 27: { // GetAllDebugThreadInfo
 					var ret = GetAllDebugThreadInfo(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 29: { // TargetIOFileOpen
 					var ret = TargetIOFileOpen(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 30: { // TargetIOFileClose
 					var ret = TargetIOFileClose(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 31: { // TargetIOFileRead
 					var ret = TargetIOFileRead(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 32: { // TargetIOFileWrite
 					var ret = TargetIOFileWrite(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 33: { // TargetIOFileSetAttributes
 					var ret = TargetIOFileSetAttributes(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 34: { // TargetIOFileGetInformation
 					var ret = TargetIOFileGetInformation(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 35: { // TargetIOFileSetTime
 					var ret = TargetIOFileSetTime(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 36: { // TargetIOFileSetSize
 					var ret = TargetIOFileSetSize(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 37: { // TargetIOFileDelete
 					var ret = TargetIOFileDelete(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 38: { // TargetIOFileMove
 					var ret = TargetIOFileMove(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 39: { // TargetIODirectoryCreate
 					var ret = TargetIODirectoryCreate(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 40: { // TargetIODirectoryDelete
 					var ret = TargetIODirectoryDelete(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 41: { // TargetIODirectoryRename
 					var ret = TargetIODirectoryRename(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 42: { // TargetIODirectoryGetCount
 					var ret = TargetIODirectoryGetCount(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 43: { // TargetIODirectoryOpen
 					var ret = TargetIODirectoryOpen(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 44: { // TargetIODirectoryGetNext
 					var ret = TargetIODirectoryGetNext(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 45: { // TargetIODirectoryClose
 					var ret = TargetIODirectoryClose(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 46: { // TargetIOGetFreeSpace
 					var ret = TargetIOGetFreeSpace(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 47: { // TargetIOGetVolumeInformation
 					var ret = TargetIOGetVolumeInformation(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 48: { // InitiateCoreDump
 					var ret = InitiateCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 49: { // ContinueCoreDump
 					var ret = ContinueCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 50: { // AddTTYToCoreDump
 					var ret = AddTTYToCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 51: { // AddImageToCoreDump
 					var ret = AddImageToCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 52: { // CloseCoreDump
 					var ret = CloseCoreDump(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:

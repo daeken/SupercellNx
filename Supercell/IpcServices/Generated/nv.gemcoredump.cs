@@ -6,18 +6,21 @@ namespace Supercell.IpcServices.Nv.Gemcoredump {
 	[IpcService("nvgem:cd")]
 	public unsafe partial class INvGemCoreDump : _Base_INvGemCoreDump {}
 	public unsafe class _Base_INvGemCoreDump : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // Unknown0
 					var ret = Unknown0();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // Unknown1
 					var ret = Unknown1();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // Unknown2
 					Unknown2(out var _0, im.GetBuffer<byte>(0x22, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:

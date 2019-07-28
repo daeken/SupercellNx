@@ -9,6 +9,8 @@ namespace Supercell {
 		delegate void SignalDelegate(int sig);
 		
 		public static void Setup() {
+			if(IsWindows) return;
+			
 			void Set(int sig, SignalDelegate func) {
 				GCHandle.Alloc(func);
 				signal(sig, 0);

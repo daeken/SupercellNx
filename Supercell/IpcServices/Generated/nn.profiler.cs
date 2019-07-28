@@ -6,18 +6,21 @@ namespace Supercell.IpcServices.Nn.Profiler {
 	[IpcService("banana")]
 	public unsafe partial class IProfiler : _Base_IProfiler {}
 	public unsafe class _Base_IProfiler : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // GetSystemEvent
 					var ret = GetSystemEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // StartSignalingEvent
 					var ret = StartSignalingEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // StopSignalingEvent
 					var ret = StopSignalingEvent(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:

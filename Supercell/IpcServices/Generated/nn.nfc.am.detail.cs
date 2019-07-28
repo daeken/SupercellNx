@@ -6,11 +6,12 @@ namespace Supercell.IpcServices.Nn.Nfc.Am.Detail {
 	[IpcService("nfc:am")]
 	public unsafe partial class IAmManager : _Base_IAmManager {}
 	public unsafe class _Base_IAmManager : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // CreateAmInterface
 					var ret = CreateAmInterface();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				default:
@@ -23,18 +24,21 @@ namespace Supercell.IpcServices.Nn.Nfc.Am.Detail {
 	
 	public unsafe partial class IAm : _Base_IAm {}
 	public unsafe class _Base_IAm : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // Initialize
 					Initialize();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // Finalize
 					Finalize();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // NotifyForegroundApplet
 					NotifyForegroundApplet(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -42,8 +46,8 @@ namespace Supercell.IpcServices.Nn.Nfc.Am.Detail {
 			}
 		}
 		
-		public virtual void Initialize() => throw new NotImplementedException();
-		public virtual void Finalize() => throw new NotImplementedException();
-		public virtual void NotifyForegroundApplet(object _0) => throw new NotImplementedException();
+		public virtual void Initialize() => "Stub hit for Nn.Nfc.Am.Detail.IAm.Initialize [0]".Debug();
+		public virtual void Finalize() => "Stub hit for Nn.Nfc.Am.Detail.IAm.Finalize [1]".Debug();
+		public virtual void NotifyForegroundApplet(object _0) => "Stub hit for Nn.Nfc.Am.Detail.IAm.NotifyForegroundApplet [2]".Debug();
 	}
 }

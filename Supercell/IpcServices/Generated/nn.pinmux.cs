@@ -6,11 +6,12 @@ namespace Supercell.IpcServices.Nn.Pinmux {
 	[IpcService("pinmux")]
 	public unsafe partial class IManager : _Base_IManager {}
 	public unsafe class _Base_IManager : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // OpenSession
 					var ret = OpenSession(null);
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				default:
@@ -23,18 +24,21 @@ namespace Supercell.IpcServices.Nn.Pinmux {
 	
 	public unsafe partial class ISession : _Base_ISession {}
 	public unsafe class _Base_ISession : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // SetPinAssignment
 					SetPinAssignment(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // GetPinAssignment
 					var ret = GetPinAssignment();
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // SetPinAssignmentForHardwareTest
 					SetPinAssignmentForHardwareTest(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -42,8 +46,8 @@ namespace Supercell.IpcServices.Nn.Pinmux {
 			}
 		}
 		
-		public virtual void SetPinAssignment(object _0) => throw new NotImplementedException();
+		public virtual void SetPinAssignment(object _0) => "Stub hit for Nn.Pinmux.ISession.SetPinAssignment [0]".Debug();
 		public virtual object GetPinAssignment() => throw new NotImplementedException();
-		public virtual void SetPinAssignmentForHardwareTest(object _0) => throw new NotImplementedException();
+		public virtual void SetPinAssignmentForHardwareTest(object _0) => "Stub hit for Nn.Pinmux.ISession.SetPinAssignmentForHardwareTest [2]".Debug();
 	}
 }

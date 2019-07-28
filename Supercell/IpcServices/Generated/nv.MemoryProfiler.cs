@@ -5,14 +5,16 @@ using static Supercell.Globals;
 namespace Supercell.IpcServices.Nv.MemoryProfiler {
 	public unsafe partial class IMemoryProfiler : _Base_IMemoryProfiler {}
 	public unsafe class _Base_IMemoryProfiler : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // Unknown0
 					var ret = Unknown0(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // Unknown1
 					var ret = Unknown1(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:

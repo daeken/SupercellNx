@@ -425,7 +425,7 @@ namespace IpcGenerator {
 				cb += $"public unsafe partial class {Rename(name)} : _Base_{Rename(name)} {{}}";
 				cb += $"public unsafe class _Base_{Rename(name)} : IpcInterface {{";
 				cb++;
-				cb += "public void Dispatch(IncomingMessage im, OutgoingMessage om) {";
+				cb += "public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {";
 				cb++;
 				cb += "switch(im.CommandId) {";
 				cb++;
@@ -438,10 +438,10 @@ namespace IpcGenerator {
 					             !(command.Outputs[0].Type is IpcBufferType || command.Outputs[0].Type is IpcBytesType);
 					var args = new List<string>();
 					var outI = 0;
-					var inputOffset = 0;
+					var inputOffset = 8;
 					var moveInOffset = 0;
 					var copyInOffset = 0;
-					var outputOffset = 0;
+					var outputOffset = 8;
 					var moveOutOffset = 0;
 					var copyOutOffset = 0;
 					var outputHandlers = new List<string>();
@@ -546,12 +546,12 @@ namespace IpcGenerator {
 								break;
 							case IpcHandleType(var style, _):
 								if(style == HandleStyle.Copy)
-									outputHandlers.Add($"om.Copy({copyOutOffset++}, {vname}.Handle);");
+									outputHandlers.Add($"om.Copy({copyOutOffset++}, CreateHandle({vname}, copy: true));");
 								else
-									outputHandlers.Add($"om.Move({moveOutOffset++}, {vname}.Handle);");
+									outputHandlers.Add($"om.Move({moveOutOffset++}, CreateHandle({vname}));");
 								break;
 							case IpcObjectType(_):
-								outputHandlers.Add($"om.Move({moveOutOffset++}, {vname}.Handle);");
+								outputHandlers.Add($"om.Move({moveOutOffset++}, CreateHandle({vname}));");
 								break;
 							case IpcUnknownType _: break;
 							default: throw new NotImplementedException($"Unknown type for GenOutputArg: {type}");
@@ -569,6 +569,7 @@ namespace IpcGenerator {
 						GenOutputArg(command.Outputs[0].Type, true);
 
 					cb += $"{(hasRet ? "var ret = " : "")}{Rename(command.Name)}({string.Join(", ", args)});";
+					cb += $"om.Initialize({moveOutOffset}, {copyOutOffset}, {outputOffset - 8});";
 					foreach(var line in outputHandlers)
 						cb += line;
 					cb += "break;";
@@ -594,7 +595,8 @@ namespace IpcGenerator {
 					var args = command.Inputs.Select((x, i) => $"{GenType(x.Type)} {x.Name ?? $"_{i}"}");
 					if(rettype == "void")
 						args = args.Concat(command.Outputs.Select((x, i) => $"{GenType(x.Type, x.Type is IpcStructType ? "" : "out")} {(x.Name == null && x.Type is IpcPidType ? "pid" : x.Name ?? $"_{command.Inputs.Count + i}")}"));
-					cb += $"public virtual {rettype} {Rename(command.Name)}({string.Join(", ", args)}) => throw new NotImplementedException();";
+					var impl = command.Outputs.Count == 0 ? $"\"Stub hit for {Rename(ns)}.{Rename(name)}.{Rename(command.Name)} [{command.CommandId}]\".Debug()" : "throw new NotImplementedException()";
+					cb += $"public virtual {rettype} {Rename(command.Name)}({string.Join(", ", args)}) => {impl};";
 				}
 				cb--;
 				cb += "}";

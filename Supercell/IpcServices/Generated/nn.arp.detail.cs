@@ -6,22 +6,26 @@ namespace Supercell.IpcServices.Nn.Arp.Detail {
 	[IpcService("arp:r")]
 	public unsafe partial class IReader : _Base_IReader {}
 	public unsafe class _Base_IReader : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // GetApplicationLaunchProperty
 					var ret = GetApplicationLaunchProperty(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // GetApplicationLaunchPropertyWithApplicationId
 					var ret = GetApplicationLaunchPropertyWithApplicationId(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // GetApplicationControlProperty
 					GetApplicationControlProperty(null, im.GetBuffer<byte>(0x16, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 3: { // GetApplicationControlPropertyWithApplicationId
 					GetApplicationControlPropertyWithApplicationId(null, im.GetBuffer<byte>(0x16, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -38,15 +42,17 @@ namespace Supercell.IpcServices.Nn.Arp.Detail {
 	[IpcService("arp:w")]
 	public unsafe partial class IWriter : _Base_IWriter {}
 	public unsafe class _Base_IWriter : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // AcquireRegistrar
 					var ret = AcquireRegistrar();
-					om.Move(0, ret.Handle);
+					om.Initialize(1, 0, 0);
+					om.Move(0, CreateHandle(ret));
 					break;
 				}
 				case 1: { // DeleteProperties
 					DeleteProperties(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -55,23 +61,26 @@ namespace Supercell.IpcServices.Nn.Arp.Detail {
 		}
 		
 		public virtual Nn.Arp.Detail.IRegistrar AcquireRegistrar() => throw new NotImplementedException();
-		public virtual void DeleteProperties(object _0) => throw new NotImplementedException();
+		public virtual void DeleteProperties(object _0) => "Stub hit for Nn.Arp.Detail.IWriter.DeleteProperties [1]".Debug();
 	}
 	
 	public unsafe partial class IRegistrar : _Base_IRegistrar {}
 	public unsafe class _Base_IRegistrar : IpcInterface {
-		public void Dispatch(IncomingMessage im, OutgoingMessage om) {
+		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
 				case 0: { // Issue
 					Issue(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 1: { // SetApplicationLaunchProperty
 					SetApplicationLaunchProperty(null);
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				case 2: { // SetApplicationControlProperty
 					SetApplicationControlProperty(im.GetBuffer<byte>(0x15, 0));
+					om.Initialize(0, 0, 0);
 					break;
 				}
 				default:
@@ -79,8 +88,8 @@ namespace Supercell.IpcServices.Nn.Arp.Detail {
 			}
 		}
 		
-		public virtual void Issue(object _0) => throw new NotImplementedException();
-		public virtual void SetApplicationLaunchProperty(object _0) => throw new NotImplementedException();
-		public virtual void SetApplicationControlProperty(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void Issue(object _0) => "Stub hit for Nn.Arp.Detail.IRegistrar.Issue [0]".Debug();
+		public virtual void SetApplicationLaunchProperty(object _0) => "Stub hit for Nn.Arp.Detail.IRegistrar.SetApplicationLaunchProperty [1]".Debug();
+		public virtual void SetApplicationControlProperty(Buffer<byte> _0) => "Stub hit for Nn.Arp.Detail.IRegistrar.SetApplicationControlProperty [2]".Debug();
 	}
 }
