@@ -404,6 +404,21 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* BIC-vector-register */
+				if((inst & 0xBFE0FC00U) == 0x0E601C00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) (((Q) == (0x1)) ? 1U : 0U) != 0) ? ("16B") : ("8B"));
+					var v = ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).AndNot((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))).Store();
+					if(((byte) (((Q) == (0x1)) ? 1U : 0U)) != 0) {
+						VR[(int) (rd)] = v;
+					} else {
+						VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (v);
+					}
+					return true;
+				}
 				/* BL */
 				if((inst & 0xFC000000U) == 0x94000000U) {
 					var imm = (inst >> 0) & 0x3FFFFFFU;
@@ -1134,6 +1149,151 @@ namespace Cpu64 {
 					Label(temp_97);
 					return true;
 				}
+				/* FCMxx-register-vector */
+				if((inst & 0x9F20F400U) == 0x0E20E400U) {
+					var Q = (inst >> 30) & 0x1U;
+					var U = (inst >> 29) & 0x1U;
+					var E = (inst >> 23) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var ac = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var top = (string) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => "EQ", 0x2 => "GE", 0x3 => "GE", 0x6 => "GT", 0x7 => "GT", _ => throw new NotImplementedException() });
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var a1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var a2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							var b1 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x0))).Store();
+							var b2 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) == (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) >= (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a1).Abs())) >= ((LlvmRuntimeValue<float>) ((b1).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) > (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a1).Abs())) > ((LlvmRuntimeValue<float>) ((b1).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) == (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) >= (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a2).Abs())) >= ((LlvmRuntimeValue<float>) ((b2).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) > (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a2).Abs())) > ((LlvmRuntimeValue<float>) ((b2).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						case 0x1: {
+							var a1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var a2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							var a3 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x2))).Store();
+							var a4 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x3))).Store();
+							var b1 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x0))).Store();
+							var b2 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x1))).Store();
+							var b3 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x2))).Store();
+							var b4 = ((LlvmRuntimeValue<float>) (VR[(int) (rm)].Element<float>(0x3))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) == (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) >= (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a1).Abs())) >= ((LlvmRuntimeValue<float>) ((b1).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) > (b1))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a1).Abs())) > ((LlvmRuntimeValue<float>) ((b1).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) == (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) >= (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a2).Abs())) >= ((LlvmRuntimeValue<float>) ((b2).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) > (b2))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a2).Abs())) > ((LlvmRuntimeValue<float>) ((b2).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a3) == (b3))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a3) >= (b3))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a3).Abs())) >= ((LlvmRuntimeValue<float>) ((b3).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a3) > (b3))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a3).Abs())) > ((LlvmRuntimeValue<float>) ((b3).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a4) == (b4))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a4) >= (b4))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x3 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a4).Abs())) >= ((LlvmRuntimeValue<float>) ((b4).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x6 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a4) > (b4))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x7 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<float>) ((a4).Abs())) > ((LlvmRuntimeValue<float>) ((b4).Abs())))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						case 0x3: {
+							var a1 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0))).Store();
+							var a2 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1))).Store();
+							var b1 = ((LlvmRuntimeValue<double>) (VR[(int) (rm)].Element<double>(0x0))).Store();
+							var b2 = ((LlvmRuntimeValue<double>) (VR[(int) (rm)].Element<double>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<double>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) == (b1))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x2 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) >= (b1))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x3 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<double>) ((a1).Abs())) >= ((LlvmRuntimeValue<double>) ((b1).Abs())))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x6 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a1) > (b1))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x7 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<double>) ((a1).Abs())) > ((LlvmRuntimeValue<double>) ((b1).Abs())))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), _ => throw new NotImplementedException() }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<double>) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) == (b2))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x2 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) >= (b2))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x3 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<double>) ((a2).Abs())) >= ((LlvmRuntimeValue<double>) ((b2).Abs())))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x6 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((a2) > (b2))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x7 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) (((LlvmRuntimeValue<double>) ((a2).Abs())) > ((LlvmRuntimeValue<double>) ((b2).Abs())))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FCMxx-zero-vector */
+				if((inst & 0x9FBFEC00U) == 0x0EA0C800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var U = (inst >> 29) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var op = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var top = (string) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => "GT", 0x1 => "GE", 0x2 => "EQ", _ => "LE" });
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var v1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							break;
+						}
+						case 0x1: {
+							var v1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							var v3 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x2))).Store();
+							var v4 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x3))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v3) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v3) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v3) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v3) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (LlvmRuntimeValue<float>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v4) > ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x1 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v4) >= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), 0x2 => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v4) == ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))), _ => (LlvmRuntimeValue<float>) ((LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v4) <= ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0))))))) }));
+							break;
+						}
+						case 0x3: {
+							var v1 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<double>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) > ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x1 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) >= ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x2 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) == ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), _ => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) <= ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))) }));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<double>) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) > ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x1 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) >= ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), 0x2 => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) == ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))), _ => (LlvmRuntimeValue<double>) ((LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) <= ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0))))))) }));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FCMLT-zero-vector */
+				if((inst & 0xBFBFFC00U) == 0x0EA0E800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var v1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							break;
+						}
+						case 0x1: {
+							var v1 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x1))).Store();
+							var v3 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x2))).Store();
+							var v4 = ((LlvmRuntimeValue<float>) (VR[(int) (rn)].Element<float>(0x3))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v3) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (LlvmRuntimeValue<float>) (Ternary<byte, float>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v4) < ((float) ((float) (0x0))))), (float) (Bitcast<int, float>((int) ((int) (-0x1)))), (float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							break;
+						}
+						case 0x3: {
+							var v1 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x0))).Store();
+							var v2 = ((LlvmRuntimeValue<double>) (VR[(int) (rn)].Element<double>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<int>) ((int) ((int) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v1) < ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0)))))));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<double>) (Ternary<byte, double>((LlvmRuntimeValue<byte>) ((LlvmRuntimeValue<byte>) ((v2) < ((double) ((double) (0x0))))), (double) (Bitcast<long, double>((long) ((long) (-0x1)))), (double) (Bitcast<long, double>((long) ((long) (0x0)))))));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* FCMP */
 				if((inst & 0xFF20FC17U) == 0x1E202000U) {
 					var type = (inst >> 22) & 0x3U;
@@ -1814,6 +1974,34 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
 					VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x20, 0x2))), 0x1 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x20, 0x4))), 0x3 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Frsqrte(0x40, 0x2))), _ => throw new NotImplementedException() });
+					return true;
+				}
+				/* FRSQRTS-vector */
+				if((inst & 0xBFA0FC00U) == 0x0EA0FC00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x3)))).CreateVector())) - ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))) / ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x2)))).CreateVector()))));
+							break;
+						}
+						case 0x1: {
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x3)))).CreateVector())) - ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))) / ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x2)))).CreateVector())));
+							break;
+						}
+						case 0x3: {
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<double>) ((double) ((double) (0x3)))).CreateVector())) - (LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * (LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))))) / (LlvmRuntimeValue<Vector128<double>>) ((LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<double>) ((double) ((double) (0x2)))).CreateVector()))));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
 					return true;
 				}
 				/* FSQRT-scalar */
@@ -3633,6 +3821,50 @@ namespace Cpu64 {
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var scale = (byte) ((byte) (((byte) (((byte) (size)) << 0)) | ((byte) (((byte) (opc)) << 2))));
 					var address = ((LlvmRuntimeValue<ulong>) (((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ushort>) ((ushort) ((imm) << (int) (scale)))))).Store();
+					switch(rop) {
+						case 0x0: {
+							((LlvmRuntimePointer<float>) (address)).Value = (LlvmRuntimeValue<float>) (VBR[(int) (rt)]);
+							break;
+						}
+						case 0x4: {
+							((LlvmRuntimePointer<ushort>) (address)).Value = (LlvmRuntimeValue<ushort>) (VHR[(int) (rt)]);
+							break;
+						}
+						case 0x8: {
+							((LlvmRuntimePointer<float>) (address)).Value = (LlvmRuntimeValue<float>) (VSR[(int) (rt)]);
+							break;
+						}
+						case 0xC: {
+							((LlvmRuntimePointer<double>) (address)).Value = (LlvmRuntimeValue<double>) (VDR[(int) (rt)]);
+							break;
+						}
+						case 0x2: {
+							((LlvmRuntimePointer<Vector128<float>>) (address)).Value = (LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rt)]);
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* STR-simd-register */
+				if((inst & 0x3F600C00U) == 0x3C200800U) {
+					var size = (inst >> 30) & 0x3U;
+					var opc = (inst >> 23) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var option = (inst >> 13) & 0x7U;
+					var scale = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var rop = (byte) ((byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) (0x0)))) << 0)) | ((byte) (((byte) (opc)) << 1)))) | ((byte) (((byte) (size)) << 2))));
+					var r1 = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
+					var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
+					var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) ((size) switch { 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => (long) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? (0x4) : (0x0)) })));
+					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
+					var offset = ((LlvmRuntimeValue<ulong>) (((LlvmRuntimeValue<ulong>) (((byte) (((option) == (0x6)) ? 1U : 0U)) != 0 ? ((LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<long>) (SignExtRuntime<long>((LlvmRuntimeValue<uint>) ((rm) == 31 ? 0U : (LlvmRuntimeValue<uint>) XR[(int) rm]), 32))))) : ((LlvmRuntimeValue<ulong>) (((byte) ((((ulong) (option)) & ((ulong) (0x1))))) != 0 ? ((LlvmRuntimeValue<ulong>) ((rm) == 31 ? 0UL : (LlvmRuntimeValue<ulong>) XR[(int) rm])) : ((LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<uint>) ((rm) == 31 ? 0U : (LlvmRuntimeValue<uint>) XR[(int) rm])))))))).ShiftLeft(amount))).Store();
+					var address = ((LlvmRuntimeValue<ulong>) (((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) (offset)))).Store();
 					switch(rop) {
 						case 0x0: {
 							((LlvmRuntimePointer<float>) (address)).Value = (LlvmRuntimeValue<float>) (VBR[(int) (rt)]);

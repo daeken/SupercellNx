@@ -40,8 +40,9 @@ namespace Cpu64 {
 					var zero = et == typeof(float) || et == typeof(double)
 						? LLVM.BuildFPCast(Builder, Recompiler.Const(0), et.ToLLVMType(), "")
 						: LLVM.ConstInt(et.ToLLVMType(), 0, false);
-					return LLVM.ConstVector(Enumerable.Range(0, typeof(ZT).ElementCount()).Select(_ => zero)
-						.ToArray());
+					return LLVM.BuildBitCast(Builder,
+						LLVM.ConstVector(Enumerable.Range(0, typeof(ZT).ElementCount()).Select(_ => zero).ToArray()),
+						LlvmType<ZT>(), "");
 				});
 			return Recompiler.Const(0).Cast<ZT>();
 		}
@@ -72,8 +73,9 @@ namespace Cpu64 {
 		public static LlvmRuntimeValue<T> operator /(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			LlvmRecompiler.Ternary(b.IsZero(), Zero<T>(),
 				IsInt<T>()
-					? IsSigned<T>() ? new LlvmRuntimeValue<T>(() => LLVM.BuildSDiv(Builder, a, b, "")) :
-					new LlvmRuntimeValue<T>(() => LLVM.BuildUDiv(Builder, a, b, ""))
+					?
+						IsSigned<T>() ? new LlvmRuntimeValue<T>(() => LLVM.BuildSDiv(Builder, a, b, ""))
+						: new LlvmRuntimeValue<T>(() => LLVM.BuildUDiv(Builder, a, b, ""))
 					: new LlvmRuntimeValue<T>(() => LLVM.BuildFDiv(Builder, a, b, "")));
 
 		public static LlvmRuntimeValue<T> operator %(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
@@ -82,6 +84,14 @@ namespace Cpu64 {
 					? new LlvmRuntimeValue<T>(() => LLVM.BuildSRem(Builder, a, b, ""))
 					: new LlvmRuntimeValue<T>(() => LLVM.BuildURem(Builder, a, b, ""))
 				: new LlvmRuntimeValue<T>(() => LLVM.BuildFRem(Builder, a, b, ""));
+		
+		public LlvmRuntimeValue<T> Abs() => new LlvmRuntimeValue<T>(() => {
+			if(IsInt<T>()) throw new NotImplementedException();
+
+			if(typeof(T) == typeof(float)) return Recompiler.Intrinsic<Func<float, float>>("llvm.fabs.f32", this);
+			if(typeof(T) == typeof(double)) return Recompiler.Intrinsic<Func<double, double>>("llvm.fabs.f64", this);
+			throw new NotImplementedException();
+		});
 
 		public LlvmRuntimeValue<T> Sqrt() => new LlvmRuntimeValue<T>(() => {
 			if(typeof(T) == typeof(float)) return Recompiler.Intrinsic<Func<float, float>>("sqrtf", this);
@@ -97,6 +107,12 @@ namespace Cpu64 {
 
 		public static LlvmRuntimeValue<T> operator ^(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			new LlvmRuntimeValue<T>(() => LLVM.BuildXor(Builder, a, b, ""));
+
+		public LlvmRuntimeValue<T> AndNot(LlvmRuntimeValue<T> b) =>
+			new LlvmRuntimeValue<T>(() =>
+				LLVM.BuildBitCast(Builder,
+					LLVM.BuildAnd(Builder, Bitcast<UInt128>(), LLVM.BuildNot(Builder, b.Bitcast<UInt128>(), ""), ""),
+					LlvmType<T>(), ""));
 
 		public static LlvmRuntimeValue<T> operator ~(LlvmRuntimeValue<T> v) =>
 			new LlvmRuntimeValue<T>(() => LLVM.BuildNot(Builder, v, ""));
@@ -168,7 +184,10 @@ namespace Cpu64 {
 					IsSigned<T>() ? LLVMIntPredicate.LLVMIntSGE : LLVMIntPredicate.LLVMIntUGE, a, b, ""))
 				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOGE, a, b, ""));
 		
-		public LlvmRuntimeValue<bool> IsZero() => this == Zero<T>();
+		public LlvmRuntimeValue<bool> IsZero() =>
+			typeof(T).IsConstructedGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Vector128<>)
+				? Bitcast<UInt128>() == Zero<UInt128>()
+				: this == Zero<T>();
 
 		public LlvmRuntimeValue<OT> Cast<OT>() where OT : struct {
 			if((object) this is LlvmRuntimeValue<OT> v) return v;

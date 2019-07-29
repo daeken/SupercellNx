@@ -396,6 +396,21 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* BIC-vector-register */
+				if((inst & 0xBFE0FC00U) == 0x0E601C00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) (((Q) == (0x1)) ? 1U : 0U) != 0) ? ("16B") : ("8B"));
+					var v = (Vector128<float>) (Sse.AndNot((Vector128<float>) ((&State->V0)[rm]), (Vector128<float>) ((&State->V0)[rn])));
+					if(((byte) (((Q) == (0x1)) ? 1U : 0U)) != 0) {
+						(&State->V0)[rd] = v;
+					} else {
+						(&State->V0)[rd] = (Vector128<float>) (v);
+					}
+					return true;
+				}
 				/* BL */
 				if((inst & 0xFC000000U) == 0x94000000U) {
 					var imm = (inst >> 0) & 0x3FFFFFFU;
@@ -1067,6 +1082,151 @@ namespace Cpu64 {
 						}
 					} else {
 						NZCV = (ulong) (((ulong) ((ulong) (nzcv))) << (int) (0x1C));
+					}
+					return true;
+				}
+				/* FCMxx-register-vector */
+				if((inst & 0x9F20F400U) == 0x0E20E400U) {
+					var Q = (inst >> 30) & 0x1U;
+					var U = (inst >> 29) & 0x1U;
+					var E = (inst >> 23) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var ac = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var top = (string) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => "EQ", 0x2 => "GE", 0x3 => "GE", 0x6 => "GT", 0x7 => "GT", _ => throw new NotImplementedException() });
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var a1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var a2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							var b1 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x0));
+							var b2 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a1) == (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a1) >= (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a1))) >= ((float) (MathF.Abs(b1)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a1) > (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a1))) > ((float) (MathF.Abs(b1)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a2) == (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a2) >= (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a2))) >= ((float) (MathF.Abs(b2)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a2) > (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a2))) > ((float) (MathF.Abs(b2)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						case 0x1: {
+							var a1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var a2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							var a3 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x2));
+							var a4 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x3));
+							var b1 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x0));
+							var b2 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x1));
+							var b3 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x2));
+							var b4 = (float) ((&State->V0)[(int) (rm)].Element<float>(0x3));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a1) == (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a1) >= (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a1))) >= ((float) (MathF.Abs(b1)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a1) > (b1)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a1))) > ((float) (MathF.Abs(b1)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a2) == (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a2) >= (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a2))) >= ((float) (MathF.Abs(b2)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a2) > (b2)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a2))) > ((float) (MathF.Abs(b2)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a3) == (b3)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a3) >= (b3)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a3))) >= ((float) (MathF.Abs(b3)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a3) > (b3)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a3))) > ((float) (MathF.Abs(b3)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x3, (float) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (float) (((byte) (((a4) == (b4)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((a4) >= (b4)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x3 => (float) (((byte) ((((float) (MathF.Abs(a4))) >= ((float) (MathF.Abs(b4)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x6 => (float) (((byte) (((a4) > (b4)) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x7 => (float) (((byte) ((((float) (MathF.Abs(a4))) > ((float) (MathF.Abs(b4)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						case 0x3: {
+							var a1 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x0));
+							var a2 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x1));
+							var b1 = (double) ((&State->V0)[(int) (rm)].Element<double>(0x0));
+							var b2 = (double) ((&State->V0)[(int) (rm)].Element<double>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (double) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (double) (((byte) (((a1) == (b1)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x2 => (double) (((byte) (((a1) >= (b1)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x3 => (double) (((byte) ((((double) (Math.Abs(a1))) >= ((double) (Math.Abs(b1)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x6 => (double) (((byte) (((a1) > (b1)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x7 => (double) (((byte) ((((double) (Math.Abs(a1))) > ((double) (Math.Abs(b1)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), _ => throw new NotImplementedException() }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (double) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => (double) (((byte) (((a2) == (b2)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x2 => (double) (((byte) (((a2) >= (b2)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x3 => (double) (((byte) ((((double) (Math.Abs(a2))) >= ((double) (Math.Abs(b2)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x6 => (double) (((byte) (((a2) > (b2)) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x7 => (double) (((byte) ((((double) (Math.Abs(a2))) > ((double) (Math.Abs(b2)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), _ => throw new NotImplementedException() }));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FCMxx-zero-vector */
+				if((inst & 0x9FBFEC00U) == 0x0EA0C800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var U = (inst >> 29) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var op = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var top = (string) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => "GT", 0x1 => "GE", 0x2 => "EQ", _ => "LE" });
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var v1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var v2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v1) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v1) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v1) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v1) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v2) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v2) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v2) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v2) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							break;
+						}
+						case 0x1: {
+							var v1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var v2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							var v3 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x2));
+							var v4 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x3));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v1) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v1) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v1) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v1) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v2) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v2) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v2) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v2) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v3) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v3) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v3) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v3) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x3, (float) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (float) (((byte) (((v4) > ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x1 => (float) (((byte) (((v4) >= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), 0x2 => (float) (((byte) (((v4) == ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))), _ => (float) (((byte) (((v4) <= ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))) }));
+							break;
+						}
+						case 0x3: {
+							var v1 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x0));
+							var v2 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (double) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (double) (((byte) (((v1) > ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x1 => (double) (((byte) (((v1) >= ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x2 => (double) (((byte) (((v1) == ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), _ => (double) (((byte) (((v1) <= ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))) }));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (double) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => (double) (((byte) (((v2) > ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x1 => (double) (((byte) (((v2) >= ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), 0x2 => (double) (((byte) (((v2) == ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))), _ => (double) (((byte) (((v2) <= ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))) }));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FCMLT-zero-vector */
+				if((inst & 0xBFBFFC00U) == 0x0EA0E800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var v1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var v2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) (((v1) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) (((v2) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							break;
+						}
+						case 0x1: {
+							var v1 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x0));
+							var v2 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x1));
+							var v3 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x2));
+							var v4 = (float) ((&State->V0)[(int) (rn)].Element<float>(0x3));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (((byte) (((v1) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (((byte) (((v2) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (float) (((byte) (((v3) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x3, (float) (((byte) (((v4) < ((float) ((float) (0x0)))) ? 1U : 0U) != 0) ? ((float) (Bitcast<int, float>((int) ((int) (-0x1))))) : ((float) (Bitcast<int, float>((int) ((int) (0x0)))))));
+							break;
+						}
+						case 0x3: {
+							var v1 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x0));
+							var v2 = (double) ((&State->V0)[(int) (rn)].Element<double>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((int) ((int) (0x0))).As<int, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (double) (((byte) (((v1) < ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (double) (((byte) (((v2) < ((double) ((double) (0x0)))) ? 1U : 0U) != 0) ? ((double) (Bitcast<long, double>((long) ((long) (-0x1))))) : ((double) (Bitcast<long, double>((long) ((long) (0x0)))))));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
 					}
 					return true;
 				}
@@ -1746,6 +1906,34 @@ namespace Cpu64 {
 					var rd = (inst >> 0) & 0x1FU;
 					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
 					(&State->V0)[rd] = (Vector128<float>) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => (Vector128<float>) (VectorFrsqrte((Vector128<float>) ((&State->V0)[rn]), 0x20, 0x2)), 0x1 => (Vector128<float>) (VectorFrsqrte((Vector128<float>) ((&State->V0)[rn]), 0x20, 0x4)), 0x3 => (Vector128<float>) (VectorFrsqrte((Vector128<float>) ((&State->V0)[rn]), 0x40, 0x2)), _ => throw new NotImplementedException() });
+					return true;
+				}
+				/* FRSQRTS-vector */
+				if((inst & 0xBFA0FC00U) == 0x0EA0FC00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							(&State->V0)[rd] = (Vector128<float>) ((Vector128<float>) (Sse.Divide((Vector128<float>) (Sse.Subtract((Vector128<float>) (Vector128.Create((float) ((float) (0x3))).As<float, float>()), (Vector128<float>) (Sse.Multiply((Vector128<float>) ((&State->V0)[rn]), (Vector128<float>) ((&State->V0)[rm]))))), (Vector128<float>) (Vector128.Create((float) ((float) (0x2))).As<float, float>()))));
+							break;
+						}
+						case 0x1: {
+							(&State->V0)[rd] = (Vector128<float>) (Sse.Divide((Vector128<float>) (Sse.Subtract((Vector128<float>) (Vector128.Create((float) ((float) (0x3))).As<float, float>()), (Vector128<float>) (Sse.Multiply((Vector128<float>) ((&State->V0)[rn]), (Vector128<float>) ((&State->V0)[rm]))))), (Vector128<float>) (Vector128.Create((float) ((float) (0x2))).As<float, float>())));
+							break;
+						}
+						case 0x3: {
+							(&State->V0)[rd] = (Vector128<float>) (Sse2.Divide(((Vector128<float>) (Sse2.Subtract(((Vector128<float>) (Vector128.Create((double) ((double) (0x3))).As<double, float>())).As<float, double>(), ((Vector128<float>) (Sse2.Multiply(((Vector128<float>) ((&State->V0)[rn])).As<float, double>(), ((Vector128<float>) ((&State->V0)[rm])).As<float, double>()).As<double, float>())).As<float, double>()).As<double, float>())).As<float, double>(), ((Vector128<float>) (Vector128.Create((double) ((double) (0x2))).As<double, float>())).As<float, double>()).As<double, float>());
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
 					return true;
 				}
 				/* FSQRT-scalar */
@@ -3565,6 +3753,50 @@ namespace Cpu64 {
 					var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 					var scale = (byte) ((byte) (((byte) (((byte) (size)) << 0)) | ((byte) (((byte) (opc)) << 2))));
 					var address = (ulong) (((ulong) (ulong) ((ulong) ((rn) == 31 ? SP : (&State->X0)[(int) rn]))) + ((ulong) (ushort) ((ushort) ((imm) << (int) (scale)))));
+					switch(rop) {
+						case 0x0: {
+							*(float*) (address) = (float) ((&State->V0)[rt].As<float, byte>().GetElement(0));
+							break;
+						}
+						case 0x4: {
+							*(ushort*) (address) = (ushort) ((&State->V0)[rt].As<float, ushort>().GetElement(0));
+							break;
+						}
+						case 0x8: {
+							*(float*) (address) = (float) ((&State->V0)[rt].GetElement(0));
+							break;
+						}
+						case 0xC: {
+							*(double*) (address) = (double) ((&State->V0)[rt].As<float, double>().GetElement(0));
+							break;
+						}
+						case 0x2: {
+							Sse.Store((float*) (address), (Vector128<float>) ((&State->V0)[rt]));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* STR-simd-register */
+				if((inst & 0x3F600C00U) == 0x3C200800U) {
+					var size = (inst >> 30) & 0x3U;
+					var opc = (inst >> 23) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var option = (inst >> 13) & 0x7U;
+					var scale = (inst >> 12) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var rop = (byte) ((byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) (0x0)))) << 0)) | ((byte) (((byte) (opc)) << 1)))) | ((byte) (((byte) (size)) << 2))));
+					var r1 = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
+					var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
+					var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) ((size) switch { 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => (long) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? (0x4) : (0x0)) })));
+					var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
+					var offset = (ulong) (((ulong) (((byte) (((option) == (0x6)) ? 1U : 0U) != 0) ? ((ulong) ((ulong) ((long) (SignExt<long>((uint) ((rm) == 31 ? 0U : W[(int) rm]), 32))))) : ((ulong) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])) : ((ulong) ((ulong) ((uint) ((rm) == 31 ? 0U : W[(int) rm])))))))) << (int) (amount));
+					var address = (ulong) (((ulong) (ulong) ((ulong) ((rn) == 31 ? SP : (&State->X0)[(int) rn]))) + ((ulong) (ulong) (offset)));
 					switch(rop) {
 						case 0x0: {
 							*(float*) (address) = (float) ((&State->V0)[rt].As<float, byte>().GetElement(0));

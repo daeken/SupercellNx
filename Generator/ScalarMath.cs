@@ -112,6 +112,14 @@ namespace Generator {
 						.Aggregate((a, x) =>
 							$"({GenerateType(list.Type)}) ((({GenerateType(list.Type)}) {a}) | (({GenerateType(list.Type)}) {x}))");
 				});
+			
+			Expression("abs", list => list[1].Type, 
+				list => list[1].Type switch {
+					EFloat(32) => $"MathF.Abs({GenerateExpression(list[1])})", 
+					EFloat(64) => $"Math.Abs({GenerateExpression(list[1])})", 
+					_ => throw new NotSupportedException()
+				}, 
+				list => $"({GenerateExpression(list[1])}).Abs()");
 
 			Expression("sqrt", list => list[1].Type,
 				list => $"({GenerateType(list.Type)}) Math.Sqrt((double) ({GenerateExpression(list[1])}))",

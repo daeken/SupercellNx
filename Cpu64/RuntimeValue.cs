@@ -58,7 +58,19 @@ namespace Cpu64 {
 			})));
 
 		public static RuntimeValue<T> operator -(RuntimeValue<T> a, RuntimeValue<T> b) =>
-			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.Subtract())));
+			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+				if(typeof(T) == typeof(UInt128))
+					Ilg.Call(typeof(UInt128).GetMethod(
+						"op_Subtraction", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(UInt128), typeof(UInt128) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<float>))
+					Ilg.Call(typeof(Sse).GetMethod("Subtract", BindingFlags.Public | BindingFlags.Static));
+				else if(typeof(T) == typeof(Vector128<double>))
+					Ilg.Call(typeof(Sse2).GetMethod("Subtract", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<double>), typeof(Vector128<double>) }, new ParameterModifier[0]));
+				else
+					Ilg.Subtract();
+			})));
 
 		public static RuntimeValue<T> operator *(RuntimeValue<T> a, RuntimeValue<T> b) =>
 			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
@@ -79,13 +91,39 @@ namespace Cpu64 {
 					Ilg.Multiply();
 			})));
 
-		public static RuntimeValue<T> operator /(RuntimeValue<T> a, RuntimeValue<T> b) => a.IsSigned || b.IsSigned
-			? new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.Divide())))
-			: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.UnsignedDivide())));
+		public static RuntimeValue<T> operator /(RuntimeValue<T> a, RuntimeValue<T> b) => 
+			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+				if(typeof(T) == typeof(UInt128))
+					Ilg.Call(typeof(UInt128).GetMethod(
+						"op_Division", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(UInt128), typeof(UInt128) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Int128))
+					Ilg.Call(typeof(Int128).GetMethod(
+						"op_Division", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Int128), typeof(Int128) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<float>))
+					Ilg.Call(typeof(Sse).GetMethod("Divide", BindingFlags.Public | BindingFlags.Static));
+				else if(typeof(T) == typeof(Vector128<double>))
+					Ilg.Call(typeof(Sse2).GetMethod("Divide", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<double>), typeof(Vector128<double>) }, new ParameterModifier[0]));
+				else if(a.IsSigned || b.IsSigned)
+					Ilg.Divide();
+				else
+					Ilg.UnsignedDivide();
+			})));
 
 		public static RuntimeValue<T> operator %(RuntimeValue<T> a, RuntimeValue<T> b) => a.IsSigned || b.IsSigned
 			? new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.Remainder())))
 			: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => Ilg.UnsignedRemainder())));
+
+		public RuntimeValue<T> Abs() => new RuntimeValue<T>(() => EmitThen(() => {
+			if(typeof(T) == typeof(float))
+				Ilg.Call(typeof(MathF).GetMethod("Abs", BindingFlags.Public | BindingFlags.Static));
+			else if(typeof(T) == typeof(double))
+				Ilg.Call(typeof(Math).GetMethod("Abs", BindingFlags.Public | BindingFlags.Static));
+			else
+				throw new NotImplementedException();
+		}));
 
 		public RuntimeValue<T> Sqrt() {
 			switch(this) {
@@ -113,6 +151,14 @@ namespace Cpu64 {
 
 		public static RuntimeValue<T> operator ~(RuntimeValue<T> v) =>
 			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Not()));
+		
+		public RuntimeValue<T> AndNot(RuntimeValue<T> b) =>
+			new RuntimeValue<T>(() => b.EmitThen(() => EmitThen(() => {
+				if(typeof(T).IsConstructedGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Vector128<>))
+					Recompiler.Ilg.Call(typeof(Sse).GetMethod("AndNot", new[] { typeof(Vector128<float>), typeof(Vector128<float>) }));
+				else
+					throw new NotImplementedException();
+			})));
 
 		public static RuntimeValue<T> operator -(RuntimeValue<T> v) =>
 			new RuntimeValue<T>(() => v.EmitThen(() => Ilg.Negate()));

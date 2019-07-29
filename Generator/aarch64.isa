@@ -305,6 +305,16 @@
         (= (gpr32 rd) (& (gpr32 rn) (~ (do-shift32 (gpr32 rm) shift imm))))
         (= (gpr64 rd) (& (gpr64 rn) (~ (do-shift64 (gpr64 rm) shift imm))))))
 
+(def BIC-vector-register
+    "0 Q 0 01110 01 1 mmmmm 00011 1 nnnnn ddddd"
+    "bic V$rd.$t, V$rn.$t, V$rm.$t"
+    (names (Q Q) (rm m) (rn n) (rd d))
+    (let t (if (== Q 1) "16B" "8B"))
+    (let v (vec&~ (vec rn) (vec rm))
+        (if (== Q 1)
+            (= (vec rd) v)
+            (= (vec rd) (vector-zero-top v)))))
+
 (def BL
     "1 00101 iiiiiiiiiiiiiiiiiiiiiiiiii"
     "bl #$addr"
@@ -892,6 +902,124 @@
                 (unimplemented))
             (= (nzcv) (<< (u64 nzcv) 28)))))
 
+(defm fcm-reg (a b itype ftype)
+    (match (: E U ac)
+        0b000 (if (== a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b010 (if (>= a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b011 (if (>= (abs a) (abs b)) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b110 (if (>  a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b111 (if (>  (abs a) (abs b)) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        (unimplemented)))
+
+(def FCMxx-register-vector
+    "0 Q U 01110 E s 1 mmmmm 1110 a 1 nnnnn ddddd"
+    "FCM$top V$rd.$t, V$rn.$t, V$rm.$t"
+    (names (Q Q) (U U) (E E) (size s) (rm m) (ac a) (rn n) (rd d))
+    (block
+        (let top (match (: E U ac)
+            0b000 "EQ"
+            0b010 "GE"
+            0b011 "GE"
+            0b110 "GT"
+            0b111 "GT"
+            (unimplemented)))
+        (let t (match (: size Q)
+            0b00 "2S"
+            0b01 "4S"
+            0b11 "2D"
+            (unimplemented))))
+    (match (: size Q)
+        0b00 (let a1 (vector-element rn 0 f32) (let a2 (vector-element rn 1 f32)
+            (let b1 (vector-element rm 0 f32) (let b2 (vector-element rm 1 f32)
+                (= (vec rd) (vector-all (i32 0)))
+                (vector-insert rd 0 (fcm-reg a1 b1 i32 f32))
+                (vector-insert rd 1 (fcm-reg a2 b2 i32 f32))))))
+        0b01 (let a1 (vector-element rn 0 f32) (let a2 (vector-element rn 1 f32)
+            (let a3 (vector-element rn 2 f32) (let a4 (vector-element rn 3 f32)
+            (let b1 (vector-element rm 0 f32) (let b2 (vector-element rm 1 f32)
+            (let b3 (vector-element rm 2 f32) (let b4 (vector-element rm 3 f32)
+                (= (vec rd) (vector-all (i32 0)))
+                (vector-insert rd 0 (fcm-reg a1 b1 i32 f32))
+                (vector-insert rd 1 (fcm-reg a2 b2 i32 f32))
+                (vector-insert rd 2 (fcm-reg a3 b3 i32 f32))
+                (vector-insert rd 3 (fcm-reg a4 b4 i32 f32))))))))))
+        0b11 (let a1 (vector-element rn 0 f64) (let a2 (vector-element rn 1 f64)
+             (let b1 (vector-element rm 0 f64) (let b2 (vector-element rm 1 f64)
+                 (= (vec rd) (vector-all (i32 0)))
+                 (vector-insert rd 0 (fcm-reg a1 b1 i64 f64))
+                 (vector-insert rd 1 (fcm-reg a2 b2 i64 f64))))))
+        (unimplemented)))
+
+(defm fcm-zero (a b itype ftype)
+    (match (: op U)
+        0b00 (if (>  a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b01 (if (>= a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+        0b10 (if (== a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))
+             (if (<= a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype))))
+
+(def FCMxx-zero-vector
+    "0 Q U 01110 1 s 10000 0110 o 10 nnnnn ddddd"
+    "FCM$top V$rd.$t, V$rn.$t, #0.0"
+    (names (Q Q) (U U) (size s) (op o) (rn n) (rd d))
+    (block
+        (let top (match (: op U)
+            0b00 "GT"
+            0b01 "GE"
+            0b10 "EQ"
+            "LE"))
+        (let t (match (: size Q)
+            0b00 "2S"
+            0b01 "4S"
+            0b11 "2D"
+            (unimplemented))))
+    (match (: size Q)
+        0b00 (let v1 (vector-element rn 0 f32) (let v2 (vector-element rn 1 f32)
+            (= (vec rd) (vector-all (i32 0)))
+            (vector-insert rd 0 (fcm-zero v1 (f32 0) i32 f32))
+            (vector-insert rd 1 (fcm-zero v2 (f32 0) i32 f32))))
+        0b01 (let v1 (vector-element rn 0 f32) (let v2 (vector-element rn 1 f32)
+            (let v3 (vector-element rn 2 f32) (let v4 (vector-element rn 3 f32)
+                (= (vec rd) (vector-all (i32 0)))
+                (vector-insert rd 0 (fcm-zero v1 (f32 0) i32 f32))
+                (vector-insert rd 1 (fcm-zero v2 (f32 0) i32 f32))
+                (vector-insert rd 2 (fcm-zero v3 (f32 0) i32 f32))
+                (vector-insert rd 3 (fcm-zero v4 (f32 0) i32 f32))))))
+        0b11 (let v1 (vector-element rn 0 f64) (let v2 (vector-element rn 1 f64)
+            (= (vec rd) (vector-all (i32 0)))
+            (vector-insert rd 0 (fcm-zero v1 (f64 0) i64 f64))
+            (vector-insert rd 1 (fcm-zero v2 (f64 0) i64 f64))))
+        (unimplemented)))
+
+(defm fcmlt-zero (a b itype ftype)
+    (if (< a b) (bitcast (itype -1) ftype) (bitcast (itype 0) ftype)))
+
+(def FCMLT-zero-vector
+    "0 Q 0 01110 1 s 10000 01110 10 nnnnn ddddd"
+    "FCMLT V$rd.$t, V$rn.$t, #0.0"
+    (names (Q Q) (size s) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00 "2S"
+        0b01 "4S"
+        0b11 "2D"
+        (unimplemented)))
+    (match (: size Q)
+        0b00 (let v1 (vector-element rn 0 f32) (let v2 (vector-element rn 1 f32)
+            (= (vec rd) (vector-all (i32 0)))
+            (vector-insert rd 0 (fcmlt-zero v1 (f32 0) i32 f32))
+            (vector-insert rd 1 (fcmlt-zero v2 (f32 0) i32 f32))))
+        0b01 (let v1 (vector-element rn 0 f32) (let v2 (vector-element rn 1 f32)
+            (let v3 (vector-element rn 2 f32) (let v4 (vector-element rn 3 f32)
+                (= (vec rd) (vector-all (i32 0)))
+                (vector-insert rd 0 (fcmlt-zero v1 (f32 0) i32 f32))
+                (vector-insert rd 1 (fcmlt-zero v2 (f32 0) i32 f32))
+                (vector-insert rd 2 (fcmlt-zero v3 (f32 0) i32 f32))
+                (vector-insert rd 3 (fcmlt-zero v4 (f32 0) i32 f32))))))
+        0b11 (let v1 (vector-element rn 0 f64) (let v2 (vector-element rn 1 f64)
+            (= (vec rd) (vector-all (i32 0)))
+            (vector-insert rd 0 (fcmlt-zero v1 (f64 0) i64 f64))
+            (vector-insert rd 1 (fcmlt-zero v2 (f64 0) i64 f64))))
+        (unimplemented)))
+
 (def FCMP
     "0 0 0 11110 tt 1 mmmmm 00 1000 nnnnn 0o 000"
     "fcmp $r$rn, $r$rm $zero"
@@ -1228,6 +1356,24 @@
         0b01 (vec-frsqrte (vec rn) 32 4)
         0b11 (vec-frsqrte (vec rn) 64 2)
         (unimplemented))))
+
+(defm frsqrts (a b size type)
+    (vec/ (vec- (vector-all (type 3)) (vec* a b size) size) (vector-all (type 2)) size))
+
+(def FRSQRTS-vector
+    "0 Q 0 01110 1 s 1 mmmmm 11111 1 nnnnn ddddd"
+    "frsqrts V$rd.$t, V$rn.$t, V$rm.$t"
+    (names (Q Q) (size s) (rm m) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00 "2S"
+        0b01 "4S"
+        0b11 "2D"
+        (unimplemented)))
+    (match (: size Q)
+        0b00 (= (vec rd) (vector-zero-top (frsqrts (vec rn) (vec rm) 32 f32)))
+        0b01 (= (vec rd) (frsqrts (vec rn) (vec rm) 32 f32))
+        0b11 (= (vec rd) (frsqrts (vec rn) (vec rm) 64 f64))
+        (unimplemented)))
 
 (def FSQRT-scalar
     "0 0 0 11110 tt 1 0000 11 10000 nnnnn ddddd"
@@ -2525,6 +2671,45 @@
             0b1100 (store address (vec-d rt))
             0b0010 (store address (vec rt))
             (unimplemented))))
+
+(def STR-simd-register
+    "ff 111 1 00 x0 1 mmmmm ooo s 10 nnnnn ttttt"
+    "str $r1$rt, [X$rn, $r2, $extend $amount]"
+    (names (size f) (opc x) (rm m) (option o) (scale s) (rn n) (rt t))
+    (block
+        (let rop (: size opc (u1 0)))
+        (let r1 (match rop
+            0b0000 "B"
+            0b0100 "H"
+            0b1000 "S"
+            0b1100 "D"
+            0b0010 "Q"
+            (unimplemented)))
+        (let r2 (if (& option 1) "X" "W"))
+        (let amount (if (== scale 0) 0 (match size
+            0b01 1
+            0b10 2
+            0b11 3
+            (if (== opc 1) 4 0)
+            )))
+        (let extend (match option
+            0b010 "UXTW"
+            0b110 "SXTW"
+            0b111 "SXTX"
+            "LSL")))
+    (let offset (<< (if (== option 0b110)
+            (u64 (signext (gpr32 rm) i64))
+            (if (& option 1)
+                (gpr64 rm)
+                (u64 (gpr32 rm)))) amount)
+        (let address (+ (gpr-or-sp64 rn) offset)
+            (match rop
+                0b0000 (store address (vec-b rt))
+                0b0100 (store address (vec-h rt))
+                0b1000 (store address (vec-s rt))
+                0b1100 (store address (vec-d rt))
+                0b0010 (store address (vec rt))
+                (unimplemented)))))
 
 (def STRB-immediate-postindex
 	"00 111 0 00 00 0 iiiiiiiii 01 nnnnn ttttt"

@@ -145,7 +145,6 @@ namespace CpuTest {
 				pre?.Invoke(llvmRecompiler, addr);
 				SetUc(uc, llvmRecompiler);
 				llvmRecompiler.Run(llvmRecompiler.State->PC, llvmRecompiler.State->SP, true);
-
 				post?.Invoke(llvmRecompiler, true, addr);
 				pre?.Invoke(null, addr);
 				CheckUc(uc, llvmRecompiler, true);

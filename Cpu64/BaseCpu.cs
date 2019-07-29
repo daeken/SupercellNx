@@ -168,9 +168,19 @@ namespace Cpu64 {
 		protected static unsafe OutT Bitcast<InT, OutT>(InT value) {
 			var ov = Activator.CreateInstance<OutT>();
 			switch(value) {
+				case int v:
+					switch(ov) {
+						case float _: return (OutT) (object) *(float*) &v;
+						default: throw new NotImplementedException();
+					}
 				case uint v:
 					switch(ov) {
 						case float _: return (OutT) (object) *(float*) &v;
+						default: throw new NotImplementedException();
+					}
+				case long v:
+					switch(ov) {
+						case double _: return (OutT) (object) *(double*) &v;
 						default: throw new NotImplementedException();
 					}
 				case ulong v:

@@ -210,23 +210,6 @@ namespace Generator {
 				case PName("vector-sum-unsigned"): return $"VectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				case PName("vector-extract"): return $"VectorExtract({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])})";
 				
-				case PName("vec+"):
-					switch(list[3]) {
-						case PInt(32):
-							return $"Sse.Add({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
-						case PInt(64):
-							return $"Sse2.Add(({GenerateExpression(list[1])}).As<float, double>(), ({GenerateExpression(list[2])}).As<float, double>()).As<double, float>()";
-						default: throw new NotSupportedException();
-					}
-				case PName("vec*"):
-					switch(list[3]) {
-						case PInt(32):
-							return $"Sse.Multiply({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
-						case PInt(64):
-							return $"Sse2.Multiply(({GenerateExpression(list[1])}).As<float, double>(), ({GenerateExpression(list[2])}).As<float, double>()).As<double, float>()";
-						default: throw new NotSupportedException();
-					}
-				
 				case PName("float-to-fixed-point"): return $"FloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, (int) ({GenerateExpression(list[3])}))";
 				
 				case PName name when Expressions.ContainsKey(name): return Expressions[name].CompileTime(list);
@@ -257,23 +240,6 @@ namespace Generator {
 				case PName("vector-count-bits"): return $"CallVectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"CallVectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				case PName("vector-extract"): return $"CallVectorExtract({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])})";
-				
-				case PName("vec+"):
-					switch(list[3]) {
-						case PInt(32):
-							return $"({GenerateExpression(list[1])}) + ({GenerateExpression(list[2])})";
-						case PInt(64):
-							return $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ({GenerateExpression(list[1])}) + (RuntimeValue<Vector128<double>>) ({GenerateExpression(list[2])}))";
-						default: throw new NotSupportedException();
-					}
-				case PName("vec*"):
-					switch(list[3]) {
-						case PInt(32):
-							return $"({GenerateExpression(list[1])}) * ({GenerateExpression(list[2])})";
-						case PInt(64):
-							return $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ({GenerateExpression(list[1])}) * (RuntimeValue<Vector128<double>>) ({GenerateExpression(list[2])}))";
-						default: throw new NotSupportedException();
-					}
 				
 				case PName("float-to-fixed-point"): return $"CallFloatToFixed{((EInt) list.Type).Width}({GenerateExpression(list[1])}, {GenerateExpression(list[3])})";
 				

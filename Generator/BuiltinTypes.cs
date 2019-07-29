@@ -44,8 +44,6 @@ namespace Generator {
 			["vector-extract"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["vector-count-bits"] = _ => EType.Vector, 
 			["vector-sum-unsigned"] = _ => new EInt(false, 32), 
-			["vec+"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
-			["vec*"] = x => EType.Vector.AsRuntime(x[1].Type.Runtime || x[2].Type.Runtime), 
 			["float-to-fixed-point"] = x => TypeFromName(x[2]).AsRuntime(x[1].Type.Runtime || x[3].Type.Runtime), 
 		};
 	}

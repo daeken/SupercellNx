@@ -177,6 +177,15 @@ namespace Cpu64 {
 				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"bic {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
+			/* BIC-vector-register */
+			if((inst & 0xBFE0FC00U) == 0x0E601C00U) {
+				var Q = (inst >> 30) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) (((Q) == (0x1)) ? 1U : 0U) != 0) ? ("16B") : ("8B"));
+				return $"bic V{rd}.{t}, V{rn}.{t}, V{rm}.{t}";
+			}
 			/* BL */
 			if((inst & 0xFC000000U) == 0x94000000U) {
 				var imm = (inst >> 0) & 0x3FFFFFFU;
@@ -482,6 +491,41 @@ namespace Cpu64 {
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				var condstr = (string) ((cond) switch { 0x0 => "EQ", 0x1 => "NE", 0x2 => "CS", 0x3 => "CC", 0x4 => "MI", 0x5 => "PL", 0x6 => "VS", 0x7 => "VC", 0x8 => "HI", 0x9 => "LS", 0xA => "GE", 0xB => "LT", 0xC => "GT", 0xD => "LE", _ => "AL" });
 				return $"fccmp {r}{rn}, {r}{rm}, #{nzcv}, {condstr}";
+			}
+			/* FCMxx-register-vector */
+			if((inst & 0x9F20F400U) == 0x0E20E400U) {
+				var Q = (inst >> 30) & 0x1U;
+				var U = (inst >> 29) & 0x1U;
+				var E = (inst >> 23) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var ac = (inst >> 11) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var top = (string) (((byte) ((byte) (((byte) (byte) (((byte) (((byte) (ac)) << 0)) | ((byte) (((byte) (U)) << 1)))) | ((byte) (((byte) (E)) << 2))))) switch { 0x0 => "EQ", 0x2 => "GE", 0x3 => "GE", 0x6 => "GT", 0x7 => "GT", _ => throw new NotImplementedException() });
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"FCM{top} V{rd}.{t}, V{rn}.{t}, V{rm}.{t}";
+			}
+			/* FCMxx-zero-vector */
+			if((inst & 0x9FBFEC00U) == 0x0EA0C800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var U = (inst >> 29) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var op = (inst >> 12) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var top = (string) (((byte) ((byte) (((byte) (((byte) (U)) << 0)) | ((byte) (((byte) (op)) << 1))))) switch { 0x0 => "GT", 0x1 => "GE", 0x2 => "EQ", _ => "LE" });
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"FCM{top} V{rd}.{t}, V{rn}.{t}, #0.0";
+			}
+			/* FCMLT-zero-vector */
+			if((inst & 0xBFBFFC00U) == 0x0EA0E800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"FCMLT V{rd}.{t}, V{rn}.{t}, #0.0";
 			}
 			/* FCMP */
 			if((inst & 0xFF20FC17U) == 0x1E202000U) {
@@ -821,6 +865,16 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
 				return $"frsqrte V{rd}.{t}, V{rn}.{t}";
+			}
+			/* FRSQRTS-vector */
+			if((inst & 0xBFA0FC00U) == 0x0EA0FC00U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"frsqrts V{rd}.{t}, V{rn}.{t}, V{rm}.{t}";
 			}
 			/* FSQRT-scalar */
 			if((inst & 0xFF3FFC00U) == 0x1E21C000U) {
@@ -1840,6 +1894,22 @@ namespace Cpu64 {
 				var r = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
 				var scale = (byte) ((byte) (((byte) (((byte) (size)) << 0)) | ((byte) (((byte) (opc)) << 2))));
 				return $"str {r}{rt}, [X{rn}, #0x{imm:X}]";
+			}
+			/* STR-simd-register */
+			if((inst & 0x3F600C00U) == 0x3C200800U) {
+				var size = (inst >> 30) & 0x3U;
+				var opc = (inst >> 23) & 0x1U;
+				var rm = (inst >> 16) & 0x1FU;
+				var option = (inst >> 13) & 0x7U;
+				var scale = (inst >> 12) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rt = (inst >> 0) & 0x1FU;
+				var rop = (byte) ((byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) (0x0)))) << 0)) | ((byte) (((byte) (opc)) << 1)))) | ((byte) (((byte) (size)) << 2))));
+				var r1 = (string) ((rop) switch { 0x0 => "B", 0x4 => "H", 0x8 => "S", 0xC => "D", 0x2 => "Q", _ => throw new NotImplementedException() });
+				var r2 = (string) (((byte) ((((ulong) (option)) & ((ulong) (0x1)))) != 0) ? ("X") : ("W"));
+				var amount = (long) (((byte) (((scale) == (0x0)) ? 1U : 0U) != 0) ? (0x0) : ((long) ((size) switch { 0x1 => 0x1, 0x2 => 0x2, 0x3 => 0x3, _ => (long) (((byte) (((opc) == (0x1)) ? 1U : 0U) != 0) ? (0x4) : (0x0)) })));
+				var extend = (string) ((option) switch { 0x2 => "UXTW", 0x6 => "SXTW", 0x7 => "SXTX", _ => "LSL" });
+				return $"str {r1}{rt}, [X{rn}, {r2}, {extend} {(amount < 0 ? $"-0x{-amount:X}" : $"0x{amount:X}")}]";
 			}
 			/* STRB-immediate-postindex */
 			if((inst & 0xFFE00C00U) == 0x38000400U) {
