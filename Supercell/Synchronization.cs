@@ -99,6 +99,18 @@ namespace Supercell {
 			? mutex
 			: Mutexes[addr] = new Mutex();
 
+		[Svc(0x12)]
+		public uint ClearEvent(uint handle) {
+			$"ClearEvent(0x{handle:X})".Debug();
+			return 0;
+		}
+		
+		[Svc(0x17)]
+		public uint ResetSignal(uint handle) {
+			$"ResetSignal(0x{handle:X})".Debug();
+			return 0;
+		}
+
 		[Svc(0x18)]
 		public (uint, uint) WaitSynchronization(ulong _, ulong handlesAddr, uint numHandles, ulong timeout) {
 			$"WaitSynchronization".Debug();
