@@ -33,6 +33,11 @@ namespace Supercell {
 			Size = size;
 			InitialBackingMemory = new byte[size];
 		}
+
+		public KSharedMemory(byte[] data) {
+			Size = data.Length;
+			InitialBackingMemory = data;
+		}
 	}
 	
 	public unsafe class MemoryManager {

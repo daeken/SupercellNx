@@ -22,6 +22,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Common\Common.csproj" />
       <ProjectReference Include="..\Cpu64\Cpu64.csproj" />
+      <ProjectReference Include="..\OpenFonts\OpenFonts.csproj" />
     </ItemGroup>
 
 </Project>
