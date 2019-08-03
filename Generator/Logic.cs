@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using MoreLinq;
 
@@ -104,6 +105,25 @@ namespace Generator {
 					else
 						c += $"var {list[1]} = {GenerateExpression(list[2])};";
 					list.Skip(3).ForEach(x => GenerateStatement(c, (PList) x));
+				});
+
+			Statement("mlet", 
+				list => list.Last().Type.AsRuntime(list.AnyRuntime),
+				(c, list) => {
+					if(!(list[1] is PList dlist)) throw new NotSupportedException();
+					Debug.Assert(dlist.Count % 2 == 0);
+					for(var i = 0; i < dlist.Count; i += 2)
+						c += $"var {dlist[i]} = {GenerateExpression(dlist[i + 1])};";
+					list.Skip(2).ForEach(x => GenerateStatement(c, (PList) x));
+				}, (c, list) => {
+					if(!(list[1] is PList dlist)) throw new NotSupportedException();
+					Debug.Assert(dlist.Count % 2 == 0);
+					for(var i = 0; i < dlist.Count; i += 2)
+						if(dlist[i + 1].Type.Runtime)
+							c += $"var {dlist[i]} = ({GenerateExpression(dlist[i + 1])}).Store();";
+						else
+							c += $"var {dlist[i]} = {GenerateExpression(dlist[i + 1])};";
+					list.Skip(2).ForEach(x => GenerateStatement(c, (PList) x));
 				});
 			
 			Expression("cast", list => TypeFromName(list[2]).AsRuntime(list.AnyRuntime), 

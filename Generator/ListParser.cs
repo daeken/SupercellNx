@@ -46,8 +46,8 @@ namespace Generator {
 		public void Deconstruct(out int width) => width = Width;
 	}
 	public class EUndef : EType {
-		public override EType AsRuntime() => throw new NotSupportedException();
-		public override EType AsCompiletime() => this;
+		public override EType AsRuntime() => Runtime ? this : new EUndef { Runtime = true };
+		public override EType AsCompiletime() => Runtime ? Undef : this;
 	}
 	public class EString : EType {
 		public static readonly EType RuntimeType = new EString { Runtime = true };

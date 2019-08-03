@@ -205,7 +205,7 @@ namespace Generator {
 				case PName("vector-zero-top"): return GenerateExpression(list[1]);
 				case PName("vector-insert"): return $"(&State->V0)[(int) ({GenerateExpression(list[1])})] = Insert((&State->V0)[(int) ({GenerateExpression(list[1])})], {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				case PName("vector-element"):
-					return $"(&State->V0)[(int) ({GenerateExpression(list[1])})].Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
+					return $"({GenerateExpression(list[1])}).Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
 				case PName("vector-count-bits"): return $"VectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"VectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				case PName("vector-extract"): return $"VectorExtract({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])}, {GenerateExpression(list[4])})";
@@ -235,7 +235,7 @@ namespace Generator {
 				case PName("vector-insert"):
 					return $"VR[(int) ({GenerateExpression(list[1])})] = VR[(int) ({GenerateExpression(list[1])})].Insert({GenerateExpression(list[2])}, {GenerateExpression(list[3])})";
 				case PName("vector-element"):
-					return $"VR[(int) ({GenerateExpression(list[1])})].Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
+					return $"({GenerateExpression(list[1])}).Element<{GenerateType(list.Type.AsCompiletime())}>({GenerateExpression(list[2])})";
 				
 				case PName("vector-count-bits"): return $"CallVectorCountBits({GenerateExpression(list[1])}, {GenerateExpression(list[2])})";
 				case PName("vector-sum-unsigned"): return $"CallVectorSumUnsigned({GenerateExpression(list[1])}, {GenerateExpression(list[2])}, {GenerateExpression(list[3])})";

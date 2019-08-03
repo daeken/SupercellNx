@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Common;
 
 namespace Cpu64 {
 	public unsafe delegate void BlockFunc(CpuState* state, BaseCpu cpu);
@@ -19,16 +20,14 @@ namespace Cpu64 {
 	public static class CacheManager {
 		static readonly Dictionary<ulong, Block> Blocks = new Dictionary<ulong, Block>();
 		
-		static CacheManager() => StartOptimizer();
-
 		public static void Clear() {
 			lock(Blocks)
 				Blocks.Clear();
 		}
 
-		static void StartOptimizer() => new Thread(Optimizer).Start();
-		static void Optimizer() {
-			var recompiler = new LlvmRecompiler();
+		public static void StartOptimizer(IKernel kernel) => new Thread(() => Optimizer(kernel)).Start();
+		static void Optimizer(IKernel kernel) {
+			var recompiler = new LlvmRecompiler(kernel);
 			while(true) {
 				Block candidate = null;
 				lock(Blocks)

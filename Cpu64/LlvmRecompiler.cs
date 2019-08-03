@@ -312,7 +312,7 @@ namespace Cpu64 {
 		static void Bailout(string func, string file, int line, string message) =>
 			throw new LlvmException($"Assertion failed in `{func}` ({file}:{line}):  {message}");
 
-		public LlvmRecompiler(IKernel kernel = null) : base(kernel) {
+		public LlvmRecompiler(IKernel kernel) : base(kernel) {
 			/*var mod = dlopen("/Users/cody/projects/SupercellNx/App/bin/Debug/netcoreapp3.0/runtimes/osx/native/libLLVM.dylib", 1);
 			Debug.Assert(mod != 0);
 			var init = dlsym(unchecked((long) mod), "LLVMInitializeX86Target");
@@ -331,13 +331,7 @@ namespace Cpu64 {
 			VDR = new LlvmVectorDoubleMap(this);
 
 			Callbacks = (LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
-			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => {
-				if(Kernel == null) {
-					Console.WriteLine("SVC!");
-					Environment.Exit(1);
-				}
-				Kernel.Svc((int) svc);
-			});
+			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => Kernel.Svc((int) svc));
 			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>((state, op0, op1, crn, crm, op2) => {
 				var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
 				if(reg == 0b11_011_1101_0000_011) // TPIDR

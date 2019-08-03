@@ -79,6 +79,13 @@ namespace Generator {
 								return list.Last().Type;
 							case "let":
 								locals[((PName) list[1]).Name] = InferType(list[2]);
+								list.Skip(3).ForEach(x => InferType(x));
+								return list.Last().Type;
+							case "mlet":
+								if(!(list[1] is PList dlist)) throw new NotSupportedException();
+								Debug.Assert(dlist.Count % 2 == 0);
+								for(var i = 0; i < dlist.Count; i += 2)
+									locals[((PName) dlist[i]).Name] = InferType(dlist[i + 1]);
 								list.Skip(2).ForEach(x => InferType(x));
 								return list.Last().Type;
 							case { } fname when Program.Statements.ContainsKey(fname):

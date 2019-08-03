@@ -1712,6 +1712,38 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				return $"smulh X{rd}, X{rn}, X{rm}";
 			}
+			/* SSHLL */
+			if((inst & 0xBF80FC00U) == 0x0F00A400U) {
+				var Q = (inst >> 30) & 0x1U;
+				var immh = (inst >> 19) & 0xFU;
+				var immb = (inst >> 16) & 0x7U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var variant = (string) ((Q != 0) ? ("2") : (""));
+				var ta = "";
+				var tb = "";
+				var shift = (ulong) ((ulong) (0x0));
+				if(((byte) (((immh) == (0x1)) ? 1U : 0U)) != 0) {
+					ta = "8H";
+					tb = (string) ((Q != 0) ? ("16B") : ("8B"));
+					shift = (ulong) (((ulong) (byte) ((byte) ((byte) (((byte) (((byte) (immb)) << 0)) | ((byte) (((byte) (immh)) << 3)))))) - ((ulong) (long) (0x8)));
+				} else {
+					if(((byte) ((((byte) ((((ulong) (immh)) & ((ulong) (0xE))))) == (0x2)) ? 1U : 0U)) != 0) {
+						ta = "4S";
+						tb = (string) ((Q != 0) ? ("8H") : ("4H"));
+						shift = (ulong) (((ulong) (byte) ((byte) ((byte) (((byte) (((byte) (immb)) << 0)) | ((byte) (((byte) (immh)) << 3)))))) - ((ulong) (long) (0x10)));
+					} else {
+						if(((byte) ((((byte) ((((ulong) (immh)) & ((ulong) (0xC))))) == (0x4)) ? 1U : 0U)) != 0) {
+							ta = "2D";
+							tb = (string) ((Q != 0) ? ("4S") : ("2S"));
+							shift = (ulong) (((ulong) (byte) ((byte) ((byte) (((byte) (((byte) (immb)) << 0)) | ((byte) (((byte) (immh)) << 3)))))) - ((ulong) (long) (0x20)));
+						} else {
+							throw new NotImplementedException();
+						}
+					}
+				}
+				return $"sshll{variant} V{rd}.{ta}, V{rn}.{tb}, #0x{shift:X}";
+			}
 			/* STLR */
 			if((inst & 0xBFFFFC00U) == 0x889FFC00U) {
 				var size = (inst >> 30) & 0x1U;
