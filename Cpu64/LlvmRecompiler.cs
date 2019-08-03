@@ -285,7 +285,8 @@ namespace Cpu64 {
 		List<LlvmLabel> UsedLabels;
 		LLVMBasicBlockRef CurrentBlock;
 
-		readonly LlvmCallbacks *Callbacks;
+		internal static readonly LlvmCallbacks* Callbacks =
+			(LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
 
 		[DllImport("libc", CharSet = CharSet.Ansi)]
 		static extern ulong dlopen(string name, int mode);
@@ -330,7 +331,6 @@ namespace Cpu64 {
 			VSR = new LlvmVectorFloatMap(this);
 			VDR = new LlvmVectorDoubleMap(this);
 
-			Callbacks = (LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
 			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => Kernel.Svc((int) svc));
 			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>((state, op0, op1, crn, crm, op2) => {
 				var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
@@ -431,6 +431,7 @@ namespace Cpu64 {
 			LLVM.AddSLPVectorizePass(PassManager);
 			LLVM.AddDeadStoreEliminationPass(PassManager);
 			LLVM.AddAggressiveDCEPass(PassManager);
+			LLVM.AddPartiallyInlineLibCallsPass(PassManager);
 			LLVM.InitializeFunctionPassManager(PassManager);
 
 			Function = LLVM.AddFunction(Module, $"_{block.Addr:X}", LlvmType<Action<ulong, ulong>>());
@@ -513,7 +514,15 @@ namespace Cpu64 {
 			
 			if(LLVM.CreateExecutionEngineForModule(out ExecutionEngine, Module, out var errorMessage).Value == 1)
 				throw new Exception(errorMessage);
-			
+
+			if(LLVM.TargetMachineEmitToMemoryBuffer(LLVM.GetExecutionEngineTargetMachine(ExecutionEngine), Module,
+				LLVMCodeGenFileType.LLVMObjectFile, out var errMsg, out var memBuf))
+				throw new LlvmException(errMsg);
+
+			var outCode = new byte[LLVM.GetBufferSize(memBuf)];
+			Marshal.Copy(LLVM.GetBufferStart(memBuf), outCode, 0, outCode.Length);
+			block.ObjectCode = outCode;
+
 			var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>(LLVM.GetPointerToGlobal(ExecutionEngine, Function));
 			block.Func = (state, _) => tfunc(state, Callbacks);
 		}

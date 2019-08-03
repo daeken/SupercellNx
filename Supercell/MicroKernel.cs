@@ -51,6 +51,7 @@ namespace Supercell {
 		
 		public unsafe void LoadAndRun(string fn) {
 			SignalHandler.Setup();
+			CacheManager.LoadCache();
 			CacheManager.StartOptimizer(this);
 			
 			var pfs = new PartitionFileSystem(new FileStream(fn, FileMode.Open, FileAccess.Read).AsStorage());
