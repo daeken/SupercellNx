@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using LLVMSharp;
 using MoreLinq;
 using PrettyPrinter;
 
@@ -66,7 +67,27 @@ namespace Cpu64 {
 		[DllImport("kernel32")]
 		static extern void VirtualProtect(ulong addr, ulong len, int prot, out int oldProt);
 
+		static bool Initialized;
+		static LLVMModuleRef Module;
+		static LLVMExecutionEngineRef ExecutionEngine;
+
+		static ulong GetIntrinsic(string name) {
+			var func = LLVM.GetNamedFunction(Module, name);
+			func = func.Pointer == IntPtr.Zero
+				? LLVM.AddFunction(Module, name,
+					LLVMTypeRef.FunctionType(LLVMTypeRef.VoidType(), new LLVMTypeRef[0], false))
+				: func;
+			return (ulong) LLVM.GetPointerToGlobal(ExecutionEngine, func);
+		}
+
 		public void* Load(byte[] file, ulong blockAddr) {
+			if(!Initialized) {
+				Initialized = true;
+				if(LLVM.CreateExecutionEngineForModule(out ExecutionEngine,
+					Module = LLVM.ModuleCreateWithName("CoffReader"), out var err))
+					throw new Exception("LLVM Error: " + err);
+			}
+			
 			fixed(byte* _ptr = file) {
 				var ptr = _ptr;
 				var header = (CoffHeader*) ptr;
@@ -87,16 +108,20 @@ namespace Cpu64 {
 					off += (int) size;
 				}
 
-				var symbols = new Dictionary<int, CoffSymbol>();
 				var csym = (CoffSymbol*) (ptr + header->SymbolPointer);
+				var strtabPtr = (byte*) &csym[header->NumSymbols];
+				var strtabLength = *(int*) strtabPtr;
+
+				string GetString(byte* name) =>
+					Marshal.PtrToStringAnsi((IntPtr) (*(uint*) name == 0 ? strtabPtr + *(uint*) (name + 4) : name));
+				
+				var symbols = new Dictionary<int, (string Name, CoffSymbol Symbol)>();
 				for(var i = 0; i < header->NumSymbols; ++i) {
 					var sym = csym[i];
-					symbols[i] = sym;
-					if(sym.SectionNumber == 0 && sym.Value == 0)
-						return null; // TODO: Add loading of external symbols!
+					symbols[i] = (GetString(sym.Name), sym);
 					i += sym.NumAux;
 				}
-				
+
 				var addr = (byte*) Marshal.AllocHGlobal(off);
 				Debug.Assert(addr != null);
 				segments.ForEach(seg =>
@@ -105,9 +130,11 @@ namespace Cpu64 {
 				foreach(var seg in segments) {
 					foreach(var reloc in seg.Relocations) {
 						var sym = symbols[(int) reloc.SymbolIndex];
-						var value = sym.SectionNumber == -1
-							? sym.Value
-							: (ulong) (addr + segments[sym.SectionNumber - 1].Offset + sym.Value);
+						var value = sym.Symbol.SectionNumber switch {
+							-1 => sym.Symbol.Value,
+							0 => GetIntrinsic(sym.Name),
+							_ => (ulong) (addr + segments[sym.Symbol.SectionNumber - 1].Offset + sym.Symbol.Value)
+						};
 						var target = addr + seg.Offset + reloc.VirtAddr;
 						switch(reloc.Type) {
 							case RelocationType.Addr64:
