@@ -931,6 +931,71 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FABS-scalar */
+				if((inst & 0xFF3FFC00U) == 0x1E20C000U) {
+					var type = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+					switch(type) {
+						case 0x0: {
+							(&State->V0)[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (MathF.Abs((float) ((&State->V0)[rn].GetElement(0)))));
+							break;
+						}
+						case 0x1: {
+							(&State->V0)[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (Math.Abs((double) ((&State->V0)[rn].As<float, double>().GetElement(0))))).As<double, float>();
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FABS-vector */
+				if((inst & 0xBFBFFC00U) == 0x0EA0F800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var a = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x0));
+							var b = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((float) ((float) (0x0))).As<float, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (MathF.Abs(a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (MathF.Abs(b)));
+							break;
+						}
+						case 0x1: {
+							var a = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x0));
+							var b = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x1));
+							var c = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x2));
+							var d = (float) (((Vector128<float>) ((&State->V0)[rn])).Element<float>(0x3));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((float) ((float) (0x0))).As<float, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (float) (MathF.Abs(a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (float) (MathF.Abs(b)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (float) (MathF.Abs(c)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x3, (float) (MathF.Abs(d)));
+							break;
+						}
+						case 0x3: {
+							var a = (double) (((Vector128<float>) ((&State->V0)[rn])).Element<double>(0x0));
+							var b = (double) (((Vector128<float>) ((&State->V0)[rn])).Element<double>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((double) ((double) (0x0))).As<double, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (double) (Math.Abs(a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (double) (Math.Abs(b)));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* FADD-scalar */
 				if((inst & 0xFF20FC00U) == 0x1E202800U) {
 					var type = (inst >> 22) & 0x3U;
@@ -3018,6 +3083,36 @@ namespace Cpu64 {
 					} else {
 						(&State->X0)[(int) rd] = (ulong) (((ulong) (ulong) ((ulong) ((ra) == 31 ? 0UL : (&State->X0)[(int) ra]))) - ((ulong) (ulong) ((ulong) (((ulong) (ulong) ((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn]))) * ((ulong) (ulong) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm])))))));
 					}
+					return true;
+				}
+				/* MUL-by-element */
+				if((inst & 0xBF00F400U) == 0x0F008000U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var L = (inst >> 21) & 0x1U;
+					var M = (inst >> 20) & 0x1U;
+					var rv = (inst >> 16) & 0xFU;
+					var H = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var rm = (byte) (((byte) (((size) == (0x2)) ? 1U : 0U) != 0) ? ((byte) ((byte) (((byte) (((byte) (rv)) << 0)) | ((byte) (((byte) (M)) << 4))))) : (rv));
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+					var ts = (string) ((size) switch { 0x1 => "H", 0x2 => "S", _ => throw new NotImplementedException() });
+					var index = (byte) ((size) switch { 0x1 => (byte) ((byte) (((byte) (byte) (((byte) (((byte) (M)) << 0)) | ((byte) (((byte) (L)) << 1)))) | ((byte) (((byte) (H)) << 2)))), 0x2 => (byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (H)) << 1)))), _ => throw new NotImplementedException() });
+					var v = (Vector128<float>) ((size) switch { 0x1 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, ushort>().Multiply(((ushort) (((Vector128<float>) ((&State->V0)[rm])).Element<ushort>(index)))).As<ushort, float>()), 0x2 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, uint>().Multiply(((uint) (((Vector128<float>) ((&State->V0)[rm])).Element<uint>(index)))).As<uint, float>()), _ => throw new NotImplementedException() });
+					(&State->V0)[rd] = (Vector128<float>) ((Q != 0) ? (v) : ((Vector128<float>) (v)));
+					return true;
+				}
+				/* MUL-vector */
+				if((inst & 0xBF20FC00U) == 0x0E209C00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+					var v = (Vector128<float>) ((size) switch { 0x0 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, byte>().Multiply(((Vector128<float>) ((&State->V0)[rm])).As<float, byte>()).As<byte, float>()), 0x1 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, ushort>().Multiply(((Vector128<float>) ((&State->V0)[rm])).As<float, ushort>()).As<ushort, float>()), 0x2 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, uint>().Multiply(((Vector128<float>) ((&State->V0)[rm])).As<float, uint>()).As<uint, float>()), _ => throw new NotImplementedException() });
+					(&State->V0)[rd] = (Vector128<float>) ((Q != 0) ? (v) : ((Vector128<float>) (v)));
 					return true;
 				}
 				/* ORN-shifted-register */

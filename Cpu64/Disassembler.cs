@@ -444,6 +444,23 @@ namespace Cpu64 {
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"extr {r}{rd}, {r}{rn}, {r}{rm}, #{lsb}";
 			}
+			/* FABS-scalar */
+			if((inst & 0xFF3FFC00U) == 0x1E20C000U) {
+				var type = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fabs {r}{rd}, {r}{rn}";
+			}
+			/* FABS-vector */
+			if((inst & 0xBFBFFC00U) == 0x0EA0F800U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+				return $"fabs V{rd}.{t}, V{rn}.{t}";
+			}
 			/* FADD-scalar */
 			if((inst & 0xFF20FC00U) == 0x1E202800U) {
 				var type = (inst >> 22) & 0x3U;
@@ -1520,6 +1537,32 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) (((byte) (((size) == (0x0)) ? 1U : 0U) != 0) ? ("W") : ("X"));
 				return $"msub {r}{rd}, {r}{rn}, {r}{rm}, {r}{ra}";
+			}
+			/* MUL-by-element */
+			if((inst & 0xBF00F400U) == 0x0F008000U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x3U;
+				var L = (inst >> 21) & 0x1U;
+				var M = (inst >> 20) & 0x1U;
+				var rv = (inst >> 16) & 0xFU;
+				var H = (inst >> 11) & 0x1U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var rm = (byte) (((byte) (((size) == (0x2)) ? 1U : 0U) != 0) ? ((byte) ((byte) (((byte) (((byte) (rv)) << 0)) | ((byte) (((byte) (M)) << 4))))) : (rv));
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+				var ts = (string) ((size) switch { 0x1 => "H", 0x2 => "S", _ => throw new NotImplementedException() });
+				var index = (byte) ((size) switch { 0x1 => (byte) ((byte) (((byte) (byte) (((byte) (((byte) (M)) << 0)) | ((byte) (((byte) (L)) << 1)))) | ((byte) (((byte) (H)) << 2)))), 0x2 => (byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (H)) << 1)))), _ => throw new NotImplementedException() });
+				return $"mul V{rd}.{t}, V{rn}.{t}, V{rm}.{ts}[{index}]";
+			}
+			/* MUL-vector */
+			if((inst & 0xBF20FC00U) == 0x0E209C00U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+				return $"mul V{rd}.{t}, V{rn}.{t}, V{rm}.{t}";
 			}
 			/* ORN-shifted-register */
 			if((inst & 0x7F200000U) == 0x2A200000U) {

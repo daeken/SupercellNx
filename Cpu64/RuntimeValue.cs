@@ -15,6 +15,7 @@ using Emitter = SigilLite.Emit<Cpu64.BlockFunc>;
 #endif
 using UltimateOrb;
 using JetBrains.Annotations;
+using Extensions = Common.Extensions;
 
 namespace Cpu64 {
 	public interface RuntimeValue {
@@ -87,9 +88,55 @@ namespace Cpu64 {
 				else if(typeof(T) == typeof(Vector128<double>))
 					Ilg.Call(typeof(Sse2).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
 						new[] { typeof(Vector128<double>), typeof(Vector128<double>) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<byte>))
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<byte>), typeof(Vector128<byte>) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<ushort>))
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<ushort>), typeof(Vector128<ushort>) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<uint>))
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<uint>), typeof(Vector128<uint>) }, new ParameterModifier[0]));
+				else if(typeof(T) == typeof(Vector128<ulong>))
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<ulong>), typeof(Vector128<ulong>) }, new ParameterModifier[0]));
 				else
 					Ilg.Multiply();
 			})));
+
+		public static RuntimeValue<T> operator *(RuntimeValue<T> a, RuntimeValue<byte> b) =>
+			typeof(T) == typeof(byte)
+				? a * (RuntimeValue<T>) (object) b
+				: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+					Debug.Assert(typeof(T) == typeof(Vector128<byte>));
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<byte>), typeof(byte) }, new ParameterModifier[0]));
+				})));
+		public static RuntimeValue<T> operator *(RuntimeValue<T> a, RuntimeValue<ushort> b) =>
+			typeof(T) == typeof(ushort)
+				? a * (RuntimeValue<T>) (object) b
+				: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+				Debug.Assert(typeof(T) == typeof(Vector128<ushort>));
+				Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+					new[] { typeof(Vector128<ushort>), typeof(ushort) }, new ParameterModifier[0]));
+			})));
+		public static RuntimeValue<T> operator *(RuntimeValue<T> a, RuntimeValue<uint> b) =>
+			typeof(T) == typeof(uint)
+				? a * (RuntimeValue<T>) (object) b
+				: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+				Debug.Assert(typeof(T) == typeof(Vector128<uint>));
+				Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+					new[] { typeof(Vector128<uint>), typeof(uint) }, new ParameterModifier[0]));
+			})));
+
+		public static RuntimeValue<T> operator *(RuntimeValue<T> a, RuntimeValue<ulong> b) =>
+			typeof(T) == typeof(ulong)
+				? a * (RuntimeValue<T>) (object) b
+				: new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
+					Debug.Assert(typeof(T) == typeof(Vector128<ulong>));
+					Ilg.Call(typeof(Extensions).GetMethod("Multiply", BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(Vector128<ulong>), typeof(ulong) }, new ParameterModifier[0]));
+				})));
 
 		public static RuntimeValue<T> operator /(RuntimeValue<T> a, RuntimeValue<T> b) => 
 			new RuntimeValue<T>(() => a.EmitThen(() => b.EmitThen(() => {
@@ -332,15 +379,35 @@ namespace Cpu64 {
 				value.Emit();
 				Ilg.Convert<double>();
 			});
+		public static implicit operator RuntimeValue<Vector128<byte>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<byte>> v ? v
+			: new RuntimeValue<Vector128<byte>>(() => {
+				value.Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(byte)));
+			});
+		public static implicit operator RuntimeValue<Vector128<ushort>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<ushort>> v ? v
+			: new RuntimeValue<Vector128<ushort>>(() => {
+				value.Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(ushort)));
+			});
+		public static implicit operator RuntimeValue<Vector128<uint>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<uint>> v ? v
+			: new RuntimeValue<Vector128<uint>>(() => {
+				value.Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(uint)));
+			});
 		public static implicit operator RuntimeValue<Vector128<double>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<double>> v ? v
 			: new RuntimeValue<Vector128<double>>(() => {
 				value.Emit();
-				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(float), typeof(double)));
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(double)));
 			});
 		public static implicit operator RuntimeValue<Vector128<float>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<float>> v ? v
 			: new RuntimeValue<Vector128<float>>(() => {
 				value.Emit();
-				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(double), typeof(float)));
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(float)));
 			});
 
 		public RuntimeValue<T> Store() {

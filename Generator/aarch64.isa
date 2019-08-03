@@ -796,6 +796,47 @@
         (= (gpr32 rd) (| (<< (gpr32 rn) (- 32 lsb)) (>> (gpr32 rm) lsb)))
         (= (gpr64 rd) (| (<< (gpr64 rn) (- 64 lsb)) (>> (gpr64 rm) lsb)))))
 
+(def FABS-scalar
+    "0 0 0 11110 tt 1 0000 01 10000 nnnnn ddddd"
+    "fabs $r$rd, $r$rn"
+    (names (type t) (rn n) (rd d))
+    (let r (match type
+        0b00 "S"
+        0b01 "D"
+        (unimplemented)))
+    (match type
+        0b00 (= (vec-s rd) (abs (vec-s rn)))
+        0b01 (= (vec-d rd) (abs (vec-d rn)))
+        (unimplemented)))
+
+(def FABS-vector
+    "0 Q 0 01110 1 s 10000 01111 10 nnnnn ddddd"
+    "fabs V$rd.$t, V$rn.$t"
+    (names (Q Q) (size s) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00 "2S"
+        0b01 "4S"
+        0b11 "2D"
+        (unimplemented)))
+    (match (: size Q)
+        0b00 (mlet (a (vector-element (vec rn) 0 f32) b (vector-element (vec rn) 1 f32))
+            (= (vec rd) (vector-all (f32 0)))
+            (vector-insert rd 0 (abs a))
+            (vector-insert rd 1 (abs b)))
+        0b01 (mlet (
+                a (vector-element (vec rn) 0 f32) b (vector-element (vec rn) 1 f32)
+                c (vector-element (vec rn) 2 f32) d (vector-element (vec rn) 3 f32))
+            (= (vec rd) (vector-all (f32 0)))
+            (vector-insert rd 0 (abs a))
+            (vector-insert rd 1 (abs b))
+            (vector-insert rd 2 (abs c))
+            (vector-insert rd 3 (abs d)))
+        0b11 (mlet (a (vector-element (vec rn) 0 f64) b (vector-element (vec rn) 1 f64))
+            (= (vec rd) (vector-all (f64 0)))
+            (vector-insert rd 0 (abs a))
+            (vector-insert rd 1 (abs b)))
+        (unimplemented)))
+
 (def FADD-scalar
     "0 0 0 11110 tt 1 mmmmm 001 0 10 nnnnn ddddd"
     "fadd $r$rd, $r$rn, $r$rm"
@@ -2178,6 +2219,51 @@
     (if (== size 0)
         (= (gpr32 rd) (- (gpr32 ra) (* (gpr32 rn) (gpr32 rm))))
         (= (gpr64 rd) (- (gpr64 ra) (* (gpr64 rn) (gpr64 rm))))))
+
+(def MUL-by-element
+    "0 Q 0 01111 ss L M vvvv 1000 H 0 nnnnn ddddd"
+    "mul V$rd.$t, V$rn.$t, V$rm.$ts[$index]"
+    (names (Q Q) (size s) (L L) (M M) (rv v) (H H) (rn n) (rd d))
+    (block
+        (let rm (if (== size 0b10) (: M rv) rv))
+        (let t (match (: size Q)
+            0b01_0 "4H"
+            0b01_1 "8H"
+            0b10_0 "2S"
+            0b10_1 "4S"
+            (unimplemented)))
+        (let ts (match size
+            0b01 "H"
+            0b10 "S"
+            (unimplemented)))
+        (let index (match size
+            0b01 (: H L M)
+            0b10 (: H L)
+            (unimplemented))))
+    (let v (match size
+                0b01 (vec-uint* (vec rn) (vector-element (vec rm) index u16) 16)
+                0b10 (vec-uint* (vec rn) (vector-element (vec rm) index u32) 32)
+                (unimplemented))
+            (= (vec rd) (if Q v (vector-zero-top v)))))
+
+(def MUL-vector
+    "0 Q 0 01110 ss 1 mmmmm 10011 1 nnnnn ddddd"
+    "mul V$rd.$t, V$rn.$t, V$rm.$t"
+    (names (Q Q) (size s) (rm m) (rn n) (rd d))
+    (let t (match (: size Q)
+        0b00_0 "8B"
+        0b00_1 "16B"
+        0b01_0 "4H"
+        0b01_1 "8H"
+        0b10_0 "2S"
+        0b10_1 "4S"
+        (unimplemented)))
+    (let v (match size
+            0b00 (vec-uint* (vec rn) (vec rm) 8)
+            0b01 (vec-uint* (vec rn) (vec rm) 16)
+            0b10 (vec-uint* (vec rn) (vec rm) 32)
+            (unimplemented))
+        (= (vec rd) (if Q v (vector-zero-top v)))))
 
 (def ORN-shifted-register
     "f 01 01010 ss 1 mmmmm iiiiii nnnnn ddddd"

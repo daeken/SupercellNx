@@ -991,6 +991,71 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FABS-scalar */
+				if((inst & 0xFF3FFC00U) == 0x1E20C000U) {
+					var type = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+					switch(type) {
+						case 0x0: {
+							VSR[(int) (rd)] = (LlvmRuntimeValue<float>) (((LlvmRuntimeValue<float>) (VSR[(int) (rn)])).Abs());
+							break;
+						}
+						case 0x1: {
+							VDR[(int) (rd)] = (LlvmRuntimeValue<double>) (((LlvmRuntimeValue<double>) (VDR[(int) (rn)])).Abs());
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FABS-vector */
+				if((inst & 0xBFBFFC00U) == 0x0EA0F800U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					switch((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							var a = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x0))).Store();
+							var b = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) ((a).Abs()));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) ((b).Abs()));
+							break;
+						}
+						case 0x1: {
+							var a = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x0))).Store();
+							var b = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x1))).Store();
+							var c = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x2))).Store();
+							var d = ((LlvmRuntimeValue<float>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(0x3))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<float>) ((float) ((float) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<float>) ((a).Abs()));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<float>) ((b).Abs()));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x2, (LlvmRuntimeValue<float>) ((c).Abs()));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x3, (LlvmRuntimeValue<float>) ((d).Abs()));
+							break;
+						}
+						case 0x3: {
+							var a = ((LlvmRuntimeValue<double>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<double>(0x0))).Store();
+							var b = ((LlvmRuntimeValue<double>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<double>(0x1))).Store();
+							VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) (((LlvmRuntimeValue<double>) ((double) ((double) (0x0)))).CreateVector());
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x0, (LlvmRuntimeValue<double>) ((a).Abs()));
+							VR[(int) (rd)] = VR[(int) (rd)].Insert(0x1, (LlvmRuntimeValue<double>) ((b).Abs()));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* FADD-scalar */
 				if((inst & 0xFF20FC00U) == 0x1E202800U) {
 					var type = (inst >> 22) & 0x3U;
@@ -3086,6 +3151,36 @@ namespace Cpu64 {
 					} else {
 						XR[(int) rd] = (LlvmRuntimeValue<ulong>) (((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((ra) == 31 ? 0UL : (LlvmRuntimeValue<ulong>) XR[(int) ra]))) - ((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) (((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((rn) == 31 ? 0UL : (LlvmRuntimeValue<ulong>) XR[(int) rn]))) * ((LlvmRuntimeValue<ulong>) (LlvmRuntimeValue<ulong>) ((LlvmRuntimeValue<ulong>) ((rm) == 31 ? 0UL : (LlvmRuntimeValue<ulong>) XR[(int) rm])))))));
 					}
+					return true;
+				}
+				/* MUL-by-element */
+				if((inst & 0xBF00F400U) == 0x0F008000U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var L = (inst >> 21) & 0x1U;
+					var M = (inst >> 20) & 0x1U;
+					var rv = (inst >> 16) & 0xFU;
+					var H = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var rm = (byte) (((byte) (((size) == (0x2)) ? 1U : 0U) != 0) ? ((byte) ((byte) (((byte) (((byte) (rv)) << 0)) | ((byte) (((byte) (M)) << 4))))) : (rv));
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+					var ts = (string) ((size) switch { 0x1 => "H", 0x2 => "S", _ => throw new NotImplementedException() });
+					var index = (byte) ((size) switch { 0x1 => (byte) ((byte) (((byte) (byte) (((byte) (((byte) (M)) << 0)) | ((byte) (((byte) (L)) << 1)))) | ((byte) (((byte) (H)) << 2)))), 0x2 => (byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (H)) << 1)))), _ => throw new NotImplementedException() });
+					var v = ((LlvmRuntimeValue<Vector128<float>>) ((size) switch { 0x1 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<ushort>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<ushort>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<ushort>(index)))))), 0x2 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<uint>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<uint>) (((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<uint>(index)))))), _ => throw new NotImplementedException() })).Store();
+					VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) ((Q) != 0 ? (v) : ((LlvmRuntimeValue<Vector128<float>>) (v)));
+					return true;
+				}
+				/* MUL-vector */
+				if((inst & 0xBF20FC00U) == 0x0E209C00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var t = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", _ => throw new NotImplementedException() });
+					var v = ((LlvmRuntimeValue<Vector128<float>>) ((size) switch { 0x0 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<byte>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<Vector128<byte>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))), 0x1 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<ushort>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<Vector128<ushort>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))), 0x2 => (LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<float>>) ((LlvmRuntimeValue<Vector128<uint>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((LlvmRuntimeValue<Vector128<uint>>) ((LlvmRuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))), _ => throw new NotImplementedException() })).Store();
+					VR[(int) (rd)] = (LlvmRuntimeValue<Vector128<float>>) ((Q) != 0 ? (v) : ((LlvmRuntimeValue<Vector128<float>>) (v)));
 					return true;
 				}
 				/* ORN-shifted-register */

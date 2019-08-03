@@ -70,6 +70,23 @@ namespace Cpu64 {
 				? new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b, ""))
 				: new LlvmRuntimeValue<T>(() => LLVM.BuildFMul(LlvmRecompiler.Builder, a, b, ""));
 
+		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<byte> b) =>
+			typeof(T) == typeof(byte)
+				? a * (LlvmRuntimeValue<T>) (object) b
+				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<ushort> b) =>
+			typeof(T) == typeof(ushort)
+				? a * (LlvmRuntimeValue<T>) (object) b
+				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<uint> b) =>
+			typeof(T) == typeof(uint)
+				? a * (LlvmRuntimeValue<T>) (object) b
+				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<ulong> b) =>
+			typeof(T) == typeof(ulong)
+				? a * (LlvmRuntimeValue<T>) (object) b
+				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+
 		public static LlvmRuntimeValue<T> operator /(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			LlvmRecompiler.Ternary(b.IsZero(), Zero<T>(),
 				IsInt<T>()
@@ -238,10 +255,12 @@ namespace Cpu64 {
 		
 		public static implicit operator LlvmRuntimeValue<float>(LlvmRuntimeValue<T> value) => value.Cast<float>();
 		public static implicit operator LlvmRuntimeValue<double>(LlvmRuntimeValue<T> value) => value.Cast<double>();
-		public static implicit operator LlvmRuntimeValue<Vector128<double>>(LlvmRuntimeValue<T> value) => value is LlvmRuntimeValue<Vector128<double>> v ? v
-			: new LlvmRuntimeValue<Vector128<double>>(() => throw new NotImplementedException());
-		public static implicit operator LlvmRuntimeValue<Vector128<float>>(LlvmRuntimeValue<T> value) => value is LlvmRuntimeValue<Vector128<float>> v ? v
-			: new LlvmRuntimeValue<Vector128<float>>(() => throw new NotImplementedException());
+		
+		public static implicit operator LlvmRuntimeValue<Vector128<byte>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<byte>>();
+		public static implicit operator LlvmRuntimeValue<Vector128<ushort>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<ushort>>();
+		public static implicit operator LlvmRuntimeValue<Vector128<uint>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<uint>>();
+		public static implicit operator LlvmRuntimeValue<Vector128<float>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<float>>();
+		public static implicit operator LlvmRuntimeValue<Vector128<double>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<double>>();
 
 		public LlvmRuntimeValue<T> Store() {
 			var value = Emit();
@@ -253,15 +272,13 @@ namespace Cpu64 {
 
 		public static implicit operator LlvmRuntimeValue<T>(T value) => Recompiler.Const(value);
 
-		public LlvmRuntimeValue<Vector128<float>> CreateVector() =>
-			new LlvmRuntimeValue<Vector128<float>>(() => {
+		public LlvmRuntimeValue<Vector128<T>> CreateVector() =>
+			new LlvmRuntimeValue<Vector128<T>>(() => {
 				var value = Emit();
 				var vec = LLVM.GetUndef(LlvmType<Vector128<T>>());
 				for(var i = 0; i < typeof(Vector128<T>).ElementCount(); ++i)
 					vec = LLVM.BuildInsertElement(Builder, vec, value, Recompiler.Const(i), "");
-				return typeof(T) == typeof(float)
-					? vec
-					: LLVM.BuildBitCast(Builder, vec, LLVMTypeRef.VectorType(LlvmType<float>(), 4), "");
+				return vec;
 			});
 		
 		public LlvmRuntimeValue<Vector128<float>> Frsqrte(int size, int count) => new LlvmRuntimeValue<Vector128<float>>(() => {
