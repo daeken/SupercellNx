@@ -6,27 +6,21 @@ using System.Runtime.InteropServices;
 namespace Supercell {
 	public class Buffer<T> : IEnumerable<T> where T : struct {
 		public readonly ulong Address;
-		public readonly int Size;
+		public readonly int Size, ElementSize;
 
-		public int Length => Size / Marshal.SizeOf<T>();
+		public int Length => Size / ElementSize;
 
-		public T Value {
-			get => Span[0];
-			set => Span[0] = value;
-		}
-
-		public T this[int index] {
-			get => Span[index];
-			set => Span[index] = value;
-		}
+		public ref T Value => ref Span[0];
+		public ref T this[int index] => ref Span[index];
 
 		public Buffer(ulong address, ulong size) {
 			Address = address;
 			Size = (int) size;
+			ElementSize = Marshal.SizeOf<T>();
 		}
 		
 		public Buffer<OtherT> As<OtherT>() where OtherT : struct => new Buffer<OtherT>(Address, (ulong) Size);
-		public unsafe Span<T> Span => new Span<T>((void *) Address, Size / Marshal.SizeOf<T>());
+		public unsafe Span<T> Span => new Span<T>((void *) Address, Size / ElementSize);
 		public static implicit operator Span<T>(Buffer<T> buffer) => buffer.Span;
 		public static implicit operator T(Buffer<T> buffer) => buffer.Value;
 		

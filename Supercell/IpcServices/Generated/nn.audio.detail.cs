@@ -312,7 +312,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual void RequestResumeAudioOutsForDebug(ulong _0) => "Stub hit for Nn.Audio.Detail.IAudioOutManagerForDebugger.RequestResumeAudioOutsForDebug [1]".Debug();
 	}
 	
-	[IpcService("audrec:u")]
+	[IpcService("audren:u")]
 	public unsafe partial class IAudioRendererManager : _Base_IAudioRendererManager {}
 	public unsafe class _Base_IAudioRendererManager : IpcInterface {
 		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
@@ -541,7 +541,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		public virtual byte IsCodecDeviceRequested() => throw new NotImplementedException();
 	}
 	
-	[IpcService("audren:u")]
+	[IpcService("audrec:u")]
 	public unsafe partial class IFinalOutputRecorderManager : _Base_IFinalOutputRecorderManager {}
 	public unsafe class _Base_IFinalOutputRecorderManager : IpcInterface {
 		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {

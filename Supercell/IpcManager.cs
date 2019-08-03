@@ -275,7 +275,7 @@ namespace Supercell {
 
 		public unsafe uint SyncMessage(ulong bufferAddr, uint bufferSize, out bool closeHandle) {
 			var buffer = (byte*) bufferAddr;
-			new Span<byte>(buffer, (int) bufferSize).Hexdump();
+			//new Span<byte>(buffer, (int) bufferSize).Hexdump();
 			var incoming = new IncomingMessage(buffer, IsDomainObject);
 			var outgoing = new OutgoingMessage(buffer, IsDomainObject, incoming);
 			var ret = 0xF601U;
@@ -292,6 +292,7 @@ namespace Supercell {
 						break;
 					case 4:
 					case 6:
+						$"IPC command {incoming.CommandId}".Debug();
 						target.Dispatch(incoming, outgoing);
 						ret = 0;
 						break;
@@ -340,7 +341,7 @@ namespace Supercell {
 				}
 			if(ret == 0)
 				outgoing.Bake();
-			new Span<byte>(buffer, (int) bufferSize).Hexdump();
+			//new Span<byte>(buffer, (int) bufferSize).Hexdump();
 			return ret;
 		}
 	}
