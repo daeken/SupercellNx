@@ -144,7 +144,7 @@ namespace Supercell {
 			const bool required = true;
 			var addr = IsWindows
 				? VirtualAlloc(preferred, size, 0x1000 | 0x2000, 0x04) // MEM_COMMIT | MEM_RESERVE
-				: mmap(preferred, size, 1 | 2, 0x1000 | 0x0001 | (required ? 0x0010 : 0), 0, 0);
+				: mmap(preferred, size, 1 | 2, (IsLinux ? 0x20 : 0x1000) | 0x0001 | (required ? 0x0010 : 0), 0, 0);
 			if(addr == 0 && Reserved.Any(x => x.Key <= preferred && x.Value >= preferred + size))
 				addr = preferred;
 			else
