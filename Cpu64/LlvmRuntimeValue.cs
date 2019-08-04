@@ -259,6 +259,7 @@ namespace Cpu64 {
 		public static implicit operator LlvmRuntimeValue<Vector128<byte>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<byte>>();
 		public static implicit operator LlvmRuntimeValue<Vector128<ushort>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<ushort>>();
 		public static implicit operator LlvmRuntimeValue<Vector128<uint>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<uint>>();
+		public static implicit operator LlvmRuntimeValue<Vector128<ulong>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<ulong>>();
 		public static implicit operator LlvmRuntimeValue<Vector128<float>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<float>>();
 		public static implicit operator LlvmRuntimeValue<Vector128<double>>(LlvmRuntimeValue<T> value) => value.Cast<Vector128<double>>();
 

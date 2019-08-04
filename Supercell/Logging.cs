@@ -1,8 +1,13 @@
 using System;
+using System.Threading;
 using Common;
 
 namespace Supercell {
 	public class Logging {
+		public void Kill() {
+			Monitor.Enter(this);
+		}
+		
 		public void Exclusive(Action cb) {
 			lock(this)
 				cb();

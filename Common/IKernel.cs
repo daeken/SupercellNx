@@ -8,5 +8,6 @@ namespace Common {
 		void Svc(int svc);
 		void Log(string message);
 		void LogExclusive(Action cb);
+		void Kill();
 	}
 }

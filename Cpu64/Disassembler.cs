@@ -50,6 +50,16 @@ namespace Cpu64 {
 				var shiftstr = (string) ((shift) switch { 0x0 => "LSL", 0x1 => "LSR", 0x2 => "ASR", _ => "ROR" });
 				return $"add {r}{rd}, {r}{rn}, {r}{rm}, {shiftstr} #{imm}";
 			}
+			/* ADD-vector */
+			if((inst & 0xBF20FC00U) == 0x0E208400U) {
+				var Q = (inst >> 30) & 0x1U;
+				var size = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", 0x7 => "2D", _ => throw new NotImplementedException() });
+				return $"add V{rd}.{ts}, V{rn}.{ts}, V{rm}.{ts}";
+			}
 			/* ADDS-immediate */
 			if((inst & 0x7F800000U) == 0x31000000U) {
 				var size = (inst >> 31) & 0x1U;
@@ -739,6 +749,15 @@ namespace Cpu64 {
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fdiv {r}{rd}, {r}{rn}, {r}{rm}";
 			}
+			/* FMAX-scalar */
+			if((inst & 0xFF20FC00U) == 0x1E204800U) {
+				var type = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fmax {r}{rd}, {r}{rn}, {r}{rm}";
+			}
 			/* FMAXNM-scalar */
 			if((inst & 0xFF20FC00U) == 0x1E206800U) {
 				var type = (inst >> 22) & 0x3U;
@@ -747,6 +766,15 @@ namespace Cpu64 {
 				var rd = (inst >> 0) & 0x1FU;
 				var r = (string) ((type) switch { 0x3 => "H", 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
 				return $"fmaxnm {r}{rd}, {r}{rn}, {r}{rm}";
+			}
+			/* FMIN-scalar */
+			if((inst & 0xFF20FC00U) == 0x1E205800U) {
+				var type = (inst >> 22) & 0x3U;
+				var rm = (inst >> 16) & 0x1FU;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+				return $"fmin {r}{rd}, {r}{rn}, {r}{rm}";
 			}
 			/* FMINNM-scalar */
 			if((inst & 0xFF20FC00U) == 0x1E207800U) {
@@ -2312,6 +2340,24 @@ namespace Cpu64 {
 				var rn = (inst >> 5) & 0x1FU;
 				var rd = (inst >> 0) & 0x1FU;
 				return $"umulh X{rd}, X{rn}, X{rm}";
+			}
+			/* XTN */
+			if((inst & 0xFF3FFC00U) == 0x0E212800U) {
+				var size = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var tb = (string) ((size) switch { 0x0 => "8B", 0x1 => "4H", 0x2 => "2S", _ => throw new NotImplementedException() });
+				var ta = (string) ((size) switch { 0x0 => "8H", 0x1 => "4S", 0x2 => "2D", _ => throw new NotImplementedException() });
+				return $"xtn V{rd}.{tb}, V{rn}.{ta}";
+			}
+			/* XTN2 */
+			if((inst & 0xFF3FFC00U) == 0x4E212800U) {
+				var size = (inst >> 22) & 0x3U;
+				var rn = (inst >> 5) & 0x1FU;
+				var rd = (inst >> 0) & 0x1FU;
+				var tb = (string) ((size) switch { 0x0 => "16B", 0x1 => "8H", 0x2 => "4S", _ => throw new NotImplementedException() });
+				var ta = (string) ((size) switch { 0x0 => "8H", 0x1 => "4S", 0x2 => "2D", _ => throw new NotImplementedException() });
+				return $"xtn2 V{rd}.{tb}, V{rn}.{ta}";
 			}
 
 			return null;

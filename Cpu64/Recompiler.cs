@@ -369,6 +369,10 @@ namespace Cpu64 {
 			});
 		}
 
+		void WithLink(Action func) {
+			XR[30] = CurPc + 4;
+			func();
+		}
 		void Branch(ulong target) {
 			Branched = true;
 			//Console.WriteLine($"Branch from {CurPc:X} -> {target:X}");
@@ -394,17 +398,16 @@ namespace Cpu64 {
 			CpuStateRef.Emit();
 			Ilg.LoadConstant(target);
 			Ilg.StoreField(typeof(CpuState).GetField(nameof(CpuState.BranchTo)));
-			
-			//if(CurPc == 0x71000016FC)
-			//	Ilg.Call(typeof(Recompiler).GetMethod("Bail"));
 		}
-		public static void Bail() => throw new Exception();
-		void Branch(RuntimeValue<ulong> addr) {
+		void BranchLinked(ulong target) => WithLink(() => Branch(target));
+		
+		void BranchRegister(ulong reg) {
 			Branched = true;
 			CpuStateRef.Emit();
-			addr.Emit();
+			XR[(int) reg].Emit();
 			Ilg.StoreField(typeof(CpuState).GetField(nameof(CpuState.BranchTo)));
 		}
+		void BranchLinkedRegister(ulong reg) => WithLink(() => BranchRegister(reg));
 
 		Label DefineLabel() => Ilg.DefineLabel();
 		void Branch(Label label) {

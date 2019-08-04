@@ -51,12 +51,29 @@ namespace Generator {
 				elem.Type is EVector
 					? $"((RuntimeValue<Vector128<{type}>>) ({GenerateExpression(elem)}))"
 					: $"({GenerateExpression(elem)})";
+			
+			Expression("vec-uint+", list => EType.Vector.AsRuntime(list.AnyRuntime), 
+				list => list[3] switch {
+					PInt(8) => $"({GenerateExpression(list[1])}).As<float, byte>().Add({CastVector(list[2], "byte")}).As<byte, float>()", 
+					PInt(16) => $"({GenerateExpression(list[1])}).As<float, ushort>().Add({CastVector(list[2], "ushort")}).As<ushort, float>()", 
+					PInt(32) => $"({GenerateExpression(list[1])}).As<float, uint>().Add({CastVector(list[2], "uint")}).As<uint, float>()", 
+					PInt(64) => $"({GenerateExpression(list[1])}).As<float, ulong>().Add({CastVector(list[2], "ulong")}).As<ulong, float>()", 
+					_ => throw new NotSupportedException()
+				}, 
+				list => list[3] switch {
+					PInt(8) => $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<byte>>) ({GenerateExpression(list[1])}) + {RuntimeCastVector(list[2], "byte")})", 
+					PInt(16) => $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<ushort>>) ({GenerateExpression(list[1])}) + {RuntimeCastVector(list[2], "ushort")})", 
+					PInt(32) => $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<uint>>) ({GenerateExpression(list[1])}) + {RuntimeCastVector(list[2], "uint")})", 
+					PInt(64) => $"(RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<ulong>>) ({GenerateExpression(list[1])}) + {RuntimeCastVector(list[2], "ulong")})", 
+					_ => throw new NotSupportedException()
+				});
+			
 			Expression("vec-uint*", list => EType.Vector.AsRuntime(list.AnyRuntime), 
 				list => list[3] switch {
 					PInt(8) => $"({GenerateExpression(list[1])}).As<float, byte>().Multiply({CastVector(list[2], "byte")}).As<byte, float>()", 
 					PInt(16) => $"({GenerateExpression(list[1])}).As<float, ushort>().Multiply({CastVector(list[2], "ushort")}).As<ushort, float>()", 
 					PInt(32) => $"({GenerateExpression(list[1])}).As<float, uint>().Multiply({CastVector(list[2], "uint")}).As<uint, float>()", 
-					PInt(64) => $"({GenerateExpression(list[1])}).As<float, ulong>().Multiply({CastVector(list[2], "ulong")}).As<float, ulong>()).As<ulong, float>()", 
+					PInt(64) => $"({GenerateExpression(list[1])}).As<float, ulong>().Multiply({CastVector(list[2], "ulong")}).As<ulong, float>()", 
 					_ => throw new NotSupportedException()
 				}, 
 				list => list[3] switch {

@@ -22,6 +22,7 @@ namespace CpuTest {
 			public void Svc(int svc) {}
 			public void Log(string message) {}
 			public void LogExclusive(Action cb) => cb();
+			public void Kill() {}
 		}
 		
 		static readonly ThreadLocal<List<(ulong, uint)>> _Mapped = new ThreadLocal<List<(ulong, uint)>>();

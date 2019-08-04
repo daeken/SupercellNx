@@ -47,6 +47,8 @@ namespace Cpu64 {
 					$"Loading block {addr:X}".Print();
 					var size = (int) br.ReadUInt64();
 					var code = br.ReadBytes(size);
+					/*using var ofp = File.OpenWrite($"_{addr:X}.o");
+					ofp.Write(code);*/
 					var loadAddr = cr.Load(code, addr);
 					if(loadAddr == null) continue;
 					var block = GetBlock(addr);
@@ -81,11 +83,11 @@ namespace Cpu64 {
 						Thread.Sleep(100);
 					continue;
 				}
-				if(NeedCacheToDisk.Count > 100) TryCacheToDisk();
 
 				candidate.Optimized = true;
 				recompiler.RecompileMultiple(candidate);
 				//Console.WriteLine($"Optimized 0x{candidate.Addr:X} with {candidate.HitCount} hits!");
+				TryCacheToDisk();
 			}
 		}
 

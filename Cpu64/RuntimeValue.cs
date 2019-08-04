@@ -397,6 +397,12 @@ namespace Cpu64 {
 				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
 					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(uint)));
 			});
+		public static implicit operator RuntimeValue<Vector128<ulong>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<ulong>> v ? v
+			: new RuntimeValue<Vector128<ulong>>(() => {
+				value.Emit();
+				Ilg.Call(typeof(Vector128).GetMethod("As", BindingFlags.Public | BindingFlags.Static)
+					.MakeGenericMethod(typeof(T).GetGenericArguments()[0], typeof(ulong)));
+			});
 		public static implicit operator RuntimeValue<Vector128<double>>(RuntimeValue<T> value) => value is RuntimeValue<Vector128<double>> v ? v
 			: new RuntimeValue<Vector128<double>>(() => {
 				value.Emit();

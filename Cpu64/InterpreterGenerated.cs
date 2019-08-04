@@ -128,6 +128,18 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* ADD-vector */
+				if((inst & 0xBF20FC00U) == 0x0E208400U) {
+					var Q = (inst >> 30) & 0x1U;
+					var size = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var ts = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "8B", 0x1 => "16B", 0x2 => "4H", 0x3 => "8H", 0x4 => "2S", 0x5 => "4S", 0x7 => "2D", _ => throw new NotImplementedException() });
+					var v = (Vector128<float>) ((size) switch { 0x0 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, byte>().Add(((Vector128<float>) ((&State->V0)[rm])).As<float, byte>()).As<byte, float>()), 0x1 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, ushort>().Add(((Vector128<float>) ((&State->V0)[rm])).As<float, ushort>()).As<ushort, float>()), 0x2 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, uint>().Add(((Vector128<float>) ((&State->V0)[rm])).As<float, uint>()).As<uint, float>()), 0x3 => (Vector128<float>) (((Vector128<float>) ((&State->V0)[rn])).As<float, ulong>().Add(((Vector128<float>) ((&State->V0)[rm])).As<float, ulong>()).As<ulong, float>()), _ => throw new NotImplementedException() });
+					(&State->V0)[rd] = (Vector128<float>) ((Q != 0) ? (v) : ((Vector128<float>) (v)));
+					return true;
+				}
 				/* ADDS-immediate */
 				if((inst & 0x7F800000U) == 0x31000000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -416,21 +428,19 @@ namespace Cpu64 {
 					var imm = (inst >> 0) & 0x3FFFFFFU;
 					var offset = (long) (SignExt<long>((uint) (((uint) ((uint) (imm))) << (int) (0x2)), 28));
 					var addr = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (offset)));
-					(&State->X0)[(int) 0x1E] = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (0x4)));
-					Branch(addr);
+					BranchLinked(addr);
 					return true;
 				}
 				/* BLR */
 				if((inst & 0xFFFFFC1FU) == 0xD63F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					(&State->X0)[(int) 0x1E] = (ulong) (((ulong) (ulong) ((ulong) (pc))) + ((ulong) (long) (0x4)));
-					Branch((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn]));
+					BranchLinkedRegister(rn);
 					return true;
 				}
 				/* BR */
 				if((inst & 0xFFFFFC1FU) == 0xD61F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					Branch((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn]));
+					BranchRegister(rn);
 					return true;
 				}
 				/* CASP */
@@ -1676,6 +1686,33 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FMAX-scalar */
+				if((inst & 0xFF20FC00U) == 0x1E204800U) {
+					var type = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+					switch(type) {
+						case 0x0: {
+							var a = (float) ((&State->V0)[rn].GetElement(0));
+							var b = (float) ((&State->V0)[rm].GetElement(0));
+							(&State->V0)[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (((byte) (((a) > (b)) ? 1U : 0U) != 0) ? (a) : (b)));
+							break;
+						}
+						case 0x1: {
+							var a = (double) ((&State->V0)[rn].As<float, double>().GetElement(0));
+							var b = (double) ((&State->V0)[rm].As<float, double>().GetElement(0));
+							(&State->V0)[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (((byte) (((a) > (b)) ? 1U : 0U) != 0) ? (a) : (b))).As<double, float>();
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* FMAXNM-scalar */
 				if((inst & 0xFF20FC00U) == 0x1E206800U) {
 					var type = (inst >> 22) & 0x3U;
@@ -1694,6 +1731,33 @@ namespace Cpu64 {
 							var a = (double) ((&State->V0)[rn].As<float, double>().GetElement(0));
 							var b = (double) ((&State->V0)[rm].As<float, double>().GetElement(0));
 							(&State->V0)[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (((byte) (((a) > (b)) ? 1U : 0U) != 0) ? (a) : (b))).As<double, float>();
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* FMIN-scalar */
+				if((inst & 0xFF20FC00U) == 0x1E205800U) {
+					var type = (inst >> 22) & 0x3U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = (string) ((type) switch { 0x0 => "S", 0x1 => "D", _ => throw new NotImplementedException() });
+					switch(type) {
+						case 0x0: {
+							var a = (float) ((&State->V0)[rn].GetElement(0));
+							var b = (float) ((&State->V0)[rm].GetElement(0));
+							(&State->V0)[(int) (rd)] = new Vector128<float>().WithElement(0, (float) (((byte) (((a) < (b)) ? 1U : 0U) != 0) ? (a) : (b)));
+							break;
+						}
+						case 0x1: {
+							var a = (double) ((&State->V0)[rn].As<float, double>().GetElement(0));
+							var b = (double) ((&State->V0)[rm].As<float, double>().GetElement(0));
+							(&State->V0)[(int) (rd)] = new Vector128<double>().WithElement(0, (double) (((byte) (((a) < (b)) ? 1U : 0U) != 0) ? (a) : (b))).As<double, float>();
 							break;
 						}
 						default: {
@@ -3210,7 +3274,7 @@ namespace Cpu64 {
 				/* RET */
 				if((inst & 0xFFFFFC1FU) == 0xD65F0000U) {
 					var rn = (inst >> 5) & 0x1FU;
-					Branch((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn]));
+					BranchRegister(rn);
 					return true;
 				}
 				/* REV */
@@ -4595,6 +4659,85 @@ namespace Cpu64 {
 					var rn = (inst >> 5) & 0x1FU;
 					var rd = (inst >> 0) & 0x1FU;
 					(&State->X0)[(int) rd] = (ulong) ((ulong) ((UInt128) (((UInt128) (((UInt128) (UInt128) ((UInt128) ((UInt128) ((ulong) ((rn) == 31 ? 0UL : (&State->X0)[(int) rn]))))) * ((UInt128) (UInt128) ((UInt128) ((UInt128) ((ulong) ((rm) == 31 ? 0UL : (&State->X0)[(int) rm]))))))) >> (int) (0x40))));
+					return true;
+				}
+				/* XTN */
+				if((inst & 0xFF3FFC00U) == 0x0E212800U) {
+					var size = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var tb = (string) ((size) switch { 0x0 => "8B", 0x1 => "4H", 0x2 => "2S", _ => throw new NotImplementedException() });
+					var ta = (string) ((size) switch { 0x0 => "8H", 0x1 => "4S", 0x2 => "2D", _ => throw new NotImplementedException() });
+					switch(size) {
+						case 0x0: {
+							var a = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x0));
+							var b = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x1));
+							var c = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x2));
+							var d = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x3));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((ulong) ((ulong) (0x0))).As<ulong, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (byte) ((byte) (a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (byte) ((byte) (b)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (byte) ((byte) (c)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x3, (byte) ((byte) (d)));
+							break;
+						}
+						case 0x1: {
+							var a = (uint) (((Vector128<float>) ((&State->V0)[rn])).Element<uint>(0x0));
+							var b = (uint) (((Vector128<float>) ((&State->V0)[rn])).Element<uint>(0x1));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((ulong) ((ulong) (0x0))).As<ulong, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (ushort) ((ushort) (a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x1, (ushort) ((ushort) (b)));
+							break;
+						}
+						case 0x2: {
+							var a = (ulong) (((Vector128<float>) ((&State->V0)[rn])).Element<ulong>(0x0));
+							(&State->V0)[rd] = (Vector128<float>) (Vector128.Create((ulong) ((ulong) (0x0))).As<ulong, float>());
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x0, (uint) ((uint) (a)));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
+				/* XTN2 */
+				if((inst & 0xFF3FFC00U) == 0x4E212800U) {
+					var size = (inst >> 22) & 0x3U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var tb = (string) ((size) switch { 0x0 => "16B", 0x1 => "8H", 0x2 => "4S", _ => throw new NotImplementedException() });
+					var ta = (string) ((size) switch { 0x0 => "8H", 0x1 => "4S", 0x2 => "2D", _ => throw new NotImplementedException() });
+					switch(size) {
+						case 0x0: {
+							var a = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x0));
+							var b = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x1));
+							var c = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x2));
+							var d = (ushort) (((Vector128<float>) ((&State->V0)[rn])).Element<ushort>(0x3));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x8, (byte) ((byte) (a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x9, (byte) ((byte) (b)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0xA, (byte) ((byte) (c)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0xB, (byte) ((byte) (d)));
+							break;
+						}
+						case 0x1: {
+							var a = (uint) (((Vector128<float>) ((&State->V0)[rn])).Element<uint>(0x0));
+							var b = (uint) (((Vector128<float>) ((&State->V0)[rn])).Element<uint>(0x1));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x4, (ushort) ((ushort) (a)));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x5, (ushort) ((ushort) (b)));
+							break;
+						}
+						case 0x2: {
+							var a = (ulong) (((Vector128<float>) ((&State->V0)[rn])).Element<ulong>(0x0));
+							(&State->V0)[(int) (rd)] = Insert((&State->V0)[(int) (rd)], 0x2, (uint) ((uint) (a)));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
 					return true;
 				}
 

@@ -132,6 +132,27 @@
         (= (gpr-or-sp32 rd) (+ (gpr-or-sp32 rn) (do-shift32 (gpr-or-sp32 rm) shift imm)))
         (= (gpr-or-sp64 rd) (+ (gpr-or-sp64 rn) (do-shift64 (gpr-or-sp64 rm) shift imm)))))
 
+(def ADD-vector
+    "0 Q 0 01110 ss 1 mmmmm 10000 1 nnnnn ddddd"
+    "add V$rd.$ts, V$rn.$ts, V$rm.$ts"
+    (names (Q Q) (size s) (rm m) (rn n) (rd d))
+    (let ts (match (: size Q)
+        0b00_0 "8B"
+        0b00_1 "16B"
+        0b01_0 "4H"
+        0b01_1 "8H"
+        0b10_0 "2S"
+        0b10_1 "4S"
+        0b11_1 "2D"
+        (unimplemented)))
+    (let v (match size
+            0b00 (vec-uint+ (vec rn) (vec rm) 8)
+            0b01 (vec-uint+ (vec rn) (vec rm) 16)
+            0b10 (vec-uint+ (vec rn) (vec rm) 32)
+            0b11 (vec-uint+ (vec rn) (vec rm) 64)
+            (unimplemented))
+        (= (vec rd) (if Q v (vector-zero-top v)))))
+
 (def ADDS-immediate
     "f 0 1 10001 0s iiiiiiiiiiii nnnnn ddddd"
     "adds $r$rd, $r$rn, #$imm, LSL #$shift"
@@ -322,25 +343,21 @@
     (block
         (let offset (signext (<< (cast imm u28) 2) i64))
         (let addr (+ (pc) offset)))
-    (block
-        (= (gpr64 30) (+ (pc) 4))
-        (branch addr)))
+    (branch-linked addr))
 
 (def BLR
     "1101011 0 0 01 11111 0000 0 0 nnnnn 00000"
     "blr X$rn"
     (names (rn n))
     (block)
-    (block
-        (= (gpr64 30) (+ (pc) 4))
-        (branch (gpr64 rn))))
+    (branch-linked-register rn))
 
 (def BR
     "1101011 0 0 00 11111 0000 0 0 nnnnn 00000"
     "br X$rn"
     (names (rn n))
     (block)
-    (branch (gpr64 rn)))
+    (branch-register rn))
 
 (def CASP
     "0 f 001000 0 0 1 sssss 0 11111 nnnnn ttttt"
@@ -1238,6 +1255,19 @@
         0b01 (= (vec-d rd) (/ (vec-d rn) (vec-d rm)))
         (unimplemented)))
 
+(def FMAX-scalar
+    "0 0 0 11110 tt 1 mmmmm 01 00 10 nnnnn ddddd"
+    "fmax $r$rd, $r$rn, $r$rm"
+    (names (type t) (rm m) (rn n) (rd d))
+    (let r (match type
+        0b00 "S"
+        0b01 "D"
+        (unimplemented)))
+    (match type
+        0b00 (mlet (a (vec-s rn) b (vec-s rm)) (= (vec-s rd) (if (> a b) a b)))
+        0b01 (mlet (a (vec-d rn) b (vec-d rm)) (= (vec-d rd) (if (> a b) a b)))
+        (unimplemented)))
+
 (def FMAXNM-scalar
     "0 0 0 11110 tt 1 mmmmm 01 10 10 nnnnn ddddd"
     "fmaxnm $r$rd, $r$rn, $r$rm"
@@ -1250,6 +1280,19 @@
     (match type
         0b00 (let a (vec-s rn) (let b (vec-s rm) (= (vec-s rd) (if (> a b) a b))))
         0b01 (let a (vec-d rn) (let b (vec-d rm) (= (vec-d rd) (if (> a b) a b))))
+        (unimplemented)))
+
+(def FMIN-scalar
+    "0 0 0 11110 tt 1 mmmmm 01 01 10 nnnnn ddddd"
+    "fmin $r$rd, $r$rn, $r$rm"
+    (names (type t) (rm m) (rn n) (rd d))
+    (let r (match type
+        0b00 "S"
+        0b01 "D"
+        (unimplemented)))
+    (match type
+        0b00 (mlet (a (vec-s rn) b (vec-s rm)) (= (vec-s rd) (if (< a b) a b)))
+        0b01 (mlet (a (vec-d rn) b (vec-d rm)) (= (vec-d rd) (if (< a b) a b)))
         (unimplemented)))
 
 (def FMINNM-scalar
@@ -2328,7 +2371,7 @@
     "ret X$rn"
     (names (rn n))
     (block)
-    (branch (gpr64 rn)))
+    (branch-register rn))
 
 (def REV
     "s 1 0 11010110 00000 0000 1o nnnnn ddddd"
@@ -3265,3 +3308,64 @@
     (names (rm m) (rn n) (rd d))
     (block)
     (= (gpr64 rd) (u64 (>> (* (cast (gpr64 rn) u128) (cast (gpr64 rm) u128)) 64))))
+
+(def XTN
+    "0 0 0 01110 ss 10000 10010 10 nnnnn ddddd"
+    "xtn V$rd.$tb, V$rn.$ta"
+    (names (size s) (rn n) (rd d))
+    (block
+        (let tb (match size
+            0b00 "8B"
+            0b01 "4H"
+            0b10 "2S"
+            (unimplemented)))
+        (let ta (match size
+            0b00 "8H"
+            0b01 "4S"
+            0b10 "2D"
+            (unimplemented))))
+    (match size
+        0b00 (mlet (a (vector-element (vec rn) 0 u16) b (vector-element (vec rn) 1 u16)
+                c (vector-element (vec rn) 2 u16) d (vector-element (vec rn) 3 u16))
+            (= (vec rd) (vector-all (u64 0)))
+            (vector-insert rd 0 (u8 a))
+            (vector-insert rd 1 (u8 b))
+            (vector-insert rd 2 (u8 c))
+            (vector-insert rd 3 (u8 d)))
+        0b01 (mlet (a (vector-element (vec rn) 0 u32) b (vector-element (vec rn) 1 u32))
+            (= (vec rd) (vector-all (u64 0)))
+            (vector-insert rd 0 (u16 a))
+            (vector-insert rd 1 (u16 b)))
+        0b10 (let a (vector-element (vec rn) 0 u64)
+            (= (vec rd) (vector-all (u64 0)))
+            (vector-insert rd 0 (u32 a)))
+        (unimplemented)))
+
+(def XTN2
+    "0 1 0 01110 ss 10000 10010 10 nnnnn ddddd"
+    "xtn2 V$rd.$tb, V$rn.$ta"
+    (names (size s) (rn n) (rd d))
+    (block
+        (let tb (match size
+            0b00 "16B"
+            0b01 "8H"
+            0b10 "4S"
+            (unimplemented)))
+        (let ta (match size
+            0b00 "8H"
+            0b01 "4S"
+            0b10 "2D"
+            (unimplemented))))
+    (match size
+        0b00 (mlet (a (vector-element (vec rn) 0 u16) b (vector-element (vec rn) 1 u16)
+                c (vector-element (vec rn) 2 u16) d (vector-element (vec rn) 3 u16))
+            (vector-insert rd 8 (u8 a))
+            (vector-insert rd 9 (u8 b))
+            (vector-insert rd 10 (u8 c))
+            (vector-insert rd 11 (u8 d)))
+        0b01 (mlet (a (vector-element (vec rn) 0 u32) b (vector-element (vec rn) 1 u32))
+            (vector-insert rd 4 (u16 a))
+            (vector-insert rd 5 (u16 b)))
+        0b10 (let a (vector-element (vec rn) 0 u64)
+            (vector-insert rd 2 (u32 a)))
+        (unimplemented)))

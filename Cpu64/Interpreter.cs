@@ -43,10 +43,17 @@ namespace Cpu64 {
 				State->PC += 4;
 		}
 
+		void WithLink(Action func) {
+			State->X30 = State->PC + 4;
+			func();
+		}
 		void Branch(ulong addr) {
 			//$"Branching to 0x{addr:X}".Debug();
 			State->PC = addr;
 		}
+		void BranchLinked(ulong addr) => WithLink(() => Branch(addr));
+		void BranchRegister(ulong reg) => Branch((&State->X0)[(int) reg]);
+		void BranchLinkedRegister(ulong reg) => WithLink(() => Branch((&State->X0)[(int) reg]));
 
 		uint Shift(uint value, uint shiftType, uint _amount) {
 			var amount = (int) _amount;

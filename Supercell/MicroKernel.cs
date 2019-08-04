@@ -144,6 +144,8 @@ namespace Supercell {
 		public void Log(string message) => Logger.Log(message);
 		public void LogExclusive(Action cb) => Logger.Exclusive(cb);
 
+		public void Kill() => Logger.Kill();
+
 		[Svc(0x16)]
 		public uint Close(uint handle) {
 			Close(Get<KObject>(handle));

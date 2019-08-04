@@ -8,6 +8,7 @@ using System.Runtime.Intrinsics;
 using System.Threading;
 using Common;
 using LLVMSharp;
+using PrettyPrinter;
 using UltimateOrb;
 
 namespace Cpu64 {
@@ -72,6 +73,18 @@ namespace Cpu64 {
 
 	public unsafe partial class LlvmRecompiler : BaseCpu {
 		public static LLVMTypeRef LlvmType<T>() => typeof(T).ToLLVMType();
+
+		public class BlockContext : ICloneable {
+			public ulong? LR;
+
+			public object Clone() => MemberwiseClone();
+			public BlockContext Copy() => (BlockContext) MemberwiseClone();
+			public BlockContext CopyWith(Action<BlockContext> func) {
+				var copy = Copy();
+				func(copy);
+				return copy;
+			}
+		}
 		
 		public class LlvmLocal<T> where T : struct {
 			readonly LLVMValueRef Pointer;
@@ -275,7 +288,7 @@ namespace Cpu64 {
 		
 		bool Branched;
 		Dictionary<ulong, LlvmLabel> BlockLabels;
-		Queue<ulong> BlocksNeeded;
+		Queue<(BlockContext, ulong)> BlocksNeeded;
 		bool[] RegistersUsed;
 		LlvmLocal<ulong>[] RegisterLocals;
 		List<(LlvmLabel Before, LlvmLabel After)> LoadRegistersLabels;
@@ -284,6 +297,8 @@ namespace Cpu64 {
 		LlvmLabel SuppressedBranch;
 		List<LlvmLabel> UsedLabels;
 		LLVMBasicBlockRef CurrentBlock;
+		ulong CurrentPC;
+		BlockContext Context;
 
 		internal static readonly LlvmCallbacks* Callbacks =
 			(LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
@@ -452,19 +467,21 @@ namespace Cpu64 {
 			LoadRegistersLabels = new List<(LlvmLabel, LlvmLabel)> { (preRegisterLoad, postRegisterLoad) };
 
 			BlockLabels = new Dictionary<ulong, LlvmLabel>();
-			BlocksNeeded = new Queue<ulong>();
-			BlocksNeeded.Enqueue(block.Addr);
+			BlocksNeeded = new Queue<(BlockContext, ulong)>();
+			BlocksNeeded.Enqueue((new BlockContext(), block.Addr));
 			var blockCount = 0;
 			var recompiled = new HashSet<ulong>();
 			var topFirst = true;
-			void CompileOneBlock(ulong pc) {
+			void CompileOneBlock(BlockContext context, ulong pc) {
 				blockCount++;
 				if(recompiled.Contains(pc))
 					return;
 
+				Context = context;
 				var first = true;
 				Branched = false;
 				while(!Branched) {
+					CurrentPC = pc;
 					//Console.WriteLine($"Recompiling {pc:X}");
 
 					var label = BlockLabels.TryGetValue(pc, out var _label)
@@ -479,14 +496,17 @@ namespace Cpu64 {
 					
 					Field<ulong>(nameof(CpuState.PC), pc);
 					//Call<LlvmCallbacks.DebugDelegate>(nameof(LlvmCallbacks.Debug));
-					if(!Recompile(*(uint*) pc, pc))
+					if(!Recompile(*(uint*) pc, pc)) {
+						Kernel.Kill();
 						throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
+					}
+
 					pc += 4;
 				}
 			}
 			
-			while(BlocksNeeded.TryDequeue(out var pc))
-				CompileOneBlock(pc);
+			while(BlocksNeeded.TryDequeue(out var cpc))
+				CompileOneBlock(cpc.Item1, cpc.Item2);
 
 			foreach(var (before, after) in LoadRegistersLabels) {
 				Label(before);
@@ -595,6 +615,20 @@ namespace Cpu64 {
 			JustBranched = true;
 		}
 
+		void WithLink(Action func) {
+			var next = CurrentPC + 4;
+			XR[30] = next;
+			if(!BlockLabels.TryGetValue(next, out _)) {
+				BlockLabels[next] = DefineLabel($"_{next:X}");
+				BlocksNeeded.Enqueue((Context, next));
+			}
+
+			var old = Context;
+			Context = old.CopyWith(x => x.LR = next);
+			func();
+			Context = old;
+		}
+		
 		void Branch(ulong target) {
 			/*Field(nameof(CpuState.BranchTo), Const(target));
 			Branch(StoreRegistersLabel);
@@ -602,16 +636,36 @@ namespace Cpu64 {
 			
 			if(!BlockLabels.TryGetValue(target, out var label)) {
 				label = BlockLabels[target] = DefineLabel($"_{target:X}");
-				BlocksNeeded.Enqueue(target);
+				BlocksNeeded.Enqueue((Context, target));
 			}
 			Branch(label);
 			Branched = true;
 		}
-		void Branch(LlvmRuntimeValue<ulong> target) {
-			Field(nameof(CpuState.BranchTo), target);
-			Branch(StoreRegistersLabels[0].Before);
-			Branched = true;
+		void BranchLinked(ulong target) => WithLink(() => Branch(target));
+		
+		void BranchRegister(ulong reg) {
+			void Base() {
+				var target = XR[(int) reg];
+				Field(nameof(CpuState.BranchTo), target);
+				Branch(StoreRegistersLabels[0].Before);
+				Branched = true;
+			}
+			if(reg != 30 || Context.LR == null) {
+				Base();
+				return;
+			}
+
+			var if_ = DefineLabel();
+			var else_ = DefineLabel();
+			BranchIf(XR[30] == Context.LR.Value, if_, else_);
+			
+			Label(if_);
+			Branch(Context.LR.Value);
+			
+			Label(else_);
+			Base();
 		}
+		void BranchLinkedRegister(ulong target) => WithLink(() => BranchRegister(target));
 
 		void BranchIf(LlvmRuntimeValue<byte> cond, LlvmLabel if_label, LlvmLabel else_label) {
 			if(!JustBranched) {
@@ -640,7 +694,7 @@ namespace Cpu64 {
 				Instance.Branch(end);
 				Instance.Label(end);
 				var phi = LLVM.BuildPhi(Builder, LlvmType<ValueT>(), "");
-				LLVM.AddIncoming(phi, new[] { av, bv }, new LLVMBasicBlockRef[] { ab, bb }, 2);
+				LLVM.AddIncoming(phi, new[] { av, bv }, new[] { ab, bb }, 2);
 				return phi;
 			});
 
