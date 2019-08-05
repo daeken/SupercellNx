@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Common {
 	public interface IKernel {
@@ -9,5 +10,6 @@ namespace Common {
 		void Log(string message);
 		void LogExclusive(Action cb);
 		void Kill();
+		void CheckPointer(ulong addr);
 	}
 }

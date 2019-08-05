@@ -292,7 +292,7 @@ namespace Supercell {
 						break;
 					case 4:
 					case 6:
-						$"IPC command {incoming.CommandId}".Debug();
+						$"IPC command {incoming.CommandId} for {target}".Debug();
 						target.Dispatch(incoming, outgoing);
 						ret = 0;
 						break;

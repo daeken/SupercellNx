@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 //[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, MaxParallelThreads = 8)]
 
 namespace CpuTest {
-	public unsafe static class InsnTester {
+	public static unsafe class InsnTester {
 		class TestKernel : IKernel {
 			public string MapAddress(ulong addr) => $"0x{addr:X}";
 
@@ -23,6 +23,7 @@ namespace CpuTest {
 			public void Log(string message) {}
 			public void LogExclusive(Action cb) => cb();
 			public void Kill() {}
+			public void CheckPointer(ulong addr) {}
 		}
 		
 		static readonly ThreadLocal<List<(ulong, uint)>> _Mapped = new ThreadLocal<List<(ulong, uint)>>();

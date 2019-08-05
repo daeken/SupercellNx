@@ -329,44 +329,30 @@ namespace Cpu64 {
 		public override int GetHashCode() => throw new NotImplementedException();
 	}
 
-	public unsafe class LlvmRuntimePointer<T> where T : struct {
+	public class LlvmRuntimePointer<T> where T : struct {
 		public static LLVMTypeRef LlvmType<TT>() => typeof(TT).ToLLVMType();
-		public readonly LlvmRuntimeValue<ulong> Address;
+		public readonly LlvmRuntimeValue<ulong> Address, Pointer;
+		public readonly bool Safe;
 
 		public LlvmRuntimeValue<T> Value {
 			get => new LlvmRuntimeValue<T>(() => {
-				/*var str = typeof(T).Name;
-				if(typeof(T).IsConstructedGenericType)
-					str = $"{typeof(T).GetGenericTypeDefinition().Name.Split('`')[0]}<{string.Join(", ", typeof(T).GetGenericArguments().Select(x => x.Name))}>";
-				str += "\0";
-				var tptr = Marshal.AllocHGlobal(str.Length);
-				var span = new Span<byte>((byte*) tptr, str.Length);
-				for(var i = 0; i < str.Length; ++i)
-					span[i] = (byte) str[i];
-				LlvmRecompiler.CallLogLoad(LlvmRecompiler.Instance.Const((ulong) tptr), new LlvmRuntimeValue<ulong>(() =>
-					LLVM.BuildPtrToInt(LlvmRecompiler.Builder, Address, LLVMTypeRef.Int64Type(), "")));*/
-				var load = LLVM.BuildLoad(LlvmRecompiler.Builder, Address, "");
+				if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
+				var load = LLVM.BuildLoad(LlvmRecompiler.Builder, Pointer, "");
 				load.SetAlignment(1);
 				return load;
 			});
 			set {
-				/*var str = typeof(T).Name;
-				if(typeof(T).IsConstructedGenericType)
-					str = $"{typeof(T).GetGenericTypeDefinition().Name.Split('`')[0]}<{string.Join(", ", typeof(T).GetGenericArguments().Select(x => x.Name))}>";
-				str += "\0";
-				var tptr = Marshal.AllocHGlobal(str.Length);
-				var span = new Span<byte>((byte*) tptr, str.Length);
-				for(var i = 0; i < str.Length; ++i)
-					span[i] = (byte) str[i];
-				LlvmRecompiler.CallLogStore(LlvmRecompiler.Instance.Const((ulong) tptr), new LlvmRuntimeValue<ulong>(() =>
-					LLVM.BuildPtrToInt(LlvmRecompiler.Builder, Address, LLVMTypeRef.Int64Type(), "")));*/
-				LLVM.BuildStore(LlvmRecompiler.Builder, value, Address).SetAlignment(1);
+				if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
+				LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer).SetAlignment(1);
 			}
 		}
 
-		public LlvmRuntimePointer(LlvmRuntimeValue<ulong> address) => Address =
-			new LlvmRuntimeValue<ulong>(() => LLVM.BuildIntToPtr(LlvmRecompiler.Builder, address,
+		public LlvmRuntimePointer(LlvmRuntimeValue<ulong> address, bool safe = false) {
+			Address = address;
+			Pointer = new LlvmRuntimeValue<ulong>(() => LLVM.BuildIntToPtr(LlvmRecompiler.Builder, address,
 				LLVMTypeRef.PointerType(LlvmType<T>(), 0), ""));
+			Safe = safe;
+		}
 
 		public static implicit operator LlvmRuntimeValue<T>(LlvmRuntimePointer<T> value) => value.Value;
 		public static implicit operator LlvmRuntimePointer<T>(LlvmRuntimeValue<ulong> address) => new LlvmRuntimePointer<T>(address);

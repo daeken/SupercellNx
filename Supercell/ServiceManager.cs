@@ -92,6 +92,7 @@ namespace Supercell {
 				Handlers[svc]();
 			else
 				throw new NotImplementedException($"Unknown svc call 0x{svc:X}");
+			"SVC Completed".Debug();
 		}
 	}
 }

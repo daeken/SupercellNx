@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using LLVMSharp;
 using MoreLinq;
 using PrettyPrinter;
 
@@ -67,27 +66,32 @@ namespace Cpu64 {
 		[DllImport("kernel32")]
 		static extern void VirtualProtect(ulong addr, ulong len, int prot, out int oldProt);
 
-		static bool Initialized;
-		static LLVMModuleRef Module;
-		static LLVMExecutionEngineRef ExecutionEngine;
+		[DllImport("kernel32", CharSet = CharSet.Ansi)]
+		static extern IntPtr LoadLibrary(string name);
+		[DllImport("kernel32", CharSet = CharSet.Ansi)]
+		static extern IntPtr GetProcAddress(IntPtr module, string name);
 
+		[DllImport("libc", CharSet = CharSet.Ansi)]
+		static extern ulong dlsym(ulong handle, string name);
+
+		static readonly string[] WinLibraries = { "msvcrt.dll", "msvcr120.dll" };
 		static ulong GetIntrinsic(string name) {
-			var func = LLVM.GetNamedFunction(Module, name);
-			func = func.Pointer == IntPtr.Zero
-				? LLVM.AddFunction(Module, name,
-					LLVMTypeRef.FunctionType(LLVMTypeRef.VoidType(), new LLVMTypeRef[0], false))
-				: func;
-			return (ulong) LLVM.GetPointerToGlobal(ExecutionEngine, func);
+			if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+				foreach(var lib in WinLibraries) {
+					var handle = LoadLibrary(lib);
+					if(handle == IntPtr.Zero) continue;
+					var addr = (ulong) GetProcAddress(handle, name);
+					if(addr != 0) return addr;
+				}
+				throw new Exception($"Could not find symbol {name}");
+			} else {
+				var addr = dlsym(0, name);
+				if(addr == 0) throw new Exception($"Could not find symbol {name}");
+				return addr;
+			}
 		}
 
 		public void* Load(byte[] file, ulong blockAddr) {
-			if(!Initialized) {
-				Initialized = true;
-				if(LLVM.CreateExecutionEngineForModule(out ExecutionEngine,
-					Module = LLVM.ModuleCreateWithName("CoffReader"), out var err))
-					throw new Exception("LLVM Error: " + err);
-			}
-			
 			fixed(byte* _ptr = file) {
 				var ptr = _ptr;
 				var header = (CoffHeader*) ptr;

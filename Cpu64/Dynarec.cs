@@ -48,7 +48,7 @@ namespace Cpu64 {
 		
 		public static int SignExtRuntimeInt(ulong value, int size) => SignExt<int>(value, size);
 		public static long SignExtRuntimeLong(ulong value, int size) => SignExt<long>(value, size);
-		
+
 		public static void Unsupported() => throw new NotSupportedException();
 	}
 }

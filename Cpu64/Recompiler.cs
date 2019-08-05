@@ -495,12 +495,14 @@ namespace Cpu64 {
 			RuntimeValue<Vector128<float>> b, uint q, uint index) =>
 			Call<Vector128<float>>(nameof(VectorExtract), a, b, q, index);
 
+		public static void CallCheckPointer(RuntimeValue<ulong> addr) => CallVoid(nameof(Dynarec.CheckPointer), addr);
+
 		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<float> value, ulong fbits) => Call<uint>(nameof(Dynarec.FloatToFixed32), value, (int) fbits);
 		RuntimeValue<uint> CallFloatToFixed32(RuntimeValue<double> value, ulong fbits) => Call<uint>(nameof(Dynarec.FloatToFixed32), value, (int) fbits);
 		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<float> value, ulong fbits) => Call<ulong>(nameof(Dynarec.FloatToFixed64), value, (int) fbits);
 		RuntimeValue<ulong> CallFloatToFixed64(RuntimeValue<double> value, ulong fbits) => Call<ulong>(nameof(Dynarec.FloatToFixed64), value, (int) fbits);
 
-		public unsafe static class InterlockedProxy {
+		public static class InterlockedProxy {
 			public static int CompareExchange(IntPtr ptr, int value, int comparand) =>
 				Interlocked.CompareExchange(ref *(int*) ptr, value, comparand);
 			public static long CompareExchange(IntPtr ptr, long value, long comparand) =>

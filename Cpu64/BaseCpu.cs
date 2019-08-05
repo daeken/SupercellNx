@@ -50,6 +50,8 @@ namespace Cpu64 {
 			});
 		}
 		
+		public void CheckPointer(ulong addr) => Kernel.CheckPointer(addr);
+
 		public static T SignExt<T>(ulong value, int size) {
 			if(typeof(T) == typeof(long))
 				return (T) (object) ((value & (1UL << (size - 1))) != 0 ? (long) value - (1L << size) : (long) value);

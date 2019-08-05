@@ -64,11 +64,8 @@ namespace Cpu64 {
 		public delegate void DebugDelegate();
 		public ulong Debug;
 
-		public delegate void LogLoadDelegate(ulong typeStr, ulong address);
-		public ulong LogLoad;
-
-		public delegate void LogStoreDelegate(ulong typeStr, ulong address);
-		public ulong LogStore;
+		public delegate void CheckPointerDelegate(ulong addr);
+		public ulong CheckPointer;
 	}
 
 	public unsafe partial class LlvmRecompiler : BaseCpu {
@@ -240,10 +237,22 @@ namespace Cpu64 {
 		public readonly LlvmVectorFloatMap VSR;
 		public readonly LlvmVectorDoubleMap VDR;
 
-		public LlvmRuntimeValue<byte> Exclusive8R;
-		public LlvmRuntimeValue<ushort> Exclusive16R;
-		public LlvmRuntimeValue<uint> Exclusive32R;
-		public LlvmRuntimeValue<ulong> Exclusive64R;
+		public LlvmRuntimeValue<byte> Exclusive8R {
+			get => Field<byte>(nameof(CpuState.Exclusive8));
+			set => Field(nameof(CpuState.Exclusive8), value);
+		}
+		public LlvmRuntimeValue<ushort> Exclusive16R {
+			get => Field<ushort>(nameof(CpuState.Exclusive16));
+			set => Field(nameof(CpuState.Exclusive16), value);
+		}
+		public LlvmRuntimeValue<uint> Exclusive32R {
+			get => Field<uint>(nameof(CpuState.Exclusive32));
+			set => Field(nameof(CpuState.Exclusive32), value);
+		}
+		public LlvmRuntimeValue<ulong> Exclusive64R {
+			get => Field<ulong>(nameof(CpuState.Exclusive64));
+			set => Field(nameof(CpuState.Exclusive64), value);
+		}
 
 		public LlvmRuntimeValue<ulong> NZCVR {
 			get => (NZCV_NR << 31) | (NZCV_ZR << 30) | (NZCV_CR << 29) | (NZCV_VR << 28);
@@ -300,6 +309,7 @@ namespace Cpu64 {
 		ulong CurrentPC;
 		BlockContext Context;
 
+		internal static bool CallbacksInitialized;
 		internal static readonly LlvmCallbacks* Callbacks =
 			(LlvmCallbacks*) Marshal.AllocHGlobal(Marshal.SizeOf<LlvmCallbacks>());
 
@@ -346,6 +356,8 @@ namespace Cpu64 {
 			VSR = new LlvmVectorFloatMap(this);
 			VDR = new LlvmVectorDoubleMap(this);
 
+			if(CallbacksInitialized) return;
+			CallbacksInitialized = true;
 			Callbacks->Svc = FunctionPtr<LlvmCallbacks.SvcDelegate>(svc => Kernel.Svc((int) svc));
 			Callbacks->GetSR = FunctionPtr<LlvmCallbacks.GetSRDelegate>((state, op0, op1, crn, crm, op2) => {
 				var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
@@ -355,51 +367,7 @@ namespace Cpu64 {
 			});
 			Callbacks->SetSR = FunctionPtr<LlvmCallbacks.SetSRDelegate>(SR);
 
-			/*var bw = new BinaryWriter(File.OpenWrite("recinsns.bin"));
-			var skip = 132_500_000;
-			Callbacks->Debug = FunctionPtr<LlvmCallbacks.DebugDelegate>(() => {
-				if(skip > 0) {
-					skip--;
-					if(skip == 0)
-						Console.WriteLine($"Stopped skipping at 0x{State->PC:X}");
-					return;
-				}
-				bw.Write(State->PC);
-				bw.Write((byte) ((State->NZCV_N << 3) | (State->NZCV_Z << 2) | (State->NZCV_C << 1) | (State->NZCV_V << 0)));
-				for(var i = 0; i < 31; ++i)
-					bw.Write((&State->X0)[i]);
-				for(var i = 0; i < 32; ++i)
-					bw.Write((&State->V0)[i].As<float, ulong>().GetElement(0));
-				bw.Write(State->SP);
-				bw.Flush();
-				((FileStream) bw.BaseStream).Flush(true);
-			});*/
-
-			Callbacks->LogLoad =
-				FunctionPtr<LlvmCallbacks.LogLoadDelegate>((tstr, address) => {
-					//if(skip > 0) return;
-					var span = new Span<byte>((byte*) tstr, 64);
-					var str = "";
-					for(var i = 0; i < 64; ++i) {
-						if(span[i] == 0) break;
-						str += new string((char) span[i], 1);
-					}
-
-					Console.WriteLine($"Load {str} from 0x{address:X}");
-				});
-
-			Callbacks->LogStore =
-				FunctionPtr<LlvmCallbacks.LogStoreDelegate>((tstr, address) => {
-					//if(skip > 0) return;
-					var span = new Span<byte>((byte*) tstr, 64);
-					var str = "";
-					for(var i = 0; i < 64; ++i) {
-						if(span[i] == 0) break;
-						str += new string((char) span[i], 1);
-					}
-
-					Console.WriteLine($"Store {str} to 0x{address:X}");
-				});
+			Callbacks->CheckPointer = FunctionPtr<LlvmCallbacks.CheckPointerDelegate>(Kernel.CheckPointer);
 		}
 
 		static ulong FunctionPtr<DelegateT>(DelegateT func) {
@@ -559,9 +527,9 @@ namespace Cpu64 {
 		public LlvmRuntimeValue<ulong> CallbacksRef => new LlvmRuntimeValue<ulong>(() => LLVM.GetParam(Function, 1));
 
 		public LlvmRuntimeValue<T> Field<T>(string name) where T : struct =>
-			new LlvmRuntimePointer<T>(FieldAddress(name));
+			new LlvmRuntimePointer<T>(FieldAddress(name), safe: true);
 		public void Field<T>(string name, LlvmRuntimeValue<T> value) where T : struct =>
-			new LlvmRuntimePointer<T>(FieldAddress(name)).Value = value;
+			new LlvmRuntimePointer<T>(FieldAddress(name), safe: true).Value = value;
 		public LlvmRuntimeValue<ulong> FieldAddress(string name) =>
 			CpuStateRef + (ulong) Marshal.OffsetOf<CpuState>(name);
 		
@@ -724,10 +692,8 @@ namespace Cpu64 {
 			Label(postLoad);
 		}
 
-		public static void CallLogStore(LlvmRuntimeValue<ulong> tstr, LlvmRuntimeValue<ulong> address) =>
-			Instance.Call<LlvmCallbacks.LogStoreDelegate>(nameof(LlvmCallbacks.LogStore), tstr, address);
-		public static void CallLogLoad(LlvmRuntimeValue<ulong> tstr, LlvmRuntimeValue<ulong> address) =>
-			Instance.Call<LlvmCallbacks.LogLoadDelegate>(nameof(LlvmCallbacks.LogLoad), tstr, address);
+		public static void CallCheckPointer(LlvmRuntimeValue<ulong> address) =>
+			Instance.Call<LlvmCallbacks.CheckPointerDelegate>(nameof(LlvmCallbacks.CheckPointer), address);
 
 		LlvmRuntimeValue<T> SignExtRuntime<T>(LlvmRuntimeValue<ulong> value, int size) where T : struct =>
 			new LlvmRuntimeValue<T>(() =>
@@ -825,9 +791,9 @@ namespace Cpu64 {
 				LlvmRuntimeValue<T> comparand) where T : struct => new LlvmRuntimeValue<byte>(
 			() => LLVM.BuildSelect(Builder,
 				LLVM.BuildExtractValue(Builder,
-					LLVM.BuildAtomicCmpXchg(Builder, ptr.Address, comparand, value,
-						LLVMAtomicOrdering.LLVMAtomicOrderingMonotonic,
-						LLVMAtomicOrdering.LLVMAtomicOrderingMonotonic,
+					LLVM.BuildAtomicCmpXchg(Builder, ptr.Pointer, comparand, value,
+						LLVMAtomicOrdering.LLVMAtomicOrderingSequentiallyConsistent,
+						LLVMAtomicOrdering.LLVMAtomicOrderingSequentiallyConsistent,
 						false), 1, ""), Const((byte) 0), Const((byte) 1), ""));
 	}
 }

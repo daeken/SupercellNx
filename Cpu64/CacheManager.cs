@@ -44,7 +44,7 @@ namespace Cpu64 {
 				var cr = new CoffReader();
 				while(fp.Position < length) {
 					var addr = br.ReadUInt64();
-					$"Loading block {addr:X}".Print();
+					//$"Loading block {addr:X}".Print();
 					var size = (int) br.ReadUInt64();
 					var code = br.ReadBytes(size);
 					/*using var ofp = File.OpenWrite($"_{addr:X}.o");
@@ -53,7 +53,10 @@ namespace Cpu64 {
 					if(loadAddr == null) continue;
 					var block = GetBlock(addr);
 					var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>((IntPtr) loadAddr);
-					block.Func = (state, _) => tfunc(state, LlvmRecompiler.Callbacks);
+					block.Func = (state, _) => {
+						//Console.WriteLine($"Running block {addr:X}");
+						tfunc(state, LlvmRecompiler.Callbacks);
+					};
 					block.Optimized = true;
 				}
 			} catch(FileNotFoundException) {}

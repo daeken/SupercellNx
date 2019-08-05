@@ -88,7 +88,7 @@ namespace Supercell {
 		[DllImport("kernel32.dll", SetLastError=false)]
 		static extern void GetSystemInfo(out SYSTEM_INFO Info);
 		[DllImport("kernel32.dll")]
-		static extern int VirtualQueryEx(IntPtr hProcess, ulong lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+		static extern int VirtualQuery(ulong lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, int dwLength);
 		
 		public readonly SortedList<ulong, (ulong Addr, ulong Size)> Regions = new SortedList<ulong, (ulong Addr, ulong Size)>();
 		public readonly SortedList<ulong, ulong> Reserved = new SortedList<ulong, ulong>();
@@ -131,8 +131,7 @@ namespace Supercell {
 
 		public ulong AllocateAligned(ulong size, ulong preferred = 0UL, bool reserve = false) {
 			if(IsWindows && (preferred & 0xFFFF) != 0) {
-				var ret = VirtualQueryEx(Process.GetCurrentProcess().Handle, preferred, out var info,
-					(uint) Marshal.SizeOf<MEMORY_BASIC_INFORMATION>());
+				var ret = VirtualQuery(preferred, out var info, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>());
 				Debug.Assert(ret != 0);
 				if(info.State == 0x10000) // MEM_FREE
 					AllocateAligned((size & ~0xFFFFUL) + 0x10000, preferred & ~0xFFFFUL, reserve: true);
@@ -158,6 +157,31 @@ namespace Supercell {
 		}
 
 		public void UnAllocate(ulong addr, ulong size) => munmap(addr, size);
+
+		ulong LastPage1, LastPage2, LastPage3, LastPage4;
+		public void CheckPointer(ulong addr) {
+			var page = addr & ~0xFFFUL;
+			if(LastPage1 == page || LastPage2 == page || LastPage3 == page || LastPage4 == page) return;
+			LastPage1 = LastPage2;
+			LastPage2 = LastPage3;
+			LastPage3 = LastPage4;
+			LastPage4 = page;
+			//VirtualQuery(addr, out var info, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>());
+			//if(info.State != 0x10000) return;
+			foreach(var (key, (raddr, size)) in Regions)
+				if(key > addr) break;
+				else if(raddr <= addr && raddr + size >= addr) return;
+			foreach(var (raddr, top) in Reserved)
+				if(raddr > addr) break;
+				else if(raddr <= addr && top >= addr) return;
+			Logger.Exclusive(() => {
+				$"Access Violation on thread {Thread.CurrentThread.Id}".Debug();
+				$"Attempted access to 0x{addr:X}".Debug();
+				Thread.CurrentThread.Cpu.DebugRegs();
+				Backtrace.Print();
+				Environment.Exit(0);
+			});
+		}
 
 		IEnumerable<(ulong Start, ulong End, bool Resident)> AllRegions() {
 			var prevAddr = 0UL;
