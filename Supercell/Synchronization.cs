@@ -93,7 +93,7 @@ namespace Supercell {
 			get => _Triggered;
 			set {
 				var doSignal = !_Triggered && value; 
-				_Triggered = value;
+				Presignaled = _Triggered = value;
 				if(doSignal) Signal();
 			}
 		}
@@ -109,6 +109,9 @@ namespace Supercell {
 
 		readonly Dictionary<ulong, Semaphore> Semaphores = new Dictionary<ulong, Semaphore>();
 		readonly Dictionary<ulong, Mutex> Mutexes = new Dictionary<ulong, Mutex>();
+
+		static TimeSpan? ConvertTimeout(ulong timeout) =>
+			timeout != uint.MaxValue ? (TimeSpan?) new TimeSpan((long) (timeout / 100)) : null;
 
 		Semaphore EnsureSemaphore(ulong addr) => Semaphores.TryGetValue(addr, out var sema)
 			? sema
@@ -136,19 +139,24 @@ namespace Supercell {
 
 		[Svc(0x18)]
 		public (uint, uint) WaitSynchronization(ulong _, ulong handlesAddr, uint numHandles, ulong timeout) {
-			$"WaitSynchronization(0x{handlesAddr:X}, {numHandles})".Debug();
+			$"WaitSynchronization(0x{handlesAddr:X}, {numHandles}, {timeout})".Debug();
 			var handles = new Buffer<uint>(handlesAddr, numHandles * 4);
 			var waitHandle = new AutoResetEvent(false);
 			var activated = uint.MaxValue;
+			var completed = false;
 			handles.ForEach((handle, i) => Kernel.Get<Waitable>(handle).Wait(() => {
+				if(completed) return -1;
 				lock(waitHandle) {
 					activated = (uint) i;
 					waitHandle.Set();
 					return 1;
 				}
 			}));
-			waitHandle.DebugWaitOne();
-			return (0, activated);
+			var res = waitHandle.DebugWaitOne(ConvertTimeout(timeout))
+				? ((uint, uint)) (0, activated)
+				: ((uint, uint)) (0xea01, 0);
+			completed = true;
+			return res;
 		}
 
 		[Svc(0x1A)]
@@ -173,7 +181,7 @@ namespace Supercell {
 
 		[Svc(0x1C)]
 		public unsafe uint WaitProcessWideKeyAtomic(ulong mutexAddr, ulong semaAddr, uint threadHandle, uint timeout) {
-			$"WaitProcessWideKeyAtomic(0x{mutexAddr:X}, 0x{semaAddr:X}, 0x{threadHandle:X})".Debug();
+			$"WaitProcessWideKeyAtomic(0x{mutexAddr:X}, 0x{semaAddr:X}, 0x{threadHandle:X}, {timeout})".Debug();
 			var mutex = EnsureMutex(mutexAddr);
 			var sema = EnsureSemaphore(semaAddr);
 			//Debug.Assert((*(uint*) mutexAddr & ~0x40000000U) == threadHandle);

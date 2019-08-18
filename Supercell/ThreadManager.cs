@@ -55,6 +55,7 @@ namespace Supercell {
 				Cpu.Run(ep, Stack);
 			} catch(TargetInvocationException e) {
 				Logger.Exclusive(() => {
+					Backtrace.Print();
 					Console.WriteLine($"Unhandled exception on thread {CurrentThread.Id}");
 					Console.WriteLine(e.InnerException);
 					Environment.Exit(1);

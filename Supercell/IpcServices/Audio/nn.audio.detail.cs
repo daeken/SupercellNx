@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using Common;
 using PrettyPrinter;
 
@@ -11,7 +12,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 
 		public override ulong GetWorkBufferSize(Nn.Audio.Detail.AudioRendererParameterInternal* _0) => 0x10000;
 		
-		public override Nn.Audio.Detail.IAudioDevice GetAudioDeviceService(ulong _0) => throw new NotImplementedException();
+		public override Nn.Audio.Detail.IAudioDevice GetAudioDeviceService(ulong _0) => new IAudioDevice();
 		public override Nn.Audio.Detail.IAudioRenderer OpenAudioRendererAuto(Nn.Audio.Detail.AudioRendererParameterInternal* _0, ulong _1, ulong _2, ulong _3, ulong _4, KObject _5) => throw new NotImplementedException();
 		public override Nn.Audio.Detail.IAudioDevice GetAudioDeviceServiceWithRevisionInfo(ulong _0, uint _1) => throw new NotImplementedException();
 	}
@@ -20,11 +21,19 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		AudioRendererParameterInternal Params;
 		MemoryPoolState[] MemoryPools;
 		Voice[] Voices;
+		readonly Event Event = new Event(true);
 
 		public IAudioRenderer(ref AudioRendererParameterInternal @params) {
 			Params = @params;
 			MemoryPools = new MemoryPoolState[Params.EffectCount + Params.VoiceCount * 4].Construct();
 			Voices = new Voice[Params.VoiceCount].Construct();
+			new System.Threading.Thread(() => {
+				while(true)
+					if(Event.Triggered)
+						System.Threading.Thread.Sleep(1000);
+					else
+						Event.Triggered = true;
+			}).Start();
 		}
 
 		public override uint GetSampleRate() => 44100;
@@ -39,8 +48,8 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> unk
 		) {
 			var skipBehavior = (input + 1).As<byte>() + input.Value.BehaviorSize;
-			var poolsIn = skipBehavior.As<MemoryPoolIn>();
-			for(var i = 0; i < input.Value.MemoryPoolSize / poolsIn.ElementSize; ++i)
+			var poolsIn = skipBehavior.As<MemoryPoolIn>(input.Value.MemoryPoolSize);
+			for(var i = 0; i < poolsIn.Length; ++i)
 				switch(poolsIn[i].State) {
 					case MemoryPoolState.RequestAttach:
 						MemoryPools[i] = MemoryPoolState.Attached;
@@ -50,9 +59,9 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 						break;
 				}
 
-			var skipResource = poolsIn.As<byte>() + input.Value.MemoryPoolSize + input.Value.VoiceResourceSize;
-			var voicesIn = skipResource.As<VoiceIn>();
-			for(var i = 0; i < input.Value.VoiceSize / voicesIn.ElementSize; ++i) {
+			var skipResource = poolsIn.End.As<byte>() + input.Value.VoiceResourceSize;
+			var voicesIn = skipResource.As<VoiceIn>(input.Value.VoiceSize);
+			for(var i = 0; i < voicesIn.Length; ++i) {
 				var voice = voicesIn[i];
 				var cvoice = Voices[i];
 				cvoice.SetAcquireState(voice.Acquired != 0);
@@ -87,7 +96,7 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			                         to.PerformanceManagerSize;
 			var mpo = (output + 1).As<MemoryPoolOut>();
 			for(var i = 0; i < MemoryPools.Length; ++i)
-				mpo[i] = new MemoryPoolOut { State = MemoryPools[i] };
+				mpo[i].State = MemoryPools[i];
 			var vo = (mpo + MemoryPools.Length).As<VoiceOut>();
 			for(var i = 0; i < Voices.Length; ++i)
 				vo[i] = new VoiceOut { // TODO: Real values!
@@ -99,10 +108,44 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 		
 		public override void Start() => "Stub hit for Nn.Audio.Detail.IAudioRenderer.Start [5]".Debug();
 		public override void Stop() => "Stub hit for Nn.Audio.Detail.IAudioRenderer.Stop [6]".Debug();
-		public override KObject QuerySystemEvent() => new Event();
+		public override KObject QuerySystemEvent() => Event;
 		public override void SetAudioRendererRenderingTimeLimit(uint limit) => "Stub hit for Nn.Audio.Detail.IAudioRenderer.SetAudioRendererRenderingTimeLimit [8]".Debug();
 		public override uint GetAudioRendererRenderingTimeLimit() => throw new NotImplementedException();
 		public override void RequestUpdateAudioRendererAuto(Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _0, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _1, Buffer<Nn.Audio.Detail.AudioRendererUpdateDataHeader> _2) => throw new NotImplementedException();
 		public override void ExecuteAudioRendererRendering() => "Stub hit for Nn.Audio.Detail.IAudioRenderer.ExecuteAudioRendererRendering [11]".Debug();
+	}
+
+	public partial class IAudioDevice {
+		public override void ListAudioDeviceName(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public override void SetAudioDeviceOutputVolume(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.SetAudioDeviceOutputVolume [1]".Debug();
+		public override uint GetAudioDeviceOutputVolume(Buffer<byte> _0) => throw new NotImplementedException();
+		public override void GetActiveAudioDeviceName(Buffer<byte> _0) => throw new NotImplementedException();
+		public override KObject QueryAudioDeviceSystemEvent() => new Event(true);
+		
+		public override uint GetActiveChannelCount() => 2;
+		
+		public override void ListAudioDeviceNameAuto(out uint count, Buffer<byte> buf) {
+			var names = new[] {
+				"AudioTvOutput",
+				"AudioStereoJackOutput",
+				"AudioBuiltInSpeakerOutput"
+			};
+			count = (uint) names.Length;
+			var i = 0;
+			foreach(var name in names) {
+				var bytes = Encoding.ASCII.GetBytes(name + '\0');
+				bytes.AsSpan().CopyTo(buf + i);
+				i += bytes.Length;
+			}
+		}
+
+		public override void SetAudioDeviceOutputVolumeAuto(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.SetAudioDeviceOutputVolumeAuto [7]".Debug();
+		public override float GetAudioDeviceOutputVolumeAuto(Buffer<byte> _0) => 1f;
+
+		public override void GetActiveAudioDeviceNameAuto(Buffer<byte> buf) =>
+			Encoding.ASCII.GetBytes("AudioBuiltInSpeakerOutput\0").AsSpan().CopyTo(buf);
+
+		public override KObject QueryAudioDeviceInputEvent() => new Event(true);
+		public override KObject QueryAudioDeviceOutputEvent() => new Event(true);
 	}
 }

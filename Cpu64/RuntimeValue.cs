@@ -581,7 +581,7 @@ namespace Cpu64 {
 
 		public RuntimeValue<T> Value {
 			get => new RuntimeValue<T>(() => {
-				Recompiler.CallCheckPointer(Address);
+				//Recompiler.CallCheckPointer(Address);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				if(typeof(T) == typeof(Vector128<float>))
@@ -590,7 +590,7 @@ namespace Cpu64 {
 					Recompiler.Ilg.LoadIndirect<T>();
 			});
 			set {
-				Recompiler.CallCheckPointer(Address);
+				//Recompiler.CallCheckPointer(Address);
 				Address.Emit();
 				Recompiler.Ilg.Convert<IntPtr>();
 				value.Emit();

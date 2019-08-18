@@ -41,7 +41,7 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 						case 0x4: {
 							var p = x.GetParameters();
 							var itype = p[0].ParameterType.GetGenericArguments()[0];
-							var im = typeof(Buffer<byte>).GetMethod("As").MakeGenericMethod(itype);
+							var im = typeof(Buffer<byte>).GetMethod("As", new Type[0]).MakeGenericMethod(itype);
 							var icast = itype == typeof(byte)
 								? (Func<Buffer<byte>, object>) (y => y)
 								: y => im.Invoke(y, null);
@@ -56,7 +56,7 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 						case 0x8: {
 							var p = x.GetParameters();
 							var otype = p[0].ParameterType.GetGenericArguments()[0];
-							var om = typeof(Buffer<byte>).GetMethod("As").MakeGenericMethod(otype);
+							var om = typeof(Buffer<byte>).GetMethod("As", new Type[0]).MakeGenericMethod(otype);
 							var ocast = otype == typeof(byte)
 								? (Func<Buffer<byte>, object>) (y => y)
 								: y => om.Invoke(y, null);
@@ -71,12 +71,12 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 						case 0xC: {
 							var p = x.GetParameters();
 							var itype = p[0].ParameterType.GetGenericArguments()[0];
-							var im = typeof(Buffer<byte>).GetMethod("As").MakeGenericMethod(itype);
+							var im = typeof(Buffer<byte>).GetMethod("As", new Type[0]).MakeGenericMethod(itype);
 							var icast = itype == typeof(byte)
 								? (Func<Buffer<byte>, object>) (y => y)
 								: y => im.Invoke(y, null);
 							var otype = p[1].ParameterType.GetGenericArguments()[0];
-							var om = typeof(Buffer<byte>).GetMethod("As").MakeGenericMethod(otype);
+							var om = typeof(Buffer<byte>).GetMethod("As", new Type[0]).MakeGenericMethod(otype);
 							var ocast = otype == typeof(byte)
 								? (Func<Buffer<byte>, object>) (y => y)
 								: y => om.Invoke(y, null);

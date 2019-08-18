@@ -39,5 +39,20 @@ namespace Supercell {
 					Kernel.DebugWait(real: false);
 			}
 		}
+
+		public static unsafe bool DebugWaitOne(this AutoResetEvent are, TimeSpan? timespan) {
+			if(timespan == null) {
+				are.DebugWaitOne();
+				return true;
+			}
+			var tms = timespan.Value.Ticks / 10000;
+			while(true) {
+				if(are.WaitOne(50)) return true;
+				tms -= 50;
+				if(tms <= 0) return false;
+				if(Thread.CurrentThread.Cpu.State->Debugging != 0)
+					Kernel.DebugWait(real: false);
+			}
+		}
 	}
 }

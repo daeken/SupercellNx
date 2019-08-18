@@ -613,70 +613,70 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 	public unsafe class _Base_IAudioDevice : IpcInterface {
 		public override void _Dispatch(IncomingMessage im, OutgoingMessage om) {
 			switch(im.CommandId) {
-				case 0: { // Unknown0
-					Unknown0(out var _0, im.GetBuffer<byte>(0x6, 0));
+				case 0: { // ListAudioDeviceName
+					ListAudioDeviceName(out var _0, im.GetBuffer<byte>(0x6, 0));
 					om.Initialize(0, 0, 4);
 					om.SetData(8, _0);
 					break;
 				}
-				case 1: { // Unknown1
-					Unknown1(im.GetData<uint>(8), im.GetBuffer<byte>(0x5, 0));
+				case 1: { // SetAudioDeviceOutputVolume
+					SetAudioDeviceOutputVolume(im.GetData<uint>(8), im.GetBuffer<byte>(0x5, 0));
 					om.Initialize(0, 0, 0);
 					break;
 				}
-				case 2: { // Unknown2
-					var ret = Unknown2(im.GetBuffer<byte>(0x5, 0));
+				case 2: { // GetAudioDeviceOutputVolume
+					var ret = GetAudioDeviceOutputVolume(im.GetBuffer<byte>(0x5, 0));
 					om.Initialize(0, 0, 4);
 					om.SetData(8, ret);
 					break;
 				}
-				case 3: { // Unknown3
-					Unknown3(im.GetBuffer<byte>(0x6, 0));
+				case 3: { // GetActiveAudioDeviceName
+					GetActiveAudioDeviceName(im.GetBuffer<byte>(0x6, 0));
 					om.Initialize(0, 0, 0);
 					break;
 				}
-				case 4: { // Unknown4
-					var ret = Unknown4();
+				case 4: { // QueryAudioDeviceSystemEvent
+					var ret = QueryAudioDeviceSystemEvent();
 					om.Initialize(0, 1, 0);
 					om.Copy(0, CreateHandle(ret, copy: true));
 					break;
 				}
-				case 5: { // Unknown5
-					var ret = Unknown5();
+				case 5: { // GetActiveChannelCount
+					var ret = GetActiveChannelCount();
 					om.Initialize(0, 0, 4);
 					om.SetData(8, ret);
 					break;
 				}
-				case 6: { // Unknown6
-					Unknown6(out var _0, im.GetBuffer<byte>(0x22, 0));
+				case 6: { // ListAudioDeviceNameAuto
+					ListAudioDeviceNameAuto(out var _0, im.GetBuffer<byte>(0x22, 0));
 					om.Initialize(0, 0, 4);
 					om.SetData(8, _0);
 					break;
 				}
-				case 7: { // Unknown7
-					Unknown7(im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0));
+				case 7: { // SetAudioDeviceOutputVolumeAuto
+					SetAudioDeviceOutputVolumeAuto(im.GetData<uint>(8), im.GetBuffer<byte>(0x21, 0));
 					om.Initialize(0, 0, 0);
 					break;
 				}
-				case 8: { // Unknown8
-					var ret = Unknown8(im.GetBuffer<byte>(0x21, 0));
+				case 8: { // GetAudioDeviceOutputVolumeAuto
+					var ret = GetAudioDeviceOutputVolumeAuto(im.GetBuffer<byte>(0x21, 0));
 					om.Initialize(0, 0, 4);
 					om.SetData(8, ret);
 					break;
 				}
-				case 10: { // Unknown10
-					Unknown10(im.GetBuffer<byte>(0x22, 0));
+				case 10: { // GetActiveAudioDeviceNameAuto
+					GetActiveAudioDeviceNameAuto(im.GetBuffer<byte>(0x22, 0));
 					om.Initialize(0, 0, 0);
 					break;
 				}
-				case 11: { // Unknown11
-					var ret = Unknown11();
+				case 11: { // QueryAudioDeviceInputEvent
+					var ret = QueryAudioDeviceInputEvent();
 					om.Initialize(0, 1, 0);
 					om.Copy(0, CreateHandle(ret, copy: true));
 					break;
 				}
-				case 12: { // Unknown12
-					var ret = Unknown12();
+				case 12: { // QueryAudioDeviceOutputEvent
+					var ret = QueryAudioDeviceOutputEvent();
 					om.Initialize(0, 1, 0);
 					om.Copy(0, CreateHandle(ret, copy: true));
 					break;
@@ -686,18 +686,18 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 			}
 		}
 		
-		public virtual void Unknown0(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void Unknown1(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.Unknown1 [1]".Debug();
-		public virtual uint Unknown2(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void Unknown3(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual KObject Unknown4() => throw new NotImplementedException();
-		public virtual uint Unknown5() => throw new NotImplementedException();
-		public virtual void Unknown6(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
-		public virtual void Unknown7(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.Unknown7 [7]".Debug();
-		public virtual uint Unknown8(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual void Unknown10(Buffer<byte> _0) => throw new NotImplementedException();
-		public virtual KObject Unknown11() => throw new NotImplementedException();
-		public virtual KObject Unknown12() => throw new NotImplementedException();
+		public virtual void ListAudioDeviceName(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void SetAudioDeviceOutputVolume(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.SetAudioDeviceOutputVolume [1]".Debug();
+		public virtual uint GetAudioDeviceOutputVolume(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void GetActiveAudioDeviceName(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual KObject QueryAudioDeviceSystemEvent() => throw new NotImplementedException();
+		public virtual uint GetActiveChannelCount() => throw new NotImplementedException();
+		public virtual void ListAudioDeviceNameAuto(out uint _0, Buffer<byte> _1) => throw new NotImplementedException();
+		public virtual void SetAudioDeviceOutputVolumeAuto(uint _0, Buffer<byte> _1) => "Stub hit for Nn.Audio.Detail.IAudioDevice.SetAudioDeviceOutputVolumeAuto [7]".Debug();
+		public virtual float GetAudioDeviceOutputVolumeAuto(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual void GetActiveAudioDeviceNameAuto(Buffer<byte> _0) => throw new NotImplementedException();
+		public virtual KObject QueryAudioDeviceInputEvent() => throw new NotImplementedException();
+		public virtual KObject QueryAudioDeviceOutputEvent() => throw new NotImplementedException();
 	}
 	
 	public unsafe partial class IAudioIn : _Base_IAudioIn {}

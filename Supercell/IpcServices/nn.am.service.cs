@@ -24,8 +24,8 @@ namespace Supercell.IpcServices.Nn.Am.Service {
 		public override void GetThisAppletKind(out byte[] _0) => throw new NotImplementedException();
 		public override void AllowToEnterSleep() => throw new NotImplementedException();
 		public override void DisallowToEnterSleep() => throw new NotImplementedException();
-		public override byte GetOperationMode() => throw new NotImplementedException();
-		public override uint GetPerformanceMode() => throw new NotImplementedException();
+		public override byte GetOperationMode() => 1; // Docked -- 0 is handheld
+		public override uint GetPerformanceMode() => 1; // Docked -- 0 is handheld
 		public override byte GetCradleStatus() => throw new NotImplementedException();
 		public override byte GetBootMode() => throw new NotImplementedException();
 		public override byte GetCurrentFocusState() => 1; // In focus
