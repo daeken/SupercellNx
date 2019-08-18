@@ -50,8 +50,8 @@ namespace Supercell.IpcServices.Nn.Nifm.Detail {
 		public override void GetResult() => "Stub hit for Nn.Nifm.Detail.IRequest.GetResult [1]".Debug();
 
 		public override void GetSystemEventReadableHandles(out KObject _0, out KObject _1) {
-			_0 = new KEvent();
-			_1 = new KEvent();
+			_0 = new Event();
+			_1 = new Event();
 		}
 		
 		public override void Cancel() => "Stub hit for Nn.Nifm.Detail.IRequest.Cancel [3]".Debug();

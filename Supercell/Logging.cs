@@ -15,7 +15,7 @@ namespace Supercell {
 
 		public void Log(string msg) {
 			lock(this)
-				Console.WriteLine($"[{Thread.CurrentThread.Id}]  {msg}");
+				Console.WriteLine($"[{Thread.CurrentThread?.Id ?? 7777}]  {msg}");
 		}
 	}
 }

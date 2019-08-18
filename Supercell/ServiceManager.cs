@@ -87,12 +87,14 @@ namespace Supercell {
 		}
 		
 		public void Svc(int svc) {
-			$"Incoming SVC 0x{svc:X}".Debug();
+			if(svc != 0xB)
+				$"Incoming SVC 0x{svc:X}".Debug();
 			if(Handlers.ContainsKey(svc))
 				Handlers[svc]();
 			else
 				throw new NotImplementedException($"Unknown svc call 0x{svc:X}");
-			"SVC Completed".Debug();
+			if(svc != 0xB)
+				"SVC Completed".Debug();
 		}
 	}
 }

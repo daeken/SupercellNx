@@ -10,7 +10,7 @@ namespace Supercell.IpcServices.Nns.Hosbinder {
 		
 		public override void AdjustRefcount(int id, int addVal, int type) => "Stub hit for Nns.Hosbinder.IHOSBinderDriver.AdjustRefcount [1]".Debug();
 		
-		public override KObject GetNativeHandle(int id, uint _1) => new KEvent();
+		public override KObject GetNativeHandle(int id, uint _1) => new Event(true);
 
 		public override void TransactParcelAuto(int id, uint code, Buffer<byte> parcelData, uint flags,
 			Buffer<byte> parcelReply) =>

@@ -336,13 +336,13 @@ namespace Cpu64 {
 
 		public LlvmRuntimeValue<T> Value {
 			get => new LlvmRuntimeValue<T>(() => {
-				if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
+				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
 				var load = LLVM.BuildLoad(LlvmRecompiler.Builder, Pointer, "");
 				load.SetAlignment(1);
 				return load;
 			});
 			set {
-				if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
+				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
 				LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer).SetAlignment(1);
 			}
 		}

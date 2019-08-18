@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -245,11 +244,8 @@ namespace Supercell {
 		readonly Dictionary<uint, KObject> DomainHandles = new Dictionary<uint, KObject>();
 		readonly Dictionary<uint, uint> DomainHandleMap = new Dictionary<uint, uint>();
 		
-		readonly Dictionary<uint, Action<IpcInterface, IncomingMessage, OutgoingMessage>> Commands;
-		protected IpcInterface() => Commands = Ipc.AllCommands[GetType()];
-
 		public uint CreateHandle(KObject obj, bool copy = false) {
-			if(obj == null) return 0xDEADBEEF;
+			if(obj == null) throw new NotSupportedException();
 			$"Creating handle for object with real handle 0x{obj.Handle:X}".Debug();
 			if(copy) return obj.Handle;
 			if(DomainOwner != null) return DomainOwner.CreateHandle(obj);
@@ -352,170 +348,15 @@ namespace Supercell {
 		public IpcServiceAttribute(string name) => Name = name;
 	}
 
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-	public class IpcCommandAttribute : Attribute {
-		public readonly uint Id;
-		public IpcCommandAttribute(uint id) => Id = id;
-	}
-
-	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field)]
-	public class BytesAttribute : Attribute {
-		public readonly uint Count;
-		public BytesAttribute(uint count) => Count = count;
-	}
-
-	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field)]
-	public class BufferAttribute : Attribute {
-		public readonly uint Type;
-		public BufferAttribute(uint type) => Type = type;
-	}
-	
-	[AttributeUsage(AttributeTargets.Parameter)]
-	public class CopyAttribute : Attribute {}
-	[AttributeUsage(AttributeTargets.Parameter)]
-	public class MoveAttribute : Attribute {}
-
-	[AttributeUsage(AttributeTargets.Parameter)]
-	public class PidAttribute : Attribute {}
-
 	public class IpcManager {
 		readonly Dictionary<string, Type> Services;
 
-		public readonly Dictionary<Type, Dictionary<uint, Action<IpcInterface, IncomingMessage, OutgoingMessage>>>
-			AllCommands;
-		
-		static Action<IpcInterface, IncomingMessage, OutgoingMessage> BuildHandler(uint cmdId, MethodInfo mi) {
-			var pre = new Func<IncomingMessage, object>[mi.GetParameters().Length];
-			var post = new Action<IpcInterface, OutgoingMessage, object>[mi.GetParameters().Length];
-
-			var inputOffset = 8U;
-			var outputOffset = 8U;
-			var moveCount = 0U;
-			var copyCount = 0U;
-			var dataBytes = 0U;
-			var bufferNums = new Dictionary<uint, int>();
-			mi.GetParameters().ForEach((p, i) => {
-				if(!p.IsOut) {
-					if(p.HasAttribute<PidAttribute>())
-						pre[i] = im => {
-							Debug.Assert(im.HasPid);
-							return im.Pid;
-						};
-					else if(p.TryGetAttribute<BytesAttribute>(out var bytesAttribute)) {
-						pre[i] = IncomingMessage.BytesGetter(inputOffset, bytesAttribute.Count);
-						inputOffset += bytesAttribute.Count;
-					} else if(p.TryGetAttribute<BufferAttribute>(out var bufferAttribute)) {
-						var t = p.ParameterType.GenericTypeArguments[0];
-						if(!bufferNums.ContainsKey(bufferAttribute.Type))
-							bufferNums[bufferAttribute.Type] = 0;
-						var cbo = bufferNums[bufferAttribute.Type];
-						bufferNums[bufferAttribute.Type]++;
-						if(t == typeof(byte))
-							pre[i] = im => im.GetBuffer<byte>(bufferAttribute.Type, cbo);
-						else if(t == typeof(sbyte))
-							pre[i] = im => im.GetBuffer<sbyte>(bufferAttribute.Type, cbo);
-						else if(t == typeof(uint))
-							pre[i] = im => im.GetBuffer<uint>(bufferAttribute.Type, cbo);
-						else if(t == typeof(ulong))
-							pre[i] = im => im.GetBuffer<ulong>(bufferAttribute.Type, cbo);
-						else
-							throw new NotImplementedException($"Unknown buffer type {t.Name}");
-					} else if(p.ParameterType == typeof(object))
-						pre[i] = im => null;
-					else if(p.ParameterType == typeof(KObject))
-						pre[i] = im => null;
-					else {
-						var type = p.ParameterType;
-						pre[i] = IncomingMessage.DataGetter(type, inputOffset);
-						inputOffset += (uint) Marshal.SizeOf(type.IsEnum ? Enum.GetUnderlyingType(type) : type);
-					}
-				} else {
-					var type = p.ParameterType.GetElementType();
-					if(type == typeof(KObject) || type.IsSubclassOf(typeof(KObject))) {
-						if(p.HasAttribute<MoveAttribute>()) {
-							var movePos = moveCount++;
-							post[i] = (s, om, v) => om.Move(movePos, s.CreateHandle((KObject) v));
-						} else if(p.HasAttribute<CopyAttribute>()) {
-							var copyPos = copyCount++;
-							post[i] = (s, om, v) => om.Copy(copyPos, s.CreateHandle((KObject) v));
-						} else throw new NotSupportedException();
-					} else if(p.TryGetAttribute<BytesAttribute>(out var bytesAttribute)) {
-						var bs = OutgoingMessage.BytesSetter(outputOffset, bytesAttribute.Count);
-						post[i] = (_, om, v) => bs(om, v);
-						outputOffset += bytesAttribute.Count;
-					} else if(type == typeof(object))
-						post[i] = (_, im, v) => { };
-					else {
-						//$"{p.Name} -- {type.Name}".Debug();
-						var ds = OutgoingMessage.DataSetter(type, outputOffset);
-						post[i] = (_, om, v) => ds(om, v);
-						outputOffset += (uint) Marshal.SizeOf(type);
-					}
-				}
-			});
-
-			var argCount = mi.GetParameters().Length;
-			if(mi.ReturnType == typeof(void))
-				return (s, im, om) => {
-					$"IPC Call to {s.GetType().Name}::{mi.Name}".Debug();
-					var args = new object[argCount];
-					for(var i = 0; i < argCount; ++i)
-						args[i] = pre[i]?.Invoke(im);
-					
-					try {
-						mi.Invoke(s, args);
-					} catch(TargetInvocationException e) {
-						if(!(e.InnerException is NotImplementedException)) throw;
-						$"{s.GetType().FullName} {mi.Name} [{cmdId}] not implemented".Debug();
-						Backtrace.Print();
-						Environment.Exit(1);
-					}
-					
-					om.Initialize(moveCount, copyCount, dataBytes);
-					om.ErrCode = 0;
-					for(var i = 0; i < argCount; ++i)
-						post[i]?.Invoke(s, om, args[i]);
-				};
-			if(mi.ReturnType == typeof(uint))
-				return (s, im, om) => {
-					$"IPC Call to {s.GetType().Name}::{mi.Name}".Debug();
-					var args = new object[argCount];
-					for(var i = 0; i < argCount; ++i)
-						args[i] = pre[i]?.Invoke(im);
-					
-					try {
-						om.ErrCode = (uint) mi.Invoke(s, args);
-					} catch(TargetInvocationException e) {
-						if(!(e.InnerException is NotImplementedException)) throw;
-						$"{s.GetType().FullName} {mi.Name} [{cmdId}] not implemented".Debug();
-						Backtrace.Print();
-						Environment.Exit(1);
-					}
-					
-					om.Initialize(moveCount, copyCount, dataBytes);
-					for(var i = 0; i < argCount; ++i)
-						post[i]?.Invoke(s, om, args[i]);
-				};
-			throw new NotSupportedException(
-				$"Return from function {mi.DeclaringType.FullName}.{mi.Name} should be void or uint.");
-		}
-		
-		public IpcManager() {
+		public IpcManager() =>
 			Services = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
 				.SelectMany(x =>
 					x.GetCustomAttributes(typeof(IpcServiceAttribute), true)
 						.Select(y => (((IpcServiceAttribute) y).Name, x)))
 				.ToDictionary();
-			
-			AllCommands = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-				.Where(t => t.IsSubclassOf(typeof(IpcInterface))).Select(
-					t => (t, t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-						.SelectMany(x =>
-							x.GetCustomAttributes(typeof(IpcCommandAttribute))
-								.Select(y => (((IpcCommandAttribute) y).Id, MI: x)))
-						.Select(x => (x.Id, BuildHandler(x.Id, x.MI))).ToDictionary()))
-				.ToDictionary();
-		}
 
 		public IpcInterface CreateService(string name) =>
 			Services.TryGetValue(name, out var type)

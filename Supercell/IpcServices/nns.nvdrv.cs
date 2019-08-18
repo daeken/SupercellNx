@@ -103,7 +103,7 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 				: func(this, input, output);
 		}
 
-		public virtual KEvent GetEvent(uint eventId) => throw new NotSupportedException($"GetEvent on {GetType().Name}");
+		public virtual Event GetEvent(uint eventId) => throw new NotSupportedException($"GetEvent on {GetType().Name}");
 	}
 
 	class NvhostAsGpu : NvDevice {
@@ -371,7 +371,7 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 		[Ioctl(0x80084714)]
 		void ZbcGetActiveSlotMask(Buffer<SlotMask> output) => output.Value = new SlotMask { Slot = 7, Mask = 1 };
 
-		public override KEvent GetEvent(uint eventId) => new KEvent();
+		public override Event GetEvent(uint eventId) => new Event();
 	}
 
 	abstract class NvChannel : NvDevice {
@@ -410,7 +410,7 @@ namespace Supercell.IpcServices.Nns.Nvdrv {
 		[Ioctl(0x80084715)]
 		protected void GetUserData(Buffer<ulong> output) => output.Value = UserData;
 
-		public override KEvent GetEvent(uint eventId) => new KEvent();
+		public override Event GetEvent(uint eventId) => new Event();
 	}
 
 	class NvhostGpu : NvChannel {

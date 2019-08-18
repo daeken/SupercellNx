@@ -19,7 +19,7 @@ namespace Supercell.IpcServices.Nn.Am.Service {
 	}
 
 	public partial class ICommonStateGetter {
-		public override KObject GetEventHandle() => null;
+		public override KObject GetEventHandle() => new Event(true);
 		public override uint ReceiveMessage() => 0xF; // Focus
 		public override void GetThisAppletKind(out byte[] _0) => throw new NotImplementedException();
 		public override void AllowToEnterSleep() => throw new NotImplementedException();

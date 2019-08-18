@@ -56,5 +56,18 @@ namespace Common {
 			bw.Write(MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref obj, 1)));
 
 		public static T StmtBlock<T>(Func<T> func) => func();
+
+		public static IEnumerable<int> Range(this int count) => Enumerable.Range(0, count);
+		public static IEnumerable<T> Range<T>(this int count, Func<int, T> mapper) => count.Range().Select(mapper);
+		public static IEnumerable<T> Range<T>(this int count, Func<T> emitter) => count.Range(i => emitter());
+
+		public static T[] Construct<T>(this T[] arr) where T : new() {
+			for(var i = 0; i < arr.Length; ++i)
+				arr[i] = new T();
+			return arr;
+		}
+
+		public static IEnumerable<(int, T)> Enumerate<T>(this IEnumerable<T> enumerable) =>
+			enumerable.Select((v, i) => (i, v));
 	}
 }

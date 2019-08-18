@@ -44,7 +44,7 @@ namespace Supercell.IpcServices.Nn.Visrv.Sf {
 		public override void GetIndirectLayerImageCropMap(float _0, float _1, float _2, float _3, ulong _4, ulong _5, ulong _6, ulong _7, ulong _8, out ulong _9, out ulong _10, Buffer<byte> _11) => throw new NotImplementedException();
 		public override void GetIndirectLayerImageRequiredMemoryInfo(ulong _0, ulong _1, out ulong _2, out ulong _3) => throw new NotImplementedException();
 		
-		public override KObject GetDisplayVsyncEvent(ulong _0) => new KEvent();
+		public override KObject GetDisplayVsyncEvent(ulong _0) => new Event();
 		
 		public override KObject GetDisplayVsyncEventForDebug(ulong _0) => throw new NotImplementedException();
 		

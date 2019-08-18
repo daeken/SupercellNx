@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Common;
+using MoreLinq;
+using static Supercell.Globals;
 
 namespace Supercell {
 	public abstract class Waitable : KObject {
@@ -85,6 +87,23 @@ namespace Supercell {
 		}
 	}
 
+	public class Event : Waitable {
+		bool _Triggered;
+		public bool Triggered {
+			get => _Triggered;
+			set {
+				var doSignal = !_Triggered && value; 
+				_Triggered = value;
+				if(doSignal) Signal();
+			}
+		}
+
+		public Event(bool? triggered = null) {
+			if(triggered != null)
+				Triggered = triggered.Value;
+		}
+	}
+
 	public class Synchronization {
 		public static readonly Synchronization Instance = new Synchronization();
 
@@ -102,19 +121,34 @@ namespace Supercell {
 		[Svc(0x12)]
 		public uint ClearEvent(uint handle) {
 			$"ClearEvent(0x{handle:X})".Debug();
+			var evt = Kernel.Get<Event>(handle);
+			evt.Triggered = false;
 			return 0;
 		}
 		
 		[Svc(0x17)]
 		public uint ResetSignal(uint handle) {
 			$"ResetSignal(0x{handle:X})".Debug();
+			var evt = Kernel.Get<Event>(handle);
+			evt.Triggered = false;
 			return 0;
 		}
 
 		[Svc(0x18)]
 		public (uint, uint) WaitSynchronization(ulong _, ulong handlesAddr, uint numHandles, ulong timeout) {
-			$"WaitSynchronization".Debug();
-			return (0, 0);
+			$"WaitSynchronization(0x{handlesAddr:X}, {numHandles})".Debug();
+			var handles = new Buffer<uint>(handlesAddr, numHandles * 4);
+			var waitHandle = new AutoResetEvent(false);
+			var activated = uint.MaxValue;
+			handles.ForEach((handle, i) => Kernel.Get<Waitable>(handle).Wait(() => {
+				lock(waitHandle) {
+					activated = (uint) i;
+					waitHandle.Set();
+					return 1;
+				}
+			}));
+			waitHandle.WaitOne();
+			return (0, activated);
 		}
 
 		[Svc(0x1A)]

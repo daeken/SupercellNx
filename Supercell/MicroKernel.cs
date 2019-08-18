@@ -22,13 +22,10 @@ namespace Supercell {
 		public virtual void Close() {}
 	}
 
-	public class KEvent : KObject {
-	}
-	
 	public class MicroKernel : IKernel {
 		uint HandleIter;
 		readonly Dictionary<uint, KObject> Handles = new Dictionary<uint, KObject>();
-		
+
 		public uint Add(KObject obj) {
 			lock(Handles) {
 				Handles[++HandleIter] = obj;

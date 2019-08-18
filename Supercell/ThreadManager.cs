@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Common;
 using Cpu64;
@@ -12,16 +13,19 @@ namespace Supercell {
 		public static readonly List<Thread> Threads = new List<Thread>();
 		public static Thread CurrentThread => _CurrentThread.Value;
 		static ulong ThreadIdIter;
+		
 		//public readonly BaseCpu Cpu = new Interpreter(Kernel);
 		public readonly BaseCpu Cpu = new Dynarec(Kernel);
 		//public readonly BaseCpu Cpu = new LlvmRecompiler(Kernel);
 		//public readonly BaseCpu Cpu = new Unicore(Kernel);
 
+		public System.Threading.Thread SystemThread;
 		public readonly ulong Id;
 
 		public readonly ulong Stack, TlsBase;
 
 		public unsafe Thread(ulong isp = 0) {
+			SystemThread = System.Threading.Thread.CurrentThread;
 			Threads.Add(this);
 			if(isp == 0)
 				_CurrentThread.Value = this;
@@ -63,6 +67,13 @@ namespace Supercell {
 	}
 	
 	public class ThreadManager {
+		public void SuspendAllOtherThreads() {
+			if(IsWindows) {
+				
+			} else
+				throw new NotImplementedException();
+		}
+		
 		[Svc(0x8)]
 		public static (uint, uint) CreateThread(ulong _, ulong entry, ulong threadContext, ulong stackTop, uint priority, uint processorId) {
 			var nthread = new SpawnedThread(entry, threadContext, stackTop);
