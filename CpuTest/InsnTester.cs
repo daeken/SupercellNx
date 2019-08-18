@@ -24,6 +24,7 @@ namespace CpuTest {
 			public void LogExclusive(Action cb) => cb();
 			public void Kill() {}
 			public void CheckPointer(ulong addr) {}
+			public void DebugWait() {}
 		}
 		
 		static readonly ThreadLocal<List<(ulong, uint)>> _Mapped = new ThreadLocal<List<(ulong, uint)>>();

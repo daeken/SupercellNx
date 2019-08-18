@@ -85,5 +85,7 @@ namespace Cpu64 {
 		[FieldOffset(0x338)] public ulong NZCV_Z;
 		[FieldOffset(0x340)] public ulong NZCV_C;
 		[FieldOffset(0x348)] public ulong NZCV_V;
+
+		[FieldOffset(0x350)] public int Debugging;
 	}
 }

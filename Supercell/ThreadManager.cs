@@ -67,13 +67,6 @@ namespace Supercell {
 	}
 	
 	public class ThreadManager {
-		public void SuspendAllOtherThreads() {
-			if(IsWindows) {
-				
-			} else
-				throw new NotImplementedException();
-		}
-		
 		[Svc(0x8)]
 		public static (uint, uint) CreateThread(ulong _, ulong entry, ulong threadContext, ulong stackTop, uint priority, uint processorId) {
 			var nthread = new SpawnedThread(entry, threadContext, stackTop);

@@ -21,7 +21,7 @@ namespace Supercell {
 				wait.Set();
 				return 1;
 			});
-			wait.WaitOne();
+			wait.DebugWaitOne();
 			return canceled;
 		}
 		public void Wait(Func<int> cb) => Wait(_ => cb());
@@ -147,7 +147,7 @@ namespace Supercell {
 					return 1;
 				}
 			}));
-			waitHandle.WaitOne();
+			waitHandle.DebugWaitOne();
 			return (0, activated);
 		}
 

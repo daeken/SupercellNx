@@ -11,5 +11,6 @@ namespace Common {
 		void LogExclusive(Action cb);
 		void Kill();
 		void CheckPointer(ulong addr);
+		void DebugWait();
 	}
 }

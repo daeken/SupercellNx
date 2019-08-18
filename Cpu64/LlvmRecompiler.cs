@@ -280,6 +280,9 @@ namespace Cpu64 {
 			set => Field(nameof(CpuState.NZCV_V), value);
 		}
 
+		public LlvmRuntimeValue<byte> DebuggingR =>
+			new LlvmRuntimePointer<byte>(FieldAddress(nameof(CpuState.Debugging)), safe: true, @volatile: true);
+
 		static readonly ThreadLocal<LLVMBuilderRef> TlsBuilder = new ThreadLocal<LLVMBuilderRef>();
 		public static LLVMBuilderRef Builder {
 			get => TlsBuilder.Value;
@@ -368,6 +371,8 @@ namespace Cpu64 {
 			Callbacks->SetSR = FunctionPtr<LlvmCallbacks.SetSRDelegate>(SR);
 
 			Callbacks->CheckPointer = FunctionPtr<LlvmCallbacks.CheckPointerDelegate>(Kernel.CheckPointer);
+
+			Callbacks->Debug = FunctionPtr<LlvmCallbacks.DebugDelegate>(Kernel.DebugWait);
 		}
 
 		static ulong FunctionPtr<DelegateT>(DelegateT func) {
@@ -463,7 +468,23 @@ namespace Cpu64 {
 					Label(label);
 					
 					Field<ulong>(nameof(CpuState.PC), pc);
-					//Call<LlvmCallbacks.DebugDelegate>(nameof(LlvmCallbacks.Debug));
+#if GDB
+					var preDebug = DefineLabel();
+					var postDebug = DefineLabel();
+					BranchIf(DebuggingR, preDebug, postDebug);
+					Label(preDebug);
+					LlvmLabel preStore = DefineLabel("preSvcStore_"), postStore = DefineLabel("postSvcStore_");
+					LlvmLabel preLoad = DefineLabel("preSvcLoad_"), postLoad = DefineLabel("postSvcLoad_");
+					StoreRegistersLabels.Add((preStore, postStore));
+					LoadRegistersLabels.Add((preLoad, postLoad));
+					Branch(preStore);
+					Label(postStore);
+					Call<LlvmCallbacks.DebugDelegate>(nameof(LlvmCallbacks.Debug));
+					Branch(preLoad);
+					Label(postLoad);
+					Branch(postDebug);
+					Label(postDebug);
+#endif
 					if(!Recompile(*(uint*) pc, pc)) {
 						Kernel.Kill();
 						throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");

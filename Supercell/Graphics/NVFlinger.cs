@@ -235,7 +235,7 @@ namespace Supercell.Graphics {
 				var slot = GetFreeSlot(width, height);
 				if(slot != uint.MaxValue)
 					return slot;
-				WaitBufferFree.WaitOne();
+				WaitBufferFree.DebugWaitOne();
 			} while(true);
 		}
 

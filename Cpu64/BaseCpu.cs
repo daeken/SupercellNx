@@ -135,6 +135,8 @@ namespace Cpu64 {
 
 		public void Svc(uint svc) => Kernel.Svc((int) svc);
 
+		public void DebugWait() => Kernel.DebugWait();
+
 		public ulong SR(uint op0, uint op1, uint crn, uint crm, uint op2) {
 			var reg = ((0b10 | op0) << 14) | (op1 << 11) | (crn << 7) | (crm << 3) | op2;
 			switch(reg) {

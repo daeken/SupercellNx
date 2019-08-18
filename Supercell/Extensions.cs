@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using PrettyPrinter;
 using static Supercell.Globals;
 
@@ -29,6 +30,14 @@ namespace Supercell {
 				}
 				Console.WriteLine($"{buffer.Length:X4}");
 			});
+		}
+
+		public static unsafe void DebugWaitOne(this AutoResetEvent are) {
+			while(true) {
+				if(are.WaitOne(100)) return;
+				if(Thread.CurrentThread.Cpu.State->Debugging != 0)
+					Kernel.DebugWait(real: false);
+			}
 		}
 	}
 }

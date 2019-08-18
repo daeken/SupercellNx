@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Common;
 using Cpu64;
 using LibHac;
@@ -26,6 +27,26 @@ namespace Supercell {
 		uint HandleIter;
 		readonly Dictionary<uint, KObject> Handles = new Dictionary<uint, KObject>();
 
+		bool StopTheWorld;
+		int StopCount;
+		AutoResetEvent StopEvent;
+
+		public unsafe MicroKernel() =>
+			Console.CancelKeyPress += (_, __) => {
+				lock(Threading) {
+					StopTheWorld = true;
+					StopEvent = new AutoResetEvent(false);
+					StopCount = Thread.Threads.Count;
+					foreach(var thread in Thread.Threads)
+						thread.Cpu.State->Debugging = 1;
+					"Waiting for all threads to go to sleep...".Debug();
+					StopEvent.WaitOne();
+
+					foreach(var thread in Thread.Threads)
+						Backtrace.Print(thread);
+				}
+			};
+		
 		public uint Add(KObject obj) {
 			lock(Handles) {
 				Handles[++HandleIter] = obj;
@@ -143,6 +164,19 @@ namespace Supercell {
 		public void Kill() => Logger.Kill();
 
 		public void CheckPointer(ulong addr) => Memory.CheckPointer(addr);
+
+		public void DebugWait() => DebugWait(true);
+		public void DebugWait(bool real) {
+			if(StopTheWorld) {
+				lock(this)
+					if(--StopCount == 0)
+						StopEvent.Set();
+
+				while(true)
+					System.Threading.Thread.Sleep(100);
+			}
+			throw new NotImplementedException();
+		}
 
 		[Svc(0x16)]
 		public uint Close(uint handle) {

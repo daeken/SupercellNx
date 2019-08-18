@@ -235,6 +235,8 @@ namespace Cpu64 {
 			get => Field<ulong>(nameof(CpuState.NZCV_V));
 			set => Field(nameof(CpuState.NZCV_V), value);
 		}
+
+		RuntimeValue<bool> DebuggingR => Field<bool>(nameof(CpuState.Debugging));
 		
 		TypeBuilder Tb;
 		static readonly ThreadLocal<Emitter> TlsIlg = new ThreadLocal<Emitter>();
@@ -289,6 +291,17 @@ namespace Cpu64 {
 				Ilg.MarkLabel(blabel);
 
 				Field<ulong>(nameof(CpuState.PC), pc);
+
+#if GDB
+				var preDebug = DefineLabel();
+				var postDebug = DefineLabel();
+				BranchIf(DebuggingR, preDebug, postDebug);
+				Label(preDebug);
+				CallVoid(nameof(DebugWait));
+				Branch(postDebug);
+				Label(postDebug);
+#endif
+
 				if(!Recompile(inst, pc))
 					throw new NotSupportedException($"Instruction at 0x{pc:X} failed to recompile");
 				pc += 4;

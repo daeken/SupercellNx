@@ -332,26 +332,32 @@ namespace Cpu64 {
 	public class LlvmRuntimePointer<T> where T : struct {
 		public static LLVMTypeRef LlvmType<TT>() => typeof(TT).ToLLVMType();
 		public readonly LlvmRuntimeValue<ulong> Address, Pointer;
-		public readonly bool Safe;
+		public readonly bool Safe, Volatile;
 
 		public LlvmRuntimeValue<T> Value {
 			get => new LlvmRuntimeValue<T>(() => {
 				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
 				var load = LLVM.BuildLoad(LlvmRecompiler.Builder, Pointer, "");
 				load.SetAlignment(1);
+				if(Volatile)
+					load.SetVolatile(true);
 				return load;
 			});
 			set {
 				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
-				LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer).SetAlignment(1);
+				var inst = LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer);
+				inst.SetAlignment(1);
+				if(Volatile)
+					inst.SetVolatile(true);
 			}
 		}
 
-		public LlvmRuntimePointer(LlvmRuntimeValue<ulong> address, bool safe = false) {
+		public LlvmRuntimePointer(LlvmRuntimeValue<ulong> address, bool safe = false, bool @volatile = false) {
 			Address = address;
 			Pointer = new LlvmRuntimeValue<ulong>(() => LLVM.BuildIntToPtr(LlvmRecompiler.Builder, address,
 				LLVMTypeRef.PointerType(LlvmType<T>(), 0), ""));
 			Safe = safe;
+			Volatile = @volatile;
 		}
 
 		public static implicit operator LlvmRuntimeValue<T>(LlvmRuntimePointer<T> value) => value.Value;
