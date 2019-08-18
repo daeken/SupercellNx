@@ -147,6 +147,8 @@ namespace Supercell {
 
 			RomFs = data;
 			
+			//Debugger.Start();
+			
 			Thread.CurrentThread.Run(binaries[0].Addr);
 		}
 
