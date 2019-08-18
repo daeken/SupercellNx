@@ -95,8 +95,6 @@ namespace Supercell.IpcServices.Nn.Audio.Detail {
 					VoiceDropsCount = 0, 
 					PlayedWaveBuffersCount = Fake / 100
 				};
-			
-			Backtrace.Print();
 		}
 		
 		public override void Start() => "Stub hit for Nn.Audio.Detail.IAudioRenderer.Start [5]".Debug();

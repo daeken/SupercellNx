@@ -64,6 +64,9 @@ namespace Supercell {
 		}
 		
 		readonly List<(ulong, ulong, string)> BinaryNames = new List<(ulong, ulong, string)>();
+		readonly SortedList<ulong, (ulong Start, ulong End, string Name)> Symbols =
+			new SortedList<ulong, (ulong Start, ulong End, string Name)>();
+		readonly HashSet<ulong> SymFirstPass = new HashSet<ulong>();
 
 		public IStorage RomFs;
 		
@@ -129,6 +132,16 @@ namespace Supercell {
 				foreach(var v in bin.Data)
 					*root++ = v;
 
+				foreach(var sym in bin.Symbols) {
+					var saddr = addr + sym.Value;
+					var eaddr = saddr + sym.Size;
+					Symbols[saddr] = (saddr, eaddr, CxxDemangler.CxxDemangler.Demangle(sym.Name));
+					saddr &= ~0xFFFUL;
+					eaddr &= ~0xFFFUL;
+					for(; saddr <= eaddr; saddr += 0x1000)
+						SymFirstPass.Add(saddr);
+				}
+
 				return (addr, size, bin);
 			}
 
@@ -154,8 +167,15 @@ namespace Supercell {
 
 		public string MapAddress(ulong addr) {
 			foreach(var (start, end, name) in BinaryNames)
-				if(start <= addr && end > addr)
-					return $"0x{addr:X} ({name} @ 0x{addr - start + 0x7100000000:X})";
+				if(start <= addr && end > addr) {
+					if(!SymFirstPass.Contains(addr & ~0xFFFUL))
+						return $"0x{addr:X} -- {name} @ 0x{addr - start + 0x7100000000:X}";
+					if(Symbols.TryGetValue(addr, out var value))
+						return $"0x{addr:X} -- {name} @ 0x{addr - start + 0x7100000000:X} -- {value.Name}";
+					foreach(var (sstart, send, sname) in Symbols.Values)
+						if(sstart <= addr && send > addr)
+							return $"0x{addr:X} -- {name} @ 0x{addr - start + 0x7100000000:X} -- {sname}";
+				}
 			return $"0x{addr:X}";
 		}
 		public IEnumerable<(ulong Start, ulong Size)> MemoryRegions => Memory.Regions.Values;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Common;
 using K4os.Compression.LZ4;
+using MoreLinq;
 using PrettyPrinter;
 
 namespace Supercell {
@@ -44,7 +45,7 @@ namespace Supercell {
 	}
 	
 	public abstract class Nxo {
-		class Symbol {
+		public class Symbol {
 			public string Name;
 			public byte Info, Other;
 			public ushort Shndx;
@@ -63,6 +64,7 @@ namespace Supercell {
 		string Dynstr;
 		public byte[] Data;
 		public uint BssStart, BssEnd;
+		public IReadOnlyList<Symbol> Symbols;
 
 		protected void Load(
 			(byte[] Data, uint Offset, uint Loc, uint Size) text, 
@@ -124,16 +126,7 @@ namespace Supercell {
 					Value = br.ReadUInt64(), 
 					Size = br.ReadUInt64()
 				});
-
-			/*void ProcessRelocations(ulong start, ulong size) {
-				
-			}
-			if(dynamic.ContainsKey(DynamicKey.REL))
-				ProcessRelocations(dynamic[DynamicKey.REL], dynamic[DynamicKey.RELSZ]);
-			if(dynamic.ContainsKey(DynamicKey.RELA))
-				ProcessRelocations(dynamic[DynamicKey.RELA], dynamic[DynamicKey.RELASZ]);
-			if(dynamic.ContainsKey(DynamicKey.JMPREL))
-				ProcessRelocations(dynamic[DynamicKey.JMPREL], dynamic[DynamicKey.PLTRELSZ]);*/
+			Symbols = symbols;
 		}
 
 		string GetDynstr(ulong i) => Dynstr.Substring((int) i, Dynstr.IndexOf('\0', (int) i) - (int) i);
