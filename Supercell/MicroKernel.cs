@@ -32,7 +32,7 @@ namespace Supercell {
 		AutoResetEvent StopEvent;
 
 		public unsafe MicroKernel() =>
-			Console.CancelKeyPress += (_, __) => {
+			Console.CancelKeyPress += (_, evt) => {
 				lock(Threading) {
 					StopTheWorld = true;
 					StopEvent = new AutoResetEvent(false);
@@ -44,6 +44,15 @@ namespace Supercell {
 
 					foreach(var thread in Thread.Threads)
 						Backtrace.Print(thread);
+
+					if(evt.SpecialKey == ConsoleSpecialKey.ControlBreak) {
+						Console.WriteLine("<Press enter to continue>");
+						if(Console.ReadLine() == null) return;
+						evt.Cancel = true;
+						StopTheWorld = false;
+						foreach(var thread in Thread.Threads)
+							thread.Cpu.State->Debugging = 0;
+					}
 				}
 			};
 		
@@ -194,8 +203,9 @@ namespace Supercell {
 					if(--StopCount == 0)
 						StopEvent.Set();
 
-				while(true)
+				while(StopTheWorld)
 					System.Threading.Thread.Sleep(100);
+				return;
 			}
 			throw new NotImplementedException();
 		}

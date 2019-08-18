@@ -12,7 +12,7 @@ namespace Supercell {
 				isp = osp;
 			var pc = cpu.State->PC;
 			var sp = isp;
-			$"Stack Trace [{thread.Id}]".Debug();
+			$"Stack Trace [{thread.Id} -- {thread.Name}]".Debug();
 			"===========".Debug();
 			while(sp >= isp && sp - isp < 1024 * 1024) {
 				Kernel.MapAddress(pc).Debug();

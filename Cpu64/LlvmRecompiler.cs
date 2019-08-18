@@ -607,6 +607,11 @@ namespace Cpu64 {
 		void WithLink(Action func) {
 			var next = CurrentPC + 4;
 			XR[30] = next;
+			// Handle RTLD case where the next instruction after branch is bad
+			if(Disassemble(*(uint*) next, next) == null) {
+				func();
+				return;
+			}
 			if(!BlockLabels.TryGetValue(next, out _)) {
 				BlockLabels[next] = DefineLabel($"_{next:X}");
 				BlocksNeeded.Enqueue((Context, next));

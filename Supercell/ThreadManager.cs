@@ -8,7 +8,7 @@ using Cpu64;
 using static Supercell.Globals;
 
 namespace Supercell {
-	public class Thread : KObject {
+	public unsafe class Thread : KObject {
 		static readonly ThreadLocal<Thread> _CurrentThread = new ThreadLocal<Thread>();
 		public static readonly List<Thread> Threads = new List<Thread>();
 		public static Thread CurrentThread => _CurrentThread.Value;
@@ -24,7 +24,12 @@ namespace Supercell {
 
 		public readonly ulong Stack, TlsBase;
 
-		public unsafe Thread(ulong isp = 0) {
+		public string Name =>
+			(Memory.IsGoodPointer(*(ulong*) (Cpu.State->TlsBase + 0x1F8))
+				? Marshal.PtrToStringUTF8((IntPtr) (*(ulong*) (Cpu.State->TlsBase + 0x1F8) + 0x188))
+				: "") switch { "" => "<unknown thread name>", var x => x };
+
+		public Thread(ulong isp = 0) {
 			SystemThread = System.Threading.Thread.CurrentThread;
 			Threads.Add(this);
 			if(isp == 0)

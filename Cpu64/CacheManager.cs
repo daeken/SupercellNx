@@ -79,7 +79,7 @@ namespace Cpu64 {
 				Block candidate = null;
 				lock(Blocks)
 					foreach(var block in Blocks.Values)
-						if(!block.Optimized && block.Addr != 0x740008FD7C && block.HitCount > 5 && (candidate == null || block.HitCount > candidate.HitCount))
+						if(!block.Optimized && block.Addr != 0x740008FD7C && (candidate == null || block.HitCount > candidate.HitCount))
 							candidate = block;
 				if(candidate == null) {
 					if(!TryCacheToDisk())

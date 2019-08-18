@@ -183,6 +183,13 @@ namespace Supercell {
 			});
 		}
 
+		public bool IsGoodPointer(ulong addr) {
+			foreach(var (key, (raddr, size)) in Regions)
+				if(key > addr) break;
+				else if(raddr <= addr && raddr + size >= addr) return true;
+			return false;
+		}
+
 		IEnumerable<(ulong Start, ulong End, bool Resident)> AllRegions() {
 			var prevAddr = 0UL;
 			foreach(var (addr, size) in Regions.Values) {
