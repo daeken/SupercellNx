@@ -60,6 +60,13 @@ namespace Supercell {
 					Console.WriteLine(e.InnerException);
 					Environment.Exit(1);
 				});
+			} catch(Exception e) {
+				Logger.Exclusive(() => {
+					Backtrace.Print();
+					Console.WriteLine($"Unhandled exception on thread {CurrentThread.Id}");
+					Console.WriteLine(e);
+					Environment.Exit(1);
+				});
 			}
 		}
 	}

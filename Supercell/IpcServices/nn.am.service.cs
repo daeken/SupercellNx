@@ -139,7 +139,7 @@ namespace Supercell.IpcServices.Nn.Am.Service {
 		public override void EndBlockingHomeButtonShortAndLongPressed() {}
 		public override void BeginBlockingHomeButton(ulong _0) {}
 		public override void EndBlockingHomeButton() {}
-		public override byte NotifyRunning() => throw new NotImplementedException();
+		public override byte NotifyRunning() => 1;
 		public override void GetPseudoDeviceId(out byte[] _0) => throw new NotImplementedException();
 		public override void SetMediaPlaybackStateForApplication(byte _0) {}
 		public override byte IsGamePlayRecordingSupported() => throw new NotImplementedException();

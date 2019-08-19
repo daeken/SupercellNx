@@ -4,4 +4,8 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="UltimateOrb.Int128" Version="1.0.8" />
+    </ItemGroup>
+
 </Project>

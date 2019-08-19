@@ -923,6 +923,63 @@ namespace Cpu64 {
 					VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<byte>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<byte>) ((RuntimeValue<byte>) ((RuntimeValue<byte>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ushort>) ((RuntimeValue<ushort>) ((RuntimeValue<ushort>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) (((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U)) != 0 ? ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (src)))).CreateVector())) : ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<uint>) ((RuntimeValue<uint>) ((RuntimeValue<uint>) (src)))).CreateVector()))))) : ((RuntimeValue<Vector128<float>>) ((Q) != 0 ? ((RuntimeValue<Vector128<float>>) (((RuntimeValue<ulong>) (src)).CreateVector())) : throw new NotImplementedException())))))));
 					return true;
 				}
+				/* DUP-element-scalar */
+				if((inst & 0xFFE0FC00U) == 0x5E000400U) {
+					var imm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var r = "";
+					var size = 0x0;
+					var index = (uint) ((uint) (0x0));
+					if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0xF))))) == (0x0)) ? 1U : 0U)) != 0) {
+						throw new NotImplementedException();
+					} else {
+						if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x1))))) == (0x1)) ? 1U : 0U)) != 0) {
+							r = "B";
+							size = 0x8;
+							index = (byte) ((imm) >> (int) (0x1));
+						} else {
+							if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x3))))) == (0x2)) ? 1U : 0U)) != 0) {
+								r = "H";
+								size = 0x10;
+								index = (byte) ((imm) >> (int) (0x2));
+							} else {
+								if(((byte) ((((byte) ((((ulong) (imm)) & ((ulong) (0x7))))) == (0x4)) ? 1U : 0U)) != 0) {
+									r = "S";
+									size = 0x20;
+									index = (byte) ((imm) >> (int) (0x3));
+								} else {
+									r = "D";
+									size = 0x40;
+									index = (byte) ((imm) >> (int) (0x4));
+								}
+							}
+						}
+					}
+					switch(size) {
+						case 0x8: {
+							VBR[(int) (rd)] = (RuntimeValue<byte>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<byte>(index));
+							break;
+						}
+						case 0x10: {
+							VHR[(int) (rd)] = (RuntimeValue<ushort>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<ushort>(index));
+							break;
+						}
+						case 0x20: {
+							VSR[(int) (rd)] = (RuntimeValue<float>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<float>(index));
+							break;
+						}
+						case 0x40: {
+							VDR[(int) (rd)] = (RuntimeValue<double>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])).Element<double>(index));
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					return true;
+				}
 				/* EON-shifted-register */
 				if((inst & 0x7F200000U) == 0x4A200000U) {
 					var size = (inst >> 31) & 0x1U;
@@ -1868,6 +1925,40 @@ namespace Cpu64 {
 					}
 					return true;
 				}
+				/* FMLA-by-element-vector-spdp */
+				if((inst & 0xBF80F400U) == 0x0F801000U) {
+					var Q = (inst >> 30) & 0x1U;
+					var sz = (inst >> 22) & 0x1U;
+					var L = (inst >> 21) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var H = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var T = (string) (((byte) ((byte) (((byte) (((byte) (sz)) << 0)) | ((byte) (((byte) (Q)) << 1))))) switch { 0x0 => "2S", 0x2 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					var Ts = (string) ((sz != 0) ? ("D") : ("S"));
+					var index = (uint) (((byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (sz)) << 1))))) switch { 0x2 => (uint) ((uint) (H)), 0x3 => throw new NotImplementedException(), _ => (uint) ((uint) ((byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (H)) << 1)))))) });
+					if((sz) != 0) {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rd)])) + (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<double>) ((RuntimeValue<double>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<double>(index)))).CreateVector())))))));
+					} else {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rd)])) + ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((RuntimeValue<float>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<float>(index)))).CreateVector())))));
+					}
+					return true;
+				}
+				/* FMLA-vector */
+				if((inst & 0xBFA0FC00U) == 0x0E20CC00U) {
+					var Q = (inst >> 30) & 0x1U;
+					var sz = (inst >> 22) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var T = (string) (((byte) ((byte) (((byte) (((byte) (Q)) << 0)) | ((byte) (((byte) (sz)) << 1))))) switch { 0x0 => "2S", 0x1 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					if((sz) != 0) {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rd)])) + (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])))))));
+					} else {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rd)])) + ((RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])))));
+					}
+					return true;
+				}
 				/* FMOV-general */
 				if((inst & 0x7F36FC00U) == 0x1E260000U) {
 					var sf = (inst >> 31) & 0x1U;
@@ -2002,6 +2093,25 @@ namespace Cpu64 {
 							VDR[(int) (rd)] = (double) (Bitcast<ulong, double>((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((ulong) ((ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (ulong) (((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 1)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 2)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 3)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 4)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 5)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 6)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 7)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 8)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 9)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 10)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 11)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 12)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 13)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 14)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 15)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 16)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 17)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 18)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 19)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 20)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 21)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 22)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 23)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 24)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 25)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 26)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 27)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 28)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 29)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 30)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 31)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 32)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 33)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 34)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 35)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 36)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 37)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 38)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 39)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 40)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 41)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 42)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 43)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 44)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 45)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 46)))) | ((ulong) (((ulong) ((byte) ((byte) (0x0)))) << 47)))))) << 0)) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((((ulong) (imm)) & ((ulong) (0xF)))))))) << 48)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x4)))) & ((ulong) (0x3)))))))) << 52)))) | ((ulong) (((ulong) ((byte) ((byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (byte) (((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 0)) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 1)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 2)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 3)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 4)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 5)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 6)))) | ((byte) (((byte) ((byte) ((byte) ((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1)))))))) << 7)))))) << 54)))) | ((ulong) (((ulong) ((byte) (((byte) ((((ulong) ((byte) ((imm) >> (int) (0x6)))) & ((ulong) (0x1))))) != 0 ? 0U : 1U))) << 62)))) | ((ulong) (((ulong) ((byte) ((byte) ((byte) ((imm) >> (int) (0x7)))))) << 63))))));
 							break;
 						}
+					}
+					return true;
+				}
+				/* FMUL-by-element-vector-spdp */
+				if((inst & 0xBF80F400U) == 0x0F809000U) {
+					var Q = (inst >> 30) & 0x1U;
+					var sz = (inst >> 22) & 0x1U;
+					var L = (inst >> 21) & 0x1U;
+					var rm = (inst >> 16) & 0x1FU;
+					var H = (inst >> 11) & 0x1U;
+					var rn = (inst >> 5) & 0x1FU;
+					var rd = (inst >> 0) & 0x1FU;
+					var T = (string) (((byte) ((byte) (((byte) (((byte) (sz)) << 0)) | ((byte) (((byte) (Q)) << 1))))) switch { 0x0 => "2S", 0x2 => "4S", 0x3 => "2D", _ => throw new NotImplementedException() });
+					var Ts = (string) ((sz != 0) ? ("D") : ("S"));
+					var index = (uint) (((byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (sz)) << 1))))) switch { 0x2 => (uint) ((uint) (H)), 0x3 => throw new NotImplementedException(), _ => (uint) ((uint) ((byte) ((byte) (((byte) (((byte) (L)) << 0)) | ((byte) (((byte) (H)) << 1)))))) });
+					if((sz) != 0) {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<float>>) ((RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * (RuntimeValue<Vector128<double>>) ((RuntimeValue<Vector128<float>>) (((RuntimeValue<double>) ((RuntimeValue<double>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<double>(index)))).CreateVector()))));
+					} else {
+						VR[(int) (rd)] = (RuntimeValue<Vector128<float>>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rn)])) * ((RuntimeValue<Vector128<float>>) (((RuntimeValue<float>) ((RuntimeValue<float>) (((RuntimeValue<Vector128<float>>) (VR[(int) (rm)])).Element<float>(index)))).CreateVector())));
 					}
 					return true;
 				}
@@ -2540,6 +2650,48 @@ namespace Cpu64 {
 						SPR = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
 					else
 						XR[(int) rn] = (RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) (address)) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)));
+					return true;
+				}
+				/* LDR-simd-immediate-preindex */
+				if((inst & 0x3F600C00U) == 0x3C400C00U) {
+					var size = (inst >> 30) & 0x3U;
+					var opc = (inst >> 23) & 0x1U;
+					var imm = (inst >> 12) & 0x1FFU;
+					var rn = (inst >> 5) & 0x1FU;
+					var rt = (inst >> 0) & 0x1FU;
+					var simm = (long) (SignExt<long>(imm, 9));
+					var r = (string) (((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) switch { 0x0 => "B", 0x2 => "H", 0x4 => "S", 0x6 => "D", 0x1 => "Q", _ => throw new NotImplementedException() });
+					var address = ((RuntimeValue<ulong>) (((RuntimeValue<ulong>) (RuntimeValue<ulong>) ((RuntimeValue<ulong>) ((rn) == 31 ? SPR : XR[(int) rn]))) + ((RuntimeValue<ulong>) (RuntimeValue<long>) (simm)))).Store();
+					switch((byte) ((byte) (((byte) (((byte) (opc)) << 0)) | ((byte) (((byte) (size)) << 1))))) {
+						case 0x0: {
+							VBR[(int) (rt)] = (RuntimeValue<byte>) (((RuntimePointer<byte>) (address)).Value);
+							break;
+						}
+						case 0x2: {
+							VHR[(int) (rt)] = (RuntimeValue<ushort>) (((RuntimePointer<ushort>) (address)).Value);
+							break;
+						}
+						case 0x4: {
+							VSR[(int) (rt)] = (RuntimeValue<float>) (((RuntimePointer<float>) (address)).Value);
+							break;
+						}
+						case 0x6: {
+							VDR[(int) (rt)] = (RuntimeValue<double>) (((RuntimePointer<double>) (address)).Value);
+							break;
+						}
+						case 0x1: {
+							VR[(int) (rt)] = (RuntimeValue<Vector128<float>>) (((RuntimePointer<Vector128<float>>) (address)).Value);
+							break;
+						}
+						default: {
+							throw new NotImplementedException();
+							break;
+						}
+					}
+					if(rn == 31)
+						SPR = address;
+					else
+						XR[(int) rn] = address;
 					return true;
 				}
 				/* LDR-simd-immediate-unsigned-offset */

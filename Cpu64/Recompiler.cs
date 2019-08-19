@@ -285,7 +285,7 @@ namespace Cpu64 {
 				var inst = *(uint*) pc;
 				var asm = Disassemble(inst, pc);
 				if(asm == null)
-					cpu.LogError($"Disassembly failed at {cpu.Kernel.MapAddress(pc)} --- {inst:X8}");
+					throw new NotSupportedException($"Disassembly failed at {cpu.Kernel.MapAddress(pc)} --- {inst:X8}");
 
 				var blabel = BlockLabels[pc] = Ilg.DefineLabel();
 				Ilg.MarkLabel(blabel);

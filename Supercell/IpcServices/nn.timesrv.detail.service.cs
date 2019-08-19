@@ -19,4 +19,11 @@ namespace Supercell.IpcServices.Nn.Timesrv.Detail.Service {
 		public override ulong CalculateStandardUserSystemClockDifferenceByUser(Buffer<byte> _0, Buffer<byte> _1) => throw new NotImplementedException();
 		public override ulong CalculateSpanBetween(Buffer<byte> _0, Buffer<byte> _1) => throw new NotImplementedException();
 	}
+
+	public partial class ISystemClock {
+		public override ulong GetCurrentTime() => (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+		public override void SetCurrentTime(ulong _0) => "Stub hit for Nn.Timesrv.Detail.Service.ISystemClock.SetCurrentTime [1]".Debug();
+		public override void GetSystemClockContext(out byte[] _0) => throw new NotImplementedException();
+		public override void SetSystemClockContext(byte[] _0) => "Stub hit for Nn.Timesrv.Detail.Service.ISystemClock.SetSystemClockContext [3]".Debug();
+	}
 }

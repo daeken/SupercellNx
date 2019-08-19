@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using UltimateOrb;
 
 namespace UnicornSharp {
 	internal enum Err {
@@ -97,9 +98,13 @@ namespace UnicornSharp {
 
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern Err uc_reg_write(IntPtr uc, int regid, ref ulong value);
+		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern Err uc_reg_write(IntPtr uc, int regid, ref UInt128 value);
 		
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern Err uc_reg_read(IntPtr uc, int regid, out ulong value);
+		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
+		internal static extern Err uc_reg_read(IntPtr uc, int regid, out UInt128 value);
 
 		[DllImport("unicorn", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern Err uc_reg_write_batch(IntPtr uc, int[] regs, IntPtr values, int count);

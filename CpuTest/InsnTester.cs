@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Common;
 using Cpu64;
+using UltimateOrb;
 using UnicornSharp;
 using Xunit;
 using Xunit.Abstractions;
@@ -161,7 +162,7 @@ namespace CpuTest {
 			for(var i = 0; i < 31; ++i)
 				uc[i < 29 ? Arm64Register.X0 + i : Arm64Register.X29 + (i - 29)] = (&cpu.State->X0)[i];
 			for(var i = 0; i < 32; ++i)
-				uc[Arm64Register.D0 + i] = (&cpu.State->V0)[i].As<float, ulong>().GetElement(0);
+				uc.SetLarge(Arm64Register.Q0 + i, *(UInt128*) &(&cpu.State->V0)[i]);
 		}
 
 		static string Hex<T>(T value) => $"{value:X}";

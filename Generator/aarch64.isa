@@ -764,6 +764,24 @@
                 (vector-zero-top (vector-all (u32 src))))
             (if Q (vector-all src) (unimplemented))))))))
 
+(def DUP-element-scalar
+    "01 0 11110000 iiiii 0 0000 1 nnnnn ddddd"
+    "dup $r$rd, V$rn.$r[$index]"
+    (names (imm i) (rn n) (rd d))
+    (block
+        (let r "") (let size 0) (let index (u32 0))
+        (if (== (& imm 0b01111) 0) (unimplemented)
+        (if (== (& imm 0b00001) 0b0001) (block (= r "B") (= size 8) (= index (>> imm 1)))
+        (if (== (& imm 0b00011) 0b0010) (block (= r "H") (= size 16) (= index (>> imm 2)))
+        (if (== (& imm 0b00111) 0b0100) (block (= r "S") (= size 32) (= index (>> imm 3)))
+        (block (= r "D") (= size 64) (= index (>> imm 4))))))))
+    (match size
+        8 (= (vec-b rd) (vector-element (vec rn) index u8))
+        16 (= (vec-h rd) (vector-element (vec rn) index u16))
+        32 (= (vec-s rd) (vector-element (vec rn) index f32))
+        64 (= (vec-d rd) (vector-element (vec rn) index f64))
+        (unimplemented)))
+
 (def EON-shifted-register
     "f 10 01010 ss 1 mmmmm iiiiii nnnnn ddddd"
     "eon $r$rd, $r$rn, $r$rm, $shiftstr #$imm"
@@ -1309,6 +1327,38 @@
         0b01 (let a (vec-d rn) (let b (vec-d rm) (= (vec-d rd) (if (< a b) a b))))
         (unimplemented)))
 
+(def FMLA-by-element-vector-spdp
+    "0 Q 0 01111 1 s L mmmmm 0 0 01 H 0 nnnnn ddddd"
+    "fmla V$rd.$T, V$rn.$T, V$rm.$Ts[$index]"
+    (names (Q Q) (sz s) (L L) (rm m) (H H) (rn n) (rd d))
+    (block
+        (let T (match (: Q sz)
+            0b00 "2S"
+            0b10 "4S"
+            0b11 "2D"
+            (unimplemented)))
+        (let Ts (if sz "D" "S"))
+        (let index (match (: sz L)
+            0b10 (u32 H)
+            0b11 (unimplemented)
+            (u32 (: H L)))))
+    (if sz
+        (= (vec rd) (vec+ (vec rd) (vec* (vec rn) (vector-all (vector-element (vec rm) index f64)) 64) 64))
+        (= (vec rd) (vec+ (vec rd) (vec* (vec rn) (vector-all (vector-element (vec rm) index f32)) 32) 32))))
+
+(def FMLA-vector
+    "0 Q 0 01110 0 s 1 mmmmm 11001 1 nnnnn ddddd"
+    "fmla V$rd.$T, V$rn.$T, V$rm.$T"
+    (names (Q Q) (sz s) (rm m) (rn n) (rd d))
+    (let T (match (: sz Q)
+        0b00 "2S"
+        0b01 "4S"
+        0b11 "2D"
+        (unimplemented)))
+    (if sz
+        (= (vec rd) (vec+ (vec rd) (vec* (vec rn) (vec rm) 64) 64))
+        (= (vec rd) (vec+ (vec rd) (vec* (vec rn) (vec rm) 32) 32))))
+
 (def FMOV-general
     "f 0 0 11110 tt 1 0m 11o 000000 nnnnn ddddd"
     "fmov $r1$rd$index1, $r2$rn$index2"
@@ -1371,6 +1421,26 @@
                 (cast (& (>> imm 4) 0b11) u2)
                 (cast (& imm 0b1111) u4)
                 (replicate (u1 0) 48)) f64))))
+
+(def FMUL-by-element-vector-spdp
+    "0 Q 0 01111 1 s L mmmmm 1001 H 0 nnnnn ddddd"
+    "fmul V$rd.$T, V$rn.$T, V$rm.$Ts[$index]"
+    (names (Q Q) (sz s) (L L) (rm m) (H H) (rn n) (rd d))
+    (block
+        (let T (match (: Q sz)
+            0b00 "2S"
+            0b10 "4S"
+            0b11 "2D"
+            (unimplemented)))
+        (let Ts (if sz "D" "S"))
+        (let index
+            (match (: sz L)
+                0b10 (u32 H)
+                0b11 (unimplemented)
+                (u32 (: H L)))))
+    (if sz
+        (= (vec rd) (vec* (vec rn) (vector-all (vector-element (vec rm) index f64)) 64))
+        (= (vec rd) (vec* (vec rn) (vector-all (vector-element (vec rm) index f32)) 32))))
 
 (def FMUL-scalar
     "0 0 0 11110 tt 1 mmmmm 0 000 10 nnnnn ddddd"
@@ -1725,6 +1795,29 @@
             0b00_1 (= (vec rt)   (load address f128))
             (unimplemented))
         (= (gpr-or-sp64 rn) (+ address simm))))
+
+(def LDR-simd-immediate-preindex
+    "ss 111 1 00 o1 0 iiiiiiiii 11 nnnnn ttttt"
+    "ldr $r$rt, [X$rn, #$simm]!"
+    (names (size s) (opc o) (imm i) (rn n) (rt t))
+    (block
+        (let simm (signext imm i64))
+        (let r (match (: size opc)
+            0b00_0 "B"
+            0b01_0 "H"
+            0b10_0 "S"
+            0b11_0 "D"
+            0b00_1 "Q"
+            (unimplemented))))
+    (let address (+ (gpr-or-sp64 rn) simm)
+        (match (: size opc)
+            0b00_0 (= (vec-b rt) (load address u8))
+            0b01_0 (= (vec-h rt) (load address u16))
+            0b10_0 (= (vec-s rt) (load address f32))
+            0b11_0 (= (vec-d rt) (load address f64))
+            0b00_1 (= (vec rt)   (load address f128))
+            (unimplemented))
+        (= (gpr-or-sp64 rn) address)))
 
 (def LDR-simd-immediate-unsigned-offset
     "ss 111 1 01 o1 iiiiiiiiiiii nnnnn ttttt"

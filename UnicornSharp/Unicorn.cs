@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using UltimateOrb;
 
 namespace UnicornSharp {
 	public enum Arch {
@@ -487,10 +488,18 @@ namespace UnicornSharp {
 
 		public ulong this[int register] {
 			get {
-				CheckError(Native.uc_reg_read(uc, register, out var val));
+				CheckError(Native.uc_reg_read(uc, register, out ulong val));
 				return val;
 			}
 			set => CheckError(Native.uc_reg_write(uc, register, ref value));
+		}
+
+		public UInt128 GetLarge(int register) {
+			CheckError(Native.uc_reg_read(uc, register, out UInt128 val));
+			return val;
+		}
+		public void SetLarge(int register, UInt128 value) {
+			CheckError(Native.uc_reg_write(uc, register, ref value));
 		}
 
 		internal readonly Dictionary<object, (IntPtr HookHandle, object Delegate)> hookHandles = new Dictionary<object, (IntPtr HookHandle, object Delegate)>();
@@ -742,6 +751,9 @@ namespace UnicornSharp {
 			get => this[(int) register];
 			set => this[(int) register] = value;
 		}
+
+		public UInt128 GetLarge(Arm64Register register) => GetLarge((int) register);
+		public void SetLarge(Arm64Register register, UInt128 value) => SetLarge((int) register, value);
 
 		public UnicornArm64(Endian endianness = Endian.Little) : base(Arch.Arm64, (Mode) ((int) Mode.Arm | (int) endianness)) {
 		}
