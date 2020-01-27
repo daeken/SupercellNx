@@ -89,7 +89,7 @@ namespace Cpu64 {
 
 				candidate.Optimized = true;
 				recompiler.RecompileMultiple(candidate);
-				//Console.WriteLine($"Optimized 0x{candidate.Addr:X} with {candidate.HitCount} hits!");
+				Console.WriteLine($"Optimized 0x{candidate.Addr:X} with {candidate.HitCount} hits!");
 				TryCacheToDisk();
 			}
 		}

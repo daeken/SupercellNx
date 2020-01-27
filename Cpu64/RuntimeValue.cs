@@ -14,7 +14,6 @@ using SigilLite;
 using Emitter = SigilLite.Emit<Cpu64.BlockFunc>;
 #endif
 using UltimateOrb;
-using JetBrains.Annotations;
 using Extensions = Common.Extensions;
 
 namespace Cpu64 {

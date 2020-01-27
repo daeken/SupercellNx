@@ -7,7 +7,7 @@ using LLVMSharp;
 using UltimateOrb;
 
 namespace Cpu64 {
-	public class LlvmRuntimeValue<T> where T : struct {
+	public unsafe class LlvmRuntimeValue<T> where T : struct {
 		readonly Func<LLVMValueRef> Generate;
 		public static LlvmRecompiler Recompiler => LlvmRecompiler.Instance;
 		public static LLVMBuilderRef Builder => LlvmRecompiler.Builder;
@@ -38,10 +38,12 @@ namespace Cpu64 {
 				return new LlvmRuntimeValue<ZT>(() => {
 					var et = typeof(ZT).GetGenericArguments()[0];
 					var zero = et == typeof(float) || et == typeof(double)
-						? LLVM.BuildFPCast(Builder, Recompiler.Const(0), et.ToLLVMType(), "")
-						: LLVM.ConstInt(et.ToLLVMType(), 0, false);
-					return LLVM.BuildBitCast(Builder,
-						LLVM.ConstVector(Enumerable.Range(0, typeof(ZT).ElementCount()).Select(_ => zero).ToArray()),
+						? Builder.BuildFPCast(Recompiler.Const(0), et.ToLLVMType(), "")
+						: LLVMValueRef.CreateConstInt(et.ToLLVMType(), 0, false);
+					return Builder.BuildBitCast(
+						LLVMValueRef.CreateConstVector(Enumerable
+						                               .Range(0, typeof(ZT).ElementCount()).Select(_ => zero)
+						                               .ToArray()),
 						LlvmType<ZT>(), "");
 				});
 			return Recompiler.Const(0).Cast<ZT>();
@@ -57,50 +59,50 @@ namespace Cpu64 {
 
 		public static LlvmRuntimeValue<T> operator +(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<T>(() => LLVM.BuildAdd(LlvmRecompiler.Builder, a, b, ""))
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildFAdd(LlvmRecompiler.Builder, a, b, ""));
+				? new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildAdd(a, b, ""))
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildFAdd(a, b, ""));
 
 		public static LlvmRuntimeValue<T> operator -(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<T>(() => LLVM.BuildSub(LlvmRecompiler.Builder, a, b, ""))
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildFSub(LlvmRecompiler.Builder, a, b, ""));
+				? new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildSub(a, b, ""))
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildFSub(a, b, ""));
 
 		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b, ""))
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildFMul(LlvmRecompiler.Builder, a, b, ""));
+				? new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildMul(a, b, ""))
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildFMul(a, b, ""));
 
 		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<byte> b) =>
 			typeof(T) == typeof(byte)
 				? a * (LlvmRuntimeValue<T>) (object) b
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildMul(a, b.CreateVector(), ""));
 		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<ushort> b) =>
 			typeof(T) == typeof(ushort)
 				? a * (LlvmRuntimeValue<T>) (object) b
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildMul(a, b.CreateVector(), ""));
 		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<uint> b) =>
 			typeof(T) == typeof(uint)
 				? a * (LlvmRuntimeValue<T>) (object) b
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildMul(a, b.CreateVector(), ""));
 		public static LlvmRuntimeValue<T> operator *(LlvmRuntimeValue<T> a, LlvmRuntimeValue<ulong> b) =>
 			typeof(T) == typeof(ulong)
 				? a * (LlvmRuntimeValue<T>) (object) b
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildMul(LlvmRecompiler.Builder, a, b.CreateVector(), ""));
+				: new LlvmRuntimeValue<T>(() => LlvmRecompiler.Builder.BuildMul(a, b.CreateVector(), ""));
 
 		public static LlvmRuntimeValue<T> operator /(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			LlvmRecompiler.Ternary(b.IsZero(), Zero<T>(),
 				IsInt<T>()
 					?
-						IsSigned<T>() ? new LlvmRuntimeValue<T>(() => LLVM.BuildSDiv(Builder, a, b, ""))
-						: new LlvmRuntimeValue<T>(() => LLVM.BuildUDiv(Builder, a, b, ""))
-					: new LlvmRuntimeValue<T>(() => LLVM.BuildFDiv(Builder, a, b, "")));
+						IsSigned<T>() ? new LlvmRuntimeValue<T>(() => Builder.BuildSDiv(a, b, ""))
+						: new LlvmRuntimeValue<T>(() => Builder.BuildUDiv(a, b, ""))
+					: new LlvmRuntimeValue<T>(() => Builder.BuildFDiv(a, b, "")));
 
 		public static LlvmRuntimeValue<T> operator %(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
 				? IsSigned<T>()
-					? new LlvmRuntimeValue<T>(() => LLVM.BuildSRem(Builder, a, b, ""))
-					: new LlvmRuntimeValue<T>(() => LLVM.BuildURem(Builder, a, b, ""))
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildFRem(Builder, a, b, ""));
+					? new LlvmRuntimeValue<T>(() => Builder.BuildSRem(a, b, ""))
+					: new LlvmRuntimeValue<T>(() => Builder.BuildURem(a, b, ""))
+				: new LlvmRuntimeValue<T>(() => Builder.BuildFRem(a, b, ""));
 		
 		public LlvmRuntimeValue<T> Abs() => new LlvmRuntimeValue<T>(() => {
 			if(IsInt<T>()) throw new NotImplementedException();
@@ -117,34 +119,34 @@ namespace Cpu64 {
 		});
 
 		public static LlvmRuntimeValue<T> operator &(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
-			new LlvmRuntimeValue<T>(() => LLVM.BuildAnd(Builder, a, b, ""));
+			new LlvmRuntimeValue<T>(() => Builder.BuildAnd(a, b, ""));
 
 		public static LlvmRuntimeValue<T> operator |(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
-			new LlvmRuntimeValue<T>(() => LLVM.BuildOr(Builder, a, b, ""));
+			new LlvmRuntimeValue<T>(() => Builder.BuildOr(a, b, ""));
 
 		public static LlvmRuntimeValue<T> operator ^(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
-			new LlvmRuntimeValue<T>(() => LLVM.BuildXor(Builder, a, b, ""));
+			new LlvmRuntimeValue<T>(() => Builder.BuildXor(a, b, ""));
 
 		public LlvmRuntimeValue<T> AndNot(LlvmRuntimeValue<T> b) =>
 			new LlvmRuntimeValue<T>(() =>
-				LLVM.BuildBitCast(Builder,
-					LLVM.BuildAnd(Builder, Bitcast<UInt128>(), LLVM.BuildNot(Builder, b.Bitcast<UInt128>(), ""), ""),
+				Builder.BuildBitCast(
+					Builder.BuildAnd(Bitcast<UInt128>(), Builder.BuildNot(b.Bitcast<UInt128>(), ""), ""),
 					LlvmType<T>(), ""));
 
 		public static LlvmRuntimeValue<T> operator ~(LlvmRuntimeValue<T> v) =>
-			new LlvmRuntimeValue<T>(() => LLVM.BuildNot(Builder, v, ""));
+			new LlvmRuntimeValue<T>(() => Builder.BuildNot(v, ""));
 
 		public static LlvmRuntimeValue<T> operator -(LlvmRuntimeValue<T> v) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<T>(() => LLVM.BuildNeg(Builder, v, ""))
-				: new LlvmRuntimeValue<T>(() => LLVM.BuildFNeg(Builder, v, ""));
+				? new LlvmRuntimeValue<T>(() => Builder.BuildNeg(v, ""))
+				: new LlvmRuntimeValue<T>(() => Builder.BuildFNeg(v, ""));
 
 		public static LlvmRuntimeValue<uint> operator !(LlvmRuntimeValue<T> v) =>
-			new LlvmRuntimeValue<T>(() => LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntEQ,  v, Recompiler.Const(0U).Cast<T>(), ""));
+			new LlvmRuntimeValue<T>(() => Builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ,  v, Recompiler.Const(0U).Cast<T>(), ""));
 
 		public static LlvmRuntimeValue<T> ShiftLeft(LlvmRuntimeValue<T> a, LlvmRuntimeValue<uint> b) =>
 			LlvmRecompiler.Ternary((LlvmRuntimeValue<bool>) (b >= (uint) Marshal.SizeOf<T>() * 8), Recompiler.Const(0).Cast<T>(),
-				new LlvmRuntimeValue<T>(() => LLVM.BuildShl(Builder, a, b.Cast<T>(), "")));
+				new LlvmRuntimeValue<T>(() => Builder.BuildShl(a, b.Cast<T>(), "")));
 		public static LlvmRuntimeValue<T> operator <<(LlvmRuntimeValue<T> a, int b) => b == 0 ? a : ShiftLeft(a, (uint) b);
 		public LlvmRuntimeValue<T> ShiftLeft(int b) => b == 0 ? this : ShiftLeft(this, (uint) b);
 		public LlvmRuntimeValue<T> ShiftLeft(long b) => b == 0 ? this : ShiftLeft(this, (uint) b);
@@ -158,8 +160,8 @@ namespace Cpu64 {
 		public static LlvmRuntimeValue<T> ShiftRight(LlvmRuntimeValue<T> a, LlvmRuntimeValue<uint> b) =>
 			LlvmRecompiler.Ternary((LlvmRuntimeValue<bool>) (b >= (uint) Marshal.SizeOf<T>() * 8), Recompiler.Const(0).Cast<T>(),
 				IsSigned<T>()
-					? new LlvmRuntimeValue<T>(() => LLVM.BuildAShr(Builder, a, b.Cast<T>(), ""))
-					: new LlvmRuntimeValue<T>(() => LLVM.BuildLShr(Builder, a, b.Cast<T>(), "")));
+					? new LlvmRuntimeValue<T>(() => Builder.BuildAShr(a, b.Cast<T>(), ""))
+					: new LlvmRuntimeValue<T>(() => Builder.BuildLShr(a, b.Cast<T>(), "")));
 		public static LlvmRuntimeValue<T> operator >>(LlvmRuntimeValue<T> a, int b) => b == 0 ? a : ShiftRight(a, (uint) b);
 		public LlvmRuntimeValue<T> ShiftRight(int b) => b == 0 ? this : ShiftRight(this, (uint) b);
 		public LlvmRuntimeValue<T> ShiftRight(long b) => b == 0 ? this : ShiftRight(this, (uint) b);
@@ -172,34 +174,34 @@ namespace Cpu64 {
 
 		public static LlvmRuntimeValue<byte> operator ==(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntEQ, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOEQ, a, b, ""));
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, a, b, ""))
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOEQ, a, b, ""));
 
 		public static LlvmRuntimeValue<byte> operator !=(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntNE, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealUNE, a, b, ""));
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(LLVMIntPredicate.LLVMIntNE, a, b, ""))
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealUNE, a, b, ""));
 
 		public static LlvmRuntimeValue<byte> operator <(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder,
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(
 					IsSigned<T>() ? LLVMIntPredicate.LLVMIntSLT : LLVMIntPredicate.LLVMIntULT, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOLT, a, b, ""));
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOLT, a, b, ""));
 		public static LlvmRuntimeValue<byte> operator >(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder,
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(
 					IsSigned<T>() ? LLVMIntPredicate.LLVMIntSGT : LLVMIntPredicate.LLVMIntUGT, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOGT, a, b, ""));
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOGT, a, b, ""));
 		public static LlvmRuntimeValue<byte> operator <=(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder,
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(
 					IsSigned<T>() ? LLVMIntPredicate.LLVMIntSLE : LLVMIntPredicate.LLVMIntULE, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOLE, a, b, ""));
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOLE, a, b, ""));
 		public static LlvmRuntimeValue<byte> operator >=(LlvmRuntimeValue<T> a, LlvmRuntimeValue<T> b) =>
 			IsInt<T>()
-				? new LlvmRuntimeValue<bool>(() => LLVM.BuildICmp(Builder,
+				? new LlvmRuntimeValue<bool>(() => Builder.BuildICmp(
 					IsSigned<T>() ? LLVMIntPredicate.LLVMIntSGE : LLVMIntPredicate.LLVMIntUGE, a, b, ""))
-				: new LlvmRuntimeValue<bool>(() => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealOGE, a, b, ""));
+				: new LlvmRuntimeValue<bool>(() => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOGE, a, b, ""));
 		
 		public LlvmRuntimeValue<bool> IsZero() =>
 			typeof(T).IsConstructedGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Vector128<>)
@@ -211,33 +213,33 @@ namespace Cpu64 {
 			Debug.Assert(typeof(T) != typeof(OT));
 			if(typeof(OT).IsConstructedGenericType && typeof(OT).GetGenericTypeDefinition() == typeof(Vector128<>) ||
 			   typeof(T).IsConstructedGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Vector128<>))
-				return new LlvmRuntimeValue<OT>(() => LLVM.BuildBitCast(Builder, this, LlvmType<OT>(), ""));
+				return new LlvmRuntimeValue<OT>(() => Builder.BuildBitCast(this, LlvmType<OT>(), ""));
 			var isize = Marshal.SizeOf<T>();
 			var osize = Marshal.SizeOf<OT>();
 			var ot = LlvmType<OT>();
 			if(typeof(T) == typeof(bool))
-				return new LlvmRuntimeValue<OT>(() => LLVM.BuildZExt(Builder, this, ot, ""));
+				return new LlvmRuntimeValue<OT>(() => Builder.BuildZExt(this, ot, ""));
 			if(typeof(OT) == typeof(bool))
-				return new LlvmRuntimeValue<OT>(() => LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntNE, this, Recompiler.Const(0).Cast<T>(), ""));
+				return new LlvmRuntimeValue<OT>(() => Builder.BuildICmp(LLVMIntPredicate.LLVMIntNE, this, Recompiler.Const(0).Cast<T>(), ""));
 			return new LlvmRuntimeValue<OT>(() => {
 				if(typeof(OT) == typeof(float) || typeof(OT) == typeof(double)) {
 					if(IsInt<T>())
 						return IsSigned<T>()
-							? LLVM.BuildSIToFP(Builder, this, ot, "")
-							: LLVM.BuildUIToFP(Builder, this, ot, "");
-					return LLVM.BuildFPCast(Builder, this, ot, "");
+							? Builder.BuildSIToFP(this, ot, "")
+							: Builder.BuildUIToFP(this, ot, "");
+					return Builder.BuildFPCast(this, ot, "");
 				}
 				if(typeof(T) == typeof(float) || typeof(T) == typeof(double)) {
 					Debug.Assert(IsInt<OT>());
 					return IsSigned<OT>()
-						? LLVM.BuildFPToSI(Builder, this, ot, "")
-						: LLVM.BuildFPToUI(Builder, this, ot, "");
+						? Builder.BuildFPToSI(this, ot, "")
+						: Builder.BuildFPToUI(this, ot, "");
 				}
 
-				if(isize == osize) return LLVM.BuildBitCast(Builder, this, ot, "");
-				if(isize > osize) return LLVM.BuildTrunc(Builder, this, ot, "");
-				if(IsSigned<OT>()) return LLVM.BuildSExt(Builder, this, ot, "");
-				return LLVM.BuildZExt(Builder, this, ot, "");
+				if(isize == osize) return Builder.BuildBitCast(this, ot, "");
+				if(isize > osize) return Builder.BuildTrunc(this, ot, "");
+				if(IsSigned<OT>()) return Builder.BuildSExt(this, ot, "");
+				return Builder.BuildZExt(this, ot, "");
 			});
 		}
 
@@ -269,7 +271,7 @@ namespace Cpu64 {
 		}
 
 		public LlvmRuntimeValue<OutT> Bitcast<OutT>() where OutT : struct =>
-			new LlvmRuntimeValue<OutT>(() => LLVM.BuildBitCast(Builder, this, LlvmType<OutT>(), ""));
+			new LlvmRuntimeValue<OutT>(() => Builder.BuildBitCast(this, LlvmType<OutT>(), ""));
 
 		public static implicit operator LlvmRuntimeValue<T>(T value) => Recompiler.Const(value);
 
@@ -278,7 +280,7 @@ namespace Cpu64 {
 				var value = Emit();
 				var vec = LLVM.GetUndef(LlvmType<Vector128<T>>());
 				for(var i = 0; i < typeof(Vector128<T>).ElementCount(); ++i)
-					vec = LLVM.BuildInsertElement(Builder, vec, value, Recompiler.Const(i), "");
+					vec = Builder.BuildInsertElement(vec, value, Recompiler.Const(i), "");
 				return vec;
 			});
 		
@@ -288,7 +290,7 @@ namespace Cpu64 {
 				var ivec = Cast<Vector128<double>>().Store();
 				var vec = LLVM.GetUndef(LlvmType<Vector128<double>>());
 				for(var i = 0; i < 2; ++i)
-					vec = LLVM.BuildInsertElement(Builder, vec,
+					vec = Builder.BuildInsertElement(vec,
 						Recompiler.Const(1.0) / ivec.Element<double>((uint) i).Sqrt(), Recompiler.Const(i), "");
 				return vec;
 			} else {
@@ -296,10 +298,10 @@ namespace Cpu64 {
 				var vec = LLVM.GetUndef(LlvmType<Vector128<float>>());
 				for(var i = 0; i < 4; ++i) {
 					if(i < count)
-						vec = LLVM.BuildInsertElement(Builder, vec,
+						vec = Builder.BuildInsertElement(vec,
 							Recompiler.Const(1.0f) / ivec.Element<float>((uint) i).Sqrt(), Recompiler.Const(i), "");
 					else
-						vec = LLVM.BuildInsertElement(Builder, vec, Recompiler.Const(0.0f), Recompiler.Const(i), "");
+						vec = Builder.BuildInsertElement(vec, Recompiler.Const(0.0f), Recompiler.Const(i), "");
 				}
 				return vec;
 			}
@@ -312,18 +314,18 @@ namespace Cpu64 {
 			return new LlvmRuntimeValue<T>(() => {
 				var vectorVal = Emit();
 				if(vet != typeof(ElementT))
-					vectorVal = LLVM.BuildBitCast(Builder, vectorVal, LlvmType<Vector128<ElementT>>(), "");
-				var ret = LLVM.BuildInsertElement(Builder, vectorVal, value, Recompiler.Const(index), "");
-				return vet != typeof(ElementT) ? LLVM.BuildBitCast(Builder, ret, LlvmType<T>(), "") : ret;
+					vectorVal = Builder.BuildBitCast(vectorVal, LlvmType<Vector128<ElementT>>(), "");
+				var ret = Builder.BuildInsertElement(vectorVal, value, Recompiler.Const(index), "");
+				return vet != typeof(ElementT) ? Builder.BuildBitCast(ret, LlvmType<T>(), "") : ret;
 			});
 		}
 
 		public LlvmRuntimeValue<ElementT> Element<ElementT>(uint index) where ElementT : struct =>
 			new LlvmRuntimeValue<ElementT>(() =>
-				LLVM.BuildExtractElement(Builder, Cast<Vector128<ElementT>>(), Recompiler.Const(index), ""));
+				Builder.BuildExtractElement(Cast<Vector128<ElementT>>(), Recompiler.Const(index), ""));
 
 		public LlvmRuntimeValue<byte> IsNaN() => new LlvmRuntimeValue<bool>(() =>
-			EmitThen(v => LLVM.BuildFCmp(Builder, LLVMRealPredicate.LLVMRealUNO, v, v, ""))).Cast<byte>();
+			EmitThen(v => Builder.BuildFCmp(LLVMRealPredicate.LLVMRealUNO, v, v, ""))).Cast<byte>();
 
 		public override bool Equals(object obj) => throw new NotImplementedException();
 		public override int GetHashCode() => throw new NotImplementedException();
@@ -337,25 +339,25 @@ namespace Cpu64 {
 		public LlvmRuntimeValue<T> Value {
 			get => new LlvmRuntimeValue<T>(() => {
 				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
-				var load = LLVM.BuildLoad(LlvmRecompiler.Builder, Pointer, "");
-				load.SetAlignment(1);
+				var load = LlvmRecompiler.Builder.BuildLoad(Pointer, "");
+				load.Alignment = 1;
 				if(Volatile)
-					load.SetVolatile(true);
+					load.Volatile = true;
 				return load;
 			});
 			set {
 				//if(!Safe) LlvmRecompiler.CallCheckPointer(Address);
-				var inst = LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer);
-				inst.SetAlignment(1);
+				var inst = LlvmRecompiler.Builder.BuildStore(value, Pointer);
+				inst.Alignment = 1;
 				if(Volatile)
-					inst.SetVolatile(true);
+					inst.Volatile = true;
 			}
 		}
 
 		public LlvmRuntimePointer(LlvmRuntimeValue<ulong> address, bool safe = false, bool @volatile = false) {
 			Address = address;
-			Pointer = new LlvmRuntimeValue<ulong>(() => LLVM.BuildIntToPtr(LlvmRecompiler.Builder, address,
-				LLVMTypeRef.PointerType(LlvmType<T>(), 0), ""));
+			Pointer = new LlvmRuntimeValue<ulong>(() => LlvmRecompiler.Builder.BuildIntToPtr(address,
+				LLVMTypeRef.CreatePointer(LlvmType<T>(), 0), ""));
 			Safe = safe;
 			Volatile = @volatile;
 		}

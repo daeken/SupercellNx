@@ -16,25 +16,25 @@ namespace Cpu64 {
 		public static LLVMTypeRef ToLLVMType(this Type type) {
 			if(type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Vector128<>)) {
 				var et = type.GetGenericArguments()[0];
-				return LLVMTypeRef.VectorType(et.ToLLVMType(), 16U / (uint) Marshal.SizeOf(et));
+				return LLVMTypeRef.CreateVector(et.ToLLVMType(), 16U / (uint) Marshal.SizeOf(et));
 			}
 			if(typeof(MulticastDelegate).IsAssignableFrom(type)) {
 				var mi = type.GetMethod("Invoke");
-				return LLVMTypeRef.FunctionType(mi.ReturnType.ToLLVMType(),
+				return LLVMTypeRef.CreateFunction(mi.ReturnType.ToLLVMType(),
 					mi.GetParameters().Select(x => x.ParameterType.ToLLVMType()).ToArray(), false);
 			}
 			if(type == typeof(void))
-				return LLVMTypeRef.VoidType();
-			if(type.IsPointer) return LLVMTypeRef.Int64Type();
+				return LLVMTypeRef.Void;
+			if(type.IsPointer) return LLVMTypeRef.Int64;
 			switch(Activator.CreateInstance(type)) {
-				case sbyte _: case byte _: return LLVMTypeRef.Int8Type();
-				case short _: case ushort _: return LLVMTypeRef.Int16Type();
-				case int _: case uint _: return LLVMTypeRef.Int32Type();
-				case long _: case ulong _: return LLVMTypeRef.Int64Type();
-				case Int128 _: case UInt128 _: return LLVMTypeRef.IntType(128);
-				case float _: return LLVMTypeRef.FloatType();
-				case double _: return LLVMTypeRef.DoubleType();
-				case bool _: return LLVMTypeRef.IntType(1);
+				case sbyte _: case byte _: return LLVMTypeRef.Int8;
+				case short _: case ushort _: return LLVMTypeRef.Int16;
+				case int _: case uint _: return LLVMTypeRef.Int32;
+				case long _: case ulong _: return LLVMTypeRef.Int64;
+				case Int128 _: case UInt128 _: return LLVMTypeRef.CreateInt(128);
+				case float _: return LLVMTypeRef.Float;
+				case double _: return LLVMTypeRef.Double;
+				case bool _: return LLVMTypeRef.Int1;
 				default: throw new NotSupportedException(type.Name);
 			}
 		}
@@ -85,10 +85,10 @@ namespace Cpu64 {
 		
 		public class LlvmLocal<T> where T : struct {
 			readonly LLVMValueRef Pointer;
-			public LlvmLocal(string name = "") => Pointer = LLVM.BuildAlloca(Builder, LlvmType<T>(), name);
+			public LlvmLocal(string name = "") => Pointer = Builder.BuildAlloca(LlvmType<T>(), name);
 			public LlvmRuntimeValue<T> Value {
-				get => new LlvmRuntimeValue<T>(() => LLVM.BuildLoad(Builder, Pointer, ""));
-				set => LLVM.BuildStore(LlvmRecompiler.Builder, value, Pointer);
+				get => new LlvmRuntimeValue<T>(() => Builder.BuildLoad(Pointer, ""));
+				set => Builder.BuildStore(value, Pointer);
 			}
 
 			public static implicit operator LlvmRuntimeValue<T>(LlvmLocal<T> local) => local.Value;
@@ -102,8 +102,8 @@ namespace Cpu64 {
 					if(reg == 31) return Recompiler.Const(0UL);
 					Recompiler.RegistersUsed[reg] = true;
 					/*var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<ulong>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"X{reg}_");*/
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<ulong>(), 0), "");
+					return Builder.BuildLoad(ptr, $"X{reg}_");*/
 					return Recompiler.RegisterLocals[reg].Value;
 				});
 				set {
@@ -113,8 +113,8 @@ namespace Cpu64 {
 					}
 					Recompiler.RegistersUsed[reg] = true;
 					/*var addr = Recompiler.FieldAddress(nameof(CpuState.X0)) + (ulong) (reg * 8);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<ulong>(), 0), $"X{reg}_");
-					LLVM.BuildStore(Builder, value, ptr);*/
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<ulong>(), 0), $"X{reg}_");
+					Builder.BuildStore(value, ptr);*/
 					Recompiler.RegisterLocals[reg].Value = value;
 				}
 			}
@@ -126,13 +126,13 @@ namespace Cpu64 {
 			public LlvmRuntimeValue<Vector128<float>> this[int reg] {
 				get => new LlvmRuntimeValue<Vector128<float>>(() => {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<Vector128<float>>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"V{reg}_");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<Vector128<float>>(), 0), "");
+					return Builder.BuildLoad(ptr, $"V{reg}_");
 				});
 				set {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<Vector128<float>>(), 0), $"V{reg}_");
-					LLVM.BuildStore(Builder, value, ptr);
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<Vector128<float>>(), 0), $"V{reg}_");
+					Builder.BuildStore(value, ptr);
 				}
 			}
 		}
@@ -143,17 +143,17 @@ namespace Cpu64 {
 			public LlvmRuntimeValue<byte> this[int reg] {
 				get => new LlvmRuntimeValue<Vector128<byte>>(() => {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<byte>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"B{reg}_");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<byte>(), 0), "");
+					return Builder.BuildLoad(ptr, $"B{reg}_");
 				});
 				set {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
 					var type = LlvmType<Vector128<byte>>();
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(type, 0), $"B{reg}_");
-					var bvec = LLVM.BuildInsertElement(Builder, LLVM.GetUndef(type), value, Recompiler.Const(0), "");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(type, 0), $"B{reg}_");
+					var bvec = Builder.BuildInsertElement(LLVM.GetUndef(type), value, Recompiler.Const(0), "");
 					for(var i = 1; i < 16; ++i)
-						bvec = LLVM.BuildInsertElement(Builder, bvec, Recompiler.Const((byte) 0), Recompiler.Const(i), "");
-					LLVM.BuildStore(Builder, bvec, ptr);
+						bvec = Builder.BuildInsertElement(bvec, Recompiler.Const((byte) 0), Recompiler.Const(i), "");
+					Builder.BuildStore(bvec, ptr);
 				}
 			}
 		}
@@ -164,17 +164,17 @@ namespace Cpu64 {
 			public LlvmRuntimeValue<ushort> this[int reg] {
 				get => new LlvmRuntimeValue<ushort>(() => {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<ushort>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"H{reg}_");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<ushort>(), 0), "");
+					return Builder.BuildLoad(ptr, $"H{reg}_");
 				});
 				set {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
 					var type = LlvmType<Vector128<ushort>>();
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(type, 0), $"H{reg}_");
-					var bvec = LLVM.BuildInsertElement(Builder, LLVM.GetUndef(type), value, Recompiler.Const(0), "");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(type, 0), $"H{reg}_");
+					var bvec = Builder.BuildInsertElement(LLVM.GetUndef(type), value, Recompiler.Const(0), "");
 					for(var i = 1; i < 8; ++i)
-						bvec = LLVM.BuildInsertElement(Builder, bvec, Recompiler.Const((ushort) 0), Recompiler.Const(i), "");
-					LLVM.BuildStore(Builder, bvec, ptr);
+						bvec = Builder.BuildInsertElement(bvec, Recompiler.Const((ushort) 0), Recompiler.Const(i), "");
+					Builder.BuildStore(bvec, ptr);
 				}
 			}
 		}
@@ -185,17 +185,17 @@ namespace Cpu64 {
 			public LlvmRuntimeValue<float> this[int reg] {
 				get => new LlvmRuntimeValue<ushort>(() => {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<float>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"S{reg}_");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<float>(), 0), "");
+					return Builder.BuildLoad(ptr, $"S{reg}_");
 				});
 				set {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
 					var type = LlvmType<Vector128<float>>();
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(type, 0), $"S{reg}_");
-					var bvec = LLVM.BuildInsertElement(Builder, LLVM.GetUndef(type), value, Recompiler.Const(0), "");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(type, 0), $"S{reg}_");
+					var bvec = Builder.BuildInsertElement(LLVM.GetUndef(type), value, Recompiler.Const(0), "");
 					for(var i = 1; i < 4; ++i)
-						bvec = LLVM.BuildInsertElement(Builder, bvec, Recompiler.Const(0f), Recompiler.Const(i), "");
-					LLVM.BuildStore(Builder, bvec, ptr);
+						bvec = Builder.BuildInsertElement(bvec, Recompiler.Const(0f), Recompiler.Const(i), "");
+					Builder.BuildStore(bvec, ptr);
 				}
 			}
 		}
@@ -206,16 +206,16 @@ namespace Cpu64 {
 			public LlvmRuntimeValue<double> this[int reg] {
 				get => new LlvmRuntimeValue<double>(() => {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(LlvmType<double>(), 0), "");
-					return LLVM.BuildLoad(Builder, ptr, $"D{reg}_");
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(LlvmType<double>(), 0), "");
+					return Builder.BuildLoad(ptr, $"D{reg}_");
 				});
 				set {
 					var addr = Recompiler.FieldAddress(nameof(CpuState.V0)) + (ulong) (reg * 16);
 					var type = LlvmType<Vector128<double>>();
-					var ptr = LLVM.BuildIntToPtr(Builder, addr, LLVMTypeRef.PointerType(type, 0), $"D{reg}_");
-					var bvec = LLVM.BuildInsertElement(Builder, LLVM.GetUndef(type), value, Recompiler.Const(0), "");
-					bvec = LLVM.BuildInsertElement(Builder, bvec, Recompiler.Const(0d), Recompiler.Const(1), "");
-					LLVM.BuildStore(Builder, bvec, ptr);
+					var ptr = Builder.BuildIntToPtr(addr, LLVMTypeRef.CreatePointer(type, 0), $"D{reg}_");
+					var bvec = Builder.BuildInsertElement(LLVM.GetUndef(type), value, Recompiler.Const(0), "");
+					bvec = Builder.BuildInsertElement(bvec, Recompiler.Const(0d), Recompiler.Const(1), "");
+					Builder.BuildStore(bvec, ptr);
 				}
 			}
 		}
@@ -330,8 +330,10 @@ namespace Cpu64 {
 			LLVM.InitializeX86TargetMC();
 			LLVM.InitializeX86AsmParser();
 			LLVM.InitializeX86AsmPrinter();
+
+			var options = new LLVMMCJITCompilerOptions { NoFramePointerElim = 1 };
+			LLVM.InitializeMCJITCompilerOptions(&options, (UIntPtr) Marshal.SizeOf<LLVMMCJITCompilerOptions>());
 			
-			LLVM.InitializeMCJITCompilerOptions(new LLVMMCJITCompilerOptions { NoFramePointerElim = 1 });
 		}
 
 		class LlvmException : Exception {
@@ -407,7 +409,7 @@ namespace Cpu64 {
 
 		public void RecompileMultiple(Block block) {
 			Instance = this;
-			Module = LLVM.ModuleCreateWithName("SupercellNXLLVM");
+			Module = LLVMModuleRef.CreateWithName("SupercellNXLLVM");
 			Builder = LLVM.CreateBuilder();
 
 			PassManager = LLVM.CreateFunctionPassManagerForModule(Module);
@@ -422,12 +424,12 @@ namespace Cpu64 {
 			LLVM.AddPartiallyInlineLibCallsPass(PassManager);
 			LLVM.InitializeFunctionPassManager(PassManager);
 
-			Function = LLVM.AddFunction(Module, $"_{block.Addr:X}", LlvmType<Action<ulong, ulong>>());
+			Function = Module.AddFunction($"_{block.Addr:X}", LlvmType<Action<ulong, ulong>>());
 			LLVM.SetLinkage(Function, LLVMLinkage.LLVMExternalLinkage);
 
 			UsedLabels = new List<LlvmLabel>();
 			
-			LLVM.PositionBuilderAtEnd(Builder, LLVM.AppendBasicBlock(Function, "entrypoint"));
+			Builder.PositionAtEnd(Function.AppendBasicBlock("entrypoint"));
 
 			RegistersUsed = new bool[31];
 			RegisterLocals = Enumerable.Range(0, 31).Select(i => new LlvmLocal<ulong>($"X{i}")).ToArray();
@@ -516,30 +518,32 @@ namespace Cpu64 {
 			
 			//LLVM.DumpValue(Function);
 			LLVM.VerifyFunction(Function, LLVMVerifierFailureAction.LLVMPrintMessageAction);
-			if(LLVM.VerifyFunction(Function, LLVMVerifierFailureAction.LLVMReturnStatusAction))
+			if(Function.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
 				throw new Exception("Program verification failed");
 			LLVM.RunFunctionPassManager(PassManager, Function);
 			//LLVM.DumpValue(Function);
 			
-			if(LLVM.CreateExecutionEngineForModule(out ExecutionEngine, Module, out var errorMessage).Value == 1)
+			if(Module.TryCreateExecutionEngine(out ExecutionEngine, out var errorMessage))
 				throw new Exception(errorMessage);
 
+			sbyte* errMsg;
+			LLVMOpaqueMemoryBuffer* memBuf;
 			if(LLVM.TargetMachineEmitToMemoryBuffer(LLVM.GetExecutionEngineTargetMachine(ExecutionEngine), Module,
-				LLVMCodeGenFileType.LLVMObjectFile, out var errMsg, out var memBuf))
-				throw new LlvmException(errMsg);
+				LLVMCodeGenFileType.LLVMObjectFile, &errMsg, &memBuf) != 1)
+				throw new LlvmException(Marshal.PtrToStringAuto((IntPtr) errMsg));
 
-			var outCode = new byte[LLVM.GetBufferSize(memBuf)];
-			Marshal.Copy(LLVM.GetBufferStart(memBuf), outCode, 0, outCode.Length);
+			var outCode = new byte[(uint) LLVM.GetBufferSize(memBuf)];
+			Marshal.Copy((IntPtr) LLVM.GetBufferStart(memBuf), outCode, 0, outCode.Length);
 			block.ObjectCode = outCode;
 
-			var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>(LLVM.GetPointerToGlobal(ExecutionEngine, Function));
+			var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>(ExecutionEngine.GetPointerToGlobal(Function));
 			block.Func = (state, _) => tfunc(state, Callbacks);
 		}
 
 		public LLVMValueRef Intrinsic<T>(string name, params LLVMValueRef[] args) {
-			var func = LLVM.GetNamedFunction(Module, name);
-			func = func.Pointer == IntPtr.Zero ? LLVM.AddFunction(Module, name, LlvmType<T>()) : func;
-			return LLVM.BuildCall(Builder, func, args, "");
+			var func = Module.GetNamedFunction(name);
+			func = func.Pointer == IntPtr.Zero ? Module.AddFunction(name, LlvmType<T>()) : func;
+			return Builder.BuildCall(func, args, "");
 		}
 
 		public void Emitted() => JustBranched = false;
@@ -557,27 +561,26 @@ namespace Cpu64 {
 		public LlvmRuntimeValue<T> Const<T>(T value) where T : struct => new LlvmRuntimeValue<T>(() => {
 			unchecked {
 				switch(value) {
-					case sbyte v: return LLVM.ConstInt(LLVMTypeRef.Int8Type(), (ulong) v, false);
-					case byte v: return LLVM.ConstInt(LLVMTypeRef.Int8Type(), v, false);
-					case short v: return LLVM.ConstInt(LLVMTypeRef.Int16Type(), (ulong) v, false);
-					case ushort v: return LLVM.ConstInt(LLVMTypeRef.Int16Type(), v, false);
-					case int v: return LLVM.ConstInt(LLVMTypeRef.Int32Type(), (ulong) v, false);
-					case uint v: return LLVM.ConstInt(LLVMTypeRef.Int32Type(), v, false);
-					case long v: return LLVM.ConstInt(LLVMTypeRef.Int64Type(), (ulong) v, false);
-					case ulong v: return LLVM.ConstInt(LLVMTypeRef.Int64Type(), v, false);
+					case sbyte v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int8, (ulong) v, false);
+					case byte v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int8, v, false);
+					case short v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int16, (ulong) v, false);
+					case ushort v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int16, v, false);
+					case int v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, (ulong) v, false);
+					case uint v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, v, false);
+					case long v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int64, (ulong) v, false);
+					case ulong v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int64, v, false);
 					case Int128 v:
 						Debug.Assert(v >= 0 && (v >> 64) == 0);
-						return LLVM.ConstInt(LLVMTypeRef.IntType(128), (ulong) v, false);
+						return LLVMValueRef.CreateConstInt(LLVMTypeRef.CreateInt(128), (ulong) v, false);
 					case UInt128 v:
 						Debug.Assert(v >= 0 && (v >> 64) == 0);
-						return LLVM.ConstInt(LLVMTypeRef.IntType(128), (ulong) v, false);
+						return LLVMValueRef.CreateConstInt(LLVMTypeRef.CreateInt(128), (ulong) v, false);
 					case float v:
-						return LLVM.BuildBitCast(Builder,
-							LLVM.ConstInt(LLVMTypeRef.Int32Type(), *(uint*) &v, false), LLVMTypeRef.FloatType(), "");
+						return Builder.BuildBitCast(LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, *(uint*) &v, false), LLVMTypeRef.Float, "");
 					case double v:
-						return LLVM.BuildBitCast(Builder,
-							LLVM.ConstInt(LLVMTypeRef.Int64Type(), *(ulong*) &v, false), LLVMTypeRef.DoubleType(), "");
-					case bool v: return LLVM.ConstInt(LLVMTypeRef.Int1Type(), v ? 1UL : 0, false);
+						return Builder.BuildBitCast(
+							LLVMValueRef.CreateConstInt(LLVMTypeRef.Int64, *(ulong*) &v, false), LLVMTypeRef.Double, "");
+					case bool v: return LLVMValueRef.CreateConstInt(LLVMTypeRef.Int1, v ? 1UL : 0, false);
 					default: throw new NotImplementedException(typeof(T).Name);
 				}
 			}
@@ -585,7 +588,7 @@ namespace Cpu64 {
 		
 		public LlvmLocal<T> DeclareLocal<T>() where T : struct => new LlvmLocal<T>();
 
-		public LlvmLabel DefineLabel(string name = "") => new LlvmLabel(() => LLVM.AppendBasicBlock(Function, name));
+		public LlvmLabel DefineLabel(string name = "") => new LlvmLabel(() => Function.AppendBasicBlock(name));
 		public void Label(LlvmLabel label) {
 			if(JustBranched && SuppressedBranch == label && !UsedLabels.Contains(label)) {
 				JustBranched = false;
@@ -597,7 +600,7 @@ namespace Cpu64 {
 
 		public void Branch(LlvmLabel label) {
 			if(!JustBranched) {
-				LLVM.BuildBr(Builder, label);
+				Builder.BuildBr(label);
 				UsedLabels.Add(label);
 			} else
 				SuppressedBranch = label;
@@ -665,8 +668,8 @@ namespace Cpu64 {
 			if(!JustBranched) {
 				UsedLabels.Add(if_label);
 				UsedLabels.Add(else_label);
-				LLVM.BuildCondBr(Builder,
-					LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntNE, cond, Const((byte) 0), ""), if_label, else_label);
+				Builder.BuildCondBr(
+					Builder.BuildICmp(LLVMIntPredicate.LLVMIntNE, cond, Const((byte) 0), ""), if_label, else_label);
 			}
 			JustBranched = true;
 		}
@@ -687,8 +690,8 @@ namespace Cpu64 {
 				var bb = Instance.CurrentBlock;
 				Instance.Branch(end);
 				Instance.Label(end);
-				var phi = LLVM.BuildPhi(Builder, LlvmType<ValueT>(), "");
-				LLVM.AddIncoming(phi, new[] { av, bv }, new[] { ab, bb }, 2);
+				var phi = Builder.BuildPhi(LlvmType<ValueT>(), "");
+				phi.AddIncoming(new[] { av, bv }, new[] { ab, bb }, 2);
 				return phi;
 			});
 
@@ -697,13 +700,13 @@ namespace Cpu64 {
 			var dt = typeof(DelegateT);
 			Debug.Assert(typeof(MulticastDelegate).IsAssignableFrom(dt));
 			var mi = dt.GetMethod("Invoke");
-			var ft = LLVMTypeRef.PointerType(LLVMTypeRef.FunctionType(mi.ReturnType.ToLLVMType(),
+			var ft = LLVMTypeRef.CreatePointer(LLVMTypeRef.CreateFunction(mi.ReturnType.ToLLVMType(),
 				mi.GetParameters().Select(x => x.ParameterType.ToLLVMType()).ToArray(), false), 0);
-			return LLVM.BuildCall(Builder,
-				LLVM.BuildIntToPtr(Builder,
-					LLVM.BuildLoad(Builder,
-						LLVM.BuildIntToPtr(Builder, CallbacksRef + Const((ulong) offset),
-							LLVMTypeRef.PointerType(LLVMTypeRef.Int64Type(), 0), ""), ""), ft, ""), args, "");
+			return Builder.BuildCall(
+				Builder.BuildIntToPtr(
+					Builder.BuildLoad(
+						Builder.BuildIntToPtr(CallbacksRef + Const((ulong) offset),
+							LLVMTypeRef.CreatePointer(LLVMTypeRef.Int64, 0), ""), ""), ft, ""), args, "");
 		}
 
 		void CallSvc(uint svc) {
@@ -723,7 +726,7 @@ namespace Cpu64 {
 
 		LlvmRuntimeValue<T> SignExtRuntime<T>(LlvmRuntimeValue<ulong> value, int size) where T : struct =>
 			new LlvmRuntimeValue<T>(() =>
-				LLVM.BuildSExt(Builder, LLVM.BuildTrunc(Builder, value, LLVMTypeRef.IntType((uint) size), ""),
+				Builder.BuildSExt(Builder.BuildTrunc(value, LLVMTypeRef.CreateInt((uint) size), ""),
 					LlvmType<T>(), ""));
 
 		LlvmRuntimeValue<uint> CallCountLeadingZeros(LlvmRuntimeValue<uint> value) =>
@@ -749,10 +752,10 @@ namespace Cpu64 {
 					vec.Cast<Vector128<byte>>().Emit());
 				if(elems == 16)
 					return ret;
-				var mask = LLVM.GetUndef(LLVMTypeRef.VectorType(LlvmType<int>(), 16));
+				var mask = LLVM.GetUndef(LLVMTypeRef.CreateVector(LlvmType<int>(), 16));
 				for(var i = 0; i < elems; ++i)
-					mask = LLVM.BuildInsertElement(Builder, mask, Const(i < elems ? i : 16), Const(i), "");
-				return LLVM.BuildShuffleVector(Builder, ret, LlvmRuntimeValue<Vector128<byte>>.Zero(), mask, "");
+					mask = Builder.BuildInsertElement(mask, Const(i < elems ? i : 16), Const(i), "");
+				return Builder.BuildShuffleVector(ret, LlvmRuntimeValue<Vector128<byte>>.Zero(), mask, "");
 			}).Cast<Vector128<float>>();
 
 		LlvmRuntimeValue<ulong> CallVectorSumUnsigned(LlvmRuntimeValue<Vector128<float>> vec, long esize, long count) =>
@@ -765,9 +768,9 @@ namespace Cpu64 {
 					_ => throw new NotSupportedException($"Summation of vector of {esize} elements")
 				};
 				return Enumerable.Range(0, (int) count)
-					.Select(i => LLVM.BuildExtractElement(Builder, svec, Const(i), ""))
-					.Select(e => esize == 64 ? e : LLVM.BuildZExt(Builder, e, LlvmType<ulong>(), ""))
-					.Aggregate((a, b) => LLVM.BuildAdd(Builder, a, b, ""));
+					.Select(i => Builder.BuildExtractElement(svec, Const(i), ""))
+					.Select(e => esize == 64 ? e : Builder.BuildZExt(e, LlvmType<ulong>(), ""))
+					.Aggregate((a, b) => Builder.BuildAdd(a, b, ""));
 			});
 
 		LlvmRuntimeValue<Vector128<float>> CallVectorExtract(LlvmRuntimeValue<Vector128<float>> a, LlvmRuntimeValue<Vector128<float>> b, uint q, uint index) =>
@@ -775,19 +778,19 @@ namespace Cpu64 {
 				var avec = a.Cast<Vector128<byte>>().Emit();
 				var bvec = b.Cast<Vector128<byte>>().Emit();
 				var count = q == 0 ? 8 : 16;
-				var mask = LLVM.GetUndef(LLVMTypeRef.VectorType(LlvmType<int>(), 16));
+				var mask = LLVM.GetUndef(LLVMTypeRef.CreateVector(LlvmType<int>(), 16));
 				for(var i = 0; i < 16; ++i)
 					if(count == 16 || i + index < 8)
-						mask = LLVM.BuildInsertElement(Builder, mask, Const((int) (i + index)), Const(i), "");
+						mask = Builder.BuildInsertElement(mask, Const((int) (i + index)), Const(i), "");
 					else
-						mask = LLVM.BuildInsertElement(Builder, mask, Const((int) (i + index + 8)), Const(i), "");
-				var ovec = LLVM.BuildShuffleVector(Builder, avec, bvec, mask, "");
+						mask = Builder.BuildInsertElement(mask, Const((int) (i + index + 8)), Const(i), "");
+				var ovec = Builder.BuildShuffleVector(avec, bvec, mask, "");
 				if(count == 16)
 					return ovec;
-				mask = LLVM.GetUndef(LLVMTypeRef.VectorType(LlvmType<int>(), 16));
+				mask = LLVM.GetUndef(LLVMTypeRef.CreateVector(LlvmType<int>(), 16));
 				for(var i = 0; i < 16; ++i)
-					mask = LLVM.BuildInsertElement(Builder, mask, Const(i < 8 ? i : 16), Const(i), "");
-				return LLVM.BuildShuffleVector(Builder, ovec, LlvmRuntimeValue<Vector128<byte>>.Zero(), mask, "");
+					mask = Builder.BuildInsertElement(mask, Const(i < 8 ? i : 16), Const(i), "");
+				return Builder.BuildShuffleVector(ovec, LlvmRuntimeValue<Vector128<byte>>.Zero(), mask, "");
 			}).Cast<Vector128<float>>();
 
 		LlvmRuntimeValue<uint> CallFloatToFixed32(LlvmRuntimeValue<float> value, ulong fbits) =>
@@ -815,9 +818,9 @@ namespace Cpu64 {
 		LlvmRuntimeValue<byte>
 			CallCompareAndSwap<T>(LlvmRuntimePointer<T> ptr, LlvmRuntimeValue<T> value,
 				LlvmRuntimeValue<T> comparand) where T : struct => new LlvmRuntimeValue<byte>(
-			() => LLVM.BuildSelect(Builder,
-				LLVM.BuildExtractValue(Builder,
-					LLVM.BuildAtomicCmpXchg(Builder, ptr.Pointer, comparand, value,
+			() => Builder.BuildSelect(
+				Builder.BuildExtractValue(
+					Builder.BuildAtomicCmpXchg(ptr.Pointer, comparand, value,
 						LLVMAtomicOrdering.LLVMAtomicOrderingSequentiallyConsistent,
 						LLVMAtomicOrdering.LLVMAtomicOrderingSequentiallyConsistent,
 						false), 1, ""), Const((byte) 0), Const((byte) 1), ""));
