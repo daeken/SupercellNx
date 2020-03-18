@@ -37,22 +37,28 @@ namespace Cpu64 {
 		static BinaryWriter CacheWriter;
 
 		public static unsafe void LoadCache() {
+			Console.WriteLine("Loading cache");
 			try {
 				using var fp = File.OpenRead("cache.bin");
 				var length = fp.Length;
 				using var br = new BinaryReader(fp);
-				var cr = new CoffReader();
+				var cr = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+					? (IBinaryReader) new ElfReader()
+					: new CoffReader();
 				while(fp.Position < length) {
 					var addr = br.ReadUInt64();
-					//$"Loading block {addr:X}".Print();
+					$"Loading block {addr:X}".Print();
 					var size = (int) br.ReadUInt64();
 					var code = br.ReadBytes(size);
-					/*using var ofp = File.OpenWrite($"_{addr:X}.o");
-					ofp.Write(code);*/
+					"Loading binary...".Print();
 					var loadAddr = cr.Load(code, addr);
+					$"Finished binary load??? {(ulong) loadAddr:X}".Print();
 					if(loadAddr == null) continue;
+					"Getting block...".Print();
 					var block = GetBlock(addr);
+					"Getting delegate".Print();
 					var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>((IntPtr) loadAddr);
+					"Finalizing".Print();
 					block.Func = (state, _) => {
 						//Console.WriteLine($"Running block {addr:X}");
 						tfunc(state, LlvmRecompiler.Callbacks);
@@ -60,6 +66,7 @@ namespace Cpu64 {
 					block.Optimized = true;
 				}
 			} catch(FileNotFoundException) {}
+			Console.WriteLine("Done loading cache");
 
 			CacheFile = File.Open("cache.bin", FileMode.Append, FileAccess.Write);
 			CacheWriter = new BinaryWriter(CacheFile);

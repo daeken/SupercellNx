@@ -8,7 +8,7 @@ using MoreLinq;
 using PrettyPrinter;
 
 namespace Cpu64 {
-	public unsafe class CoffReader {
+	public unsafe class CoffReader : IBinaryReader {
 		[StructLayout(LayoutKind.Sequential, Pack = 1)]
 		struct CoffHeader {
 			public ushort Magic, NumSections;
@@ -98,6 +98,7 @@ namespace Cpu64 {
 				var cur = &header->End;
 				var off = 0;
 				var segments = new List<(string Name, byte[] Data, List<CoffRelocation> Relocations, int Offset)>();
+				$"Reading {header->NumSections} sections...".Print();
 				for(var i = 0; i < header->NumSections; ++i) {
 					var sectHeader = (CoffSectionHeader*) cur;
 					cur = &sectHeader->End;
@@ -111,7 +112,7 @@ namespace Cpu64 {
 						.Select(j => ((CoffRelocation*) (ptr + sectHeader->RelocOffset))[j]).ToList(), off));
 					off += (int) size;
 				}
-
+				
 				var csym = (CoffSymbol*) (ptr + header->SymbolPointer);
 				var strtabPtr = (byte*) &csym[header->NumSymbols];
 				var strtabLength = *(int*) strtabPtr;

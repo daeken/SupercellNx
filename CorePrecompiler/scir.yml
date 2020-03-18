@@ -1,0 +1,29 @@
+---
+BinaryOperation:
+  - Op: BinaryOp
+  - Left: Scir
+  - Right: Scir
+UnaryOperation:
+  - Op: UnaryOp
+  - Value: Scir
+
+ConstValue<T>:
+  - Value: T
+
+Cast:
+  - Value: Scir
+Bitcast:
+  - Value: Scir
+
+Load:
+  - Address: Scir
+
+Store:
+  - Address: Scir
+  - Value: Scir
+
+Variable:
+  - Name: string
+
+Assign:
+  - Target: string

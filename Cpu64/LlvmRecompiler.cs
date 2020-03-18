@@ -333,7 +333,6 @@ namespace Cpu64 {
 
 			var options = new LLVMMCJITCompilerOptions { NoFramePointerElim = 1 };
 			LLVM.InitializeMCJITCompilerOptions(&options, (UIntPtr) Marshal.SizeOf<LLVMMCJITCompilerOptions>());
-			
 		}
 
 		class LlvmException : Exception {
@@ -518,24 +517,24 @@ namespace Cpu64 {
 			
 			//LLVM.DumpValue(Function);
 			LLVM.VerifyFunction(Function, LLVMVerifierFailureAction.LLVMPrintMessageAction);
-			if(Function.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
+			if(!Function.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
 				throw new Exception("Program verification failed");
 			LLVM.RunFunctionPassManager(PassManager, Function);
 			//LLVM.DumpValue(Function);
 			
-			if(Module.TryCreateExecutionEngine(out ExecutionEngine, out var errorMessage))
+			if(!Module.TryCreateExecutionEngine(out ExecutionEngine, out var errorMessage))
 				throw new Exception(errorMessage);
 
 			sbyte* errMsg;
 			LLVMOpaqueMemoryBuffer* memBuf;
-			if(LLVM.TargetMachineEmitToMemoryBuffer(LLVM.GetExecutionEngineTargetMachine(ExecutionEngine), Module,
-				LLVMCodeGenFileType.LLVMObjectFile, &errMsg, &memBuf) != 1)
+			if(LLVM.TargetMachineEmitToMemoryBuffer(ExecutionEngine.TargetMachine, Module,
+				   LLVMCodeGenFileType.LLVMObjectFile, &errMsg, &memBuf) != 0)
 				throw new LlvmException(Marshal.PtrToStringAuto((IntPtr) errMsg));
 
 			var outCode = new byte[(uint) LLVM.GetBufferSize(memBuf)];
 			Marshal.Copy((IntPtr) LLVM.GetBufferStart(memBuf), outCode, 0, outCode.Length);
 			block.ObjectCode = outCode;
-
+			
 			var tfunc = Marshal.GetDelegateForFunctionPointer<LlvmBlockFunc>(ExecutionEngine.GetPointerToGlobal(Function));
 			block.Func = (state, _) => tfunc(state, Callbacks);
 		}
@@ -628,8 +627,9 @@ namespace Cpu64 {
 		
 		void Branch(ulong target) {
 			/*Field(nameof(CpuState.BranchTo), Const(target));
-			Branch(StoreRegistersLabel);
-			Branched = true;*/
+			Branch(StoreRegistersLabels[0].Before);
+			Branched = true;
+			return;*/
 			
 			if(!BlockLabels.TryGetValue(target, out var label)) {
 				label = BlockLabels[target] = DefineLabel($"_{target:X}");

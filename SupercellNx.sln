@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenFonts", "OpenFonts\Open
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxxDemangler", "CxxDemangler\CxxDemangler.csproj", "{EE2AD685-6797-4E31-A0BF-DD492F63D766}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CorePrecompiler", "CorePrecompiler\CorePrecompiler.csproj", "{60A9EB30-FBBF-42D9-8A4C-D9E4A4F8CAA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,5 +90,9 @@ Global
 		{EE2AD685-6797-4E31-A0BF-DD492F63D766}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE2AD685-6797-4E31-A0BF-DD492F63D766}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE2AD685-6797-4E31-A0BF-DD492F63D766}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60A9EB30-FBBF-42D9-8A4C-D9E4A4F8CAA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60A9EB30-FBBF-42D9-8A4C-D9E4A4F8CAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60A9EB30-FBBF-42D9-8A4C-D9E4A4F8CAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60A9EB30-FBBF-42D9-8A4C-D9E4A4F8CAA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

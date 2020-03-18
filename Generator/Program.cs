@@ -59,6 +59,7 @@ namespace Generator {
 			BuildInterpreter(defs);
 			BuildRecompiler(defs);
 			BuildLlvmRecompiler(defs);
+			BuildScirRecompiler(defs);
 		}
 
 		public static readonly Dictionary<string, (Func<PList, EType> Signature, Action<CodeBuilder, PList> CompileTime, Action<CodeBuilder, PList> RunTime)>
@@ -351,6 +352,30 @@ namespace Generator {
 			using var sw = new StreamWriter(fp);
 			sw.Write(File.ReadAllText("../GeneratorStubs/LlvmRecompilerStub.cs").Replace("/*%CODE%*/",
 				c.Code.Replace("RuntimeValue", "LlvmRuntimeValue").Replace("RuntimePointer", "LlvmRuntimePointer")));
+		}
+		
+		static void BuildScirRecompiler(List<Def> defs) {
+			Context = ContextTypes.Recompiler;
+			
+			var c = new CodeBuilder();
+			c += 4;
+			
+			foreach(var def in defs) {
+				c += $"/* {def.Name} */";
+				c += $"if((inst & 0x{def.Mask:X8}U) == 0x{def.Match:X8}U) {{";
+				c++;
+				GenerateFields(c, def);
+				GenerateStatement(c, def.Decode);
+				GenerateStatement(c, def.Eval);
+				c += "return true;";
+				c--;
+				c += "}";
+			}
+			
+			using var fp = File.Open("../CorePrecompiler/ScirRecompilerGenerated.cs", FileMode.Truncate);
+			using var sw = new StreamWriter(fp);
+			sw.Write(File.ReadAllText("../GeneratorStubs/ScirRecompilerStub.cs").Replace("/*%CODE%*/",
+				c.Code.Replace("RuntimeValue", "ScirRuntimeValue").Replace("RuntimePointer", "ScirRuntimePointer")));
 		}
 	}
 }
